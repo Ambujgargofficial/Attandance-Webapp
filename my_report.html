@@ -19,8 +19,6 @@
         .status-text { font-weight: bold; font-size: 1.1em; }
         .time-text { font-size: 0.75rem; color: #555; margin-top: 4px; }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-4">
@@ -40,7 +38,7 @@
             </div>
             <button id="fetchReportBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 font-semibold h-10 flex items-center justify-center">
                 <span id="btn-text">Fetch My Report</span>
-                <div id="btn-loader" class="loader hidden"></div>
+                <div id="btn-loader" class="loader hidden" style="width: 20px; height: 20px; border-width: 3px;"></div>
             </button>
         </div>
         
@@ -51,25 +49,43 @@
         <div id="report-container" class="overflow-x-auto">
             <p class="text-center text-gray-500">Please select date range and click "Fetch My Report".</p>
         </div>
+        
+        <div class="mt-4 text-center">
+             <a href="index.html" class="text-indigo-600 hover:text-indigo-800 font-medium">← Back to Punch Interface</a>
+        </div>
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "<?= ScriptApp.getService().getUrl() ?>";
-        const EMPLOYEE_ID = "<?= employeeId ?>"; // Get employee ID from template
+        // =========================================================================================
+        // IMPORTANT: PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+        // =========================================================================================
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaQsrqv_Fqonl54pYKVIlO-TdMojBNVUsLE8jOuT8oQWd-iAshNJO_AR2RmE2tW-f4/exec"; 
+
+        // Extract employee ID from the URL parameters instead of the script template
+        const urlParams = new URLSearchParams(window.location.search);
+        const EMPLOYEE_ID = urlParams.get('empId');
+
         const fetchReportBtn = document.getElementById('fetchReportBtn');
         const reportContainer = document.getElementById('report-container');
         const dutyTimingsDiv = document.getElementById('duty-timings');
 
-        // Set default dates to today
-        const today = new Date();
-        document.getElementById('startDate').valueAsDate = today;
-        document.getElementById('endDate').valueAsDate = today;
+        // Check if ID exists
+        if (!EMPLOYEE_ID) {
+            reportContainer.innerHTML = `<p class="text-center text-red-500 font-bold">Error: Employee ID is missing. Please open this page from the main app.</p>`;
+            fetchReportBtn.disabled = true;
+            fetchReportBtn.classList.add('opacity-50');
+        } else {
+            // Set default dates to today
+            const today = new Date();
+            document.getElementById('startDate').valueAsDate = today;
+            document.getElementById('endDate').valueAsDate = today;
 
-        fetchReportBtn.addEventListener('click', fetchMyReport);
-        
-        document.addEventListener('DOMContentLoaded', (event) => {
-            fetchMyReport();
-        });
+            fetchReportBtn.addEventListener('click', fetchMyReport);
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                fetchMyReport();
+            });
+        }
 
         async function fetchMyReport() {
             const startDate = document.getElementById('startDate').value;
@@ -91,7 +107,6 @@
                 renderReport(reportData.data);
 
             } catch (error) {
-                console.error('Error fetching report:', error);
                 reportContainer.innerHTML = `<p class="text-center text-red-500">Error: ${error.message}</p>`;
             } finally {
                 toggleLoader(false);
@@ -107,7 +122,6 @@
             
             const employee = data.employees[0];
 
-            // Added Location and Department to display
             dutyTimingsDiv.innerHTML = `
                 <p><strong>Name:</strong> ${employee.name} | <strong>Location:</strong> ${employee.location} | <strong>Dept:</strong> ${employee.department}</p>
                 <p><strong>Duty On:</strong> ${employee.startTime} (Grace: ${employee.allowanceIn} min) | <strong>Duty Off:</strong> ${employee.endTime} (Grace: ${employee.allowanceOut} min)</p>
@@ -137,7 +151,6 @@
             document.getElementById('btn-loader').style.display = show ? 'block' : 'none';
             fetchReportBtn.disabled = show;
         }
-
     </script>
 </body>
 </html>
