@@ -485,13 +485,9 @@
             document.getElementById('remark-modal').classList.replace('flex', 'hidden');
         };
 
-        async function fetchGlobalData() {
+        async function fetchGlobalData(forAdmin = false) {
             try {
-                // Fetch Employees
-                const empSnap = await get(ref(database, 'employees'));
-                if (empSnap.exists()) allEmployeesData = empSnap.val();
-                
-                // Fetch Settings
+                // Fetch Settings (Needed for both Admin & Employee - Very lightweight)
                 const setSnap = await get(ref(database, 'settings'));
                 if (setSnap.exists()) {
                     let st = setSnap.val();
@@ -501,18 +497,24 @@
                     globalSettings.globalMsgText = st.globalMsgText || '';
                 }
                 
-                // Populate Dropdowns
-                const sels = ['repEmpSelect', 'manualEmpSelect'];
-                sels.forEach(sId => {
-                    const sel = document.getElementById(sId);
-                    if(sel) {
-                        sel.innerHTML = '<option value="">-- Select Employee --</option>';
-                        Object.entries(allEmployeesData).forEach(([id, emp]) => {
-                            let label = emp.status === 'inactive' ? `(Inactive)` : '';
-                            sel.innerHTML += `<option value="${id}">${emp.name || 'N/A'} (${id}) ${label}</option>`;
-                        });
-                    }
-                });
+                // ONLY fetch All Employees Data if it's an Admin (This makes employee login lightning fast!)
+                if (forAdmin) {
+                    const empSnap = await get(ref(database, 'employees'));
+                    if (empSnap.exists()) allEmployeesData = empSnap.val();
+                    
+                    // Populate Admin Dropdowns
+                    const sels = ['repEmpSelect', 'manualEmpSelect'];
+                    sels.forEach(sId => {
+                        const sel = document.getElementById(sId);
+                        if(sel) {
+                            sel.innerHTML = '<option value="">-- Select Employee --</option>';
+                            Object.entries(allEmployeesData).forEach(([id, emp]) => {
+                                let label = emp.status === 'inactive' ? `(Inactive)` : '';
+                                sel.innerHTML += `<option value="${id}">${emp.name || 'N/A'} (${id}) ${label}</option>`;
+                            });
+                        }
+                    });
+                }
             } catch(e) { console.error("Global fetch err:", e); }
         }
 
@@ -528,7 +530,8 @@
                 if (adminSnap.exists() && adminSnap.val().pin === pin) {
                     isAdmin = true; 
                     currentEmployee = { id: empId, ...adminSnap.val() };
-                    await fetchGlobalData();
+                    showLoader('Loading Admin Portal...');
+                    await fetchGlobalData(true); // Fetch everything for Admin
                     showView('admin-dashboard', 'Admin Portal');
                     hideLoader(); 
                     return;
@@ -545,7 +548,7 @@
                 isAdmin = false; 
                 currentEmployee = { id: empId, ...empData };
                 
-                await fetchGlobalData(); 
+                await fetchGlobalData(false); // Fetch ONLY settings (Lightning Fast)
                 setupEmployeeDashboard();
             } catch (err) { showMessage(err.message, 'error'); } finally { hideLoader(); }
         }
