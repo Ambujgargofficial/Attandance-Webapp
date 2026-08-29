@@ -24,6 +24,7 @@
         .status-P { background-color: #dcfce7; color: #166534; font-weight: 700; }
         .status-A { background-color: #fee2e2; color: #991b1b; font-weight: 700; }
         .status-L { background-color: #fef08a; color: #854d0e; font-weight: 700; }
+        .status-E { background-color: #ffedd5; color: #c2410c; font-weight: 700; }
         .status-PA { background-color: #dbeafe; color: #1e40af; font-weight: 700; }
         .status-WO { background-color: #f1f5f9; color: #64748b; font-weight: 700; }
 
@@ -104,6 +105,7 @@
             <button id="resetOtpFormsBtn" class="w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 rounded-xl font-bold mt-2 hover:bg-gray-50 transition-colors">Wapas Login Par Jayein</button>
         </div>
 
+        <!-- Employee Dashboard -->
         <div id="employee-dashboard" class="hidden space-y-6 max-w-md mx-auto">
             <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 flex justify-between items-center shadow-sm">
                 <div>
@@ -127,6 +129,7 @@
             </button>
         </div>
 
+        <!-- Camera Section -->
         <div id="attendance-section" class="hidden space-y-4 max-w-sm mx-auto">
             <div class="flex justify-between items-center mb-1">
                 <h2 id="camera-title" class="text-lg font-bold text-gray-800">Mark Duty</h2>
@@ -156,22 +159,26 @@
             </button>
         </div>
 
+        <!-- Report Section -->
         <div id="report-section" class="hidden w-full flex-col">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-gray-800">Attendance Report</h2>
                 <button class="back-to-dash-btn text-sm font-bold text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
             </div>
 
-            <!-- Dynamic Summary Box -->
-            <div id="report-summary-box" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 hidden">
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-gray-500 font-bold uppercase">Total Days</span><span id="sum-tot" class="text-lg font-extrabold text-gray-800">0</span></div>
-                <div class="bg-green-50 border border-green-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-green-600 font-bold uppercase">Present (P)</span><span id="sum-p" class="text-lg font-extrabold text-green-700">0</span></div>
-                <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-blue-600 font-bold uppercase">Half (P/A)</span><span id="sum-pa" class="text-lg font-extrabold text-blue-700">0</span></div>
-                <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-red-600 font-bold uppercase">Absent (A)</span><span id="sum-a" class="text-lg font-extrabold text-red-700">0</span></div>
-                <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-yellow-600 font-bold uppercase">Late (L)</span><span id="sum-l" class="text-lg font-extrabold text-yellow-700">0</span></div>
-                <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-indigo-600 font-bold uppercase">Week Off (W/O)</span><span id="sum-wo" class="text-lg font-extrabold text-indigo-700">0</span></div>
-                <div class="bg-orange-50 border border-orange-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-orange-600 font-bold uppercase">Late Ded.</span><span id="sum-ld" class="text-lg font-extrabold text-orange-700">0</span></div>
-                <div class="bg-emerald-100 border border-emerald-300 p-3 rounded-xl flex flex-col items-center justify-center shadow-md"><span class="text-[10px] text-emerald-800 font-bold uppercase">Net Days</span><span id="sum-net" class="text-xl font-black text-emerald-900">0</span></div>
+            <!-- Dynamic Summary Box (Updated for Early Leave) -->
+            <div id="report-summary-box" class="mb-4 hidden space-y-3">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-gray-500 font-bold uppercase">Total Days</span><span id="sum-tot" class="text-lg font-extrabold text-gray-800">0</span></div>
+                    <div class="bg-green-50 border border-green-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-green-600 font-bold uppercase">Present (P)</span><span id="sum-p" class="text-lg font-extrabold text-green-700">0</span></div>
+                    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-blue-600 font-bold uppercase">Half (P/A)</span><span id="sum-pa" class="text-lg font-extrabold text-blue-700">0</span></div>
+                    <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-red-600 font-bold uppercase">Absent (A)</span><span id="sum-a" class="text-lg font-extrabold text-red-700">0</span></div>
+                    <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-yellow-600 font-bold uppercase">Late (L)</span><span id="sum-l" class="text-lg font-extrabold text-yellow-700">0</span></div>
+                    <div class="bg-orange-50 border border-orange-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-orange-600 font-bold uppercase">Early (E)</span><span id="sum-e" class="text-lg font-extrabold text-orange-700">0</span></div>
+                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-indigo-600 font-bold uppercase">Week Off (W/O)</span><span id="sum-wo" class="text-lg font-extrabold text-indigo-700">0</span></div>
+                    <div class="bg-red-100 border border-red-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-red-700 font-bold uppercase">Total Ded.</span><span id="sum-ded" class="text-lg font-extrabold text-red-800">0</span></div>
+                </div>
+                <div class="bg-emerald-100 border border-emerald-300 p-4 rounded-xl flex flex-col items-center justify-center shadow-md w-full"><span class="text-xs text-emerald-800 font-extrabold uppercase tracking-wide">Net Pay Days</span><span id="sum-net" class="text-3xl font-black text-emerald-900 mt-1">0</span></div>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 mb-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm items-end w-full" id="emp-report-controls">
@@ -196,6 +203,7 @@
             </div>
         </div>
 
+        <!-- Admin Dashboard -->
         <div id="admin-dashboard" class="hidden w-full flex-col">
             <div class="bg-gradient-to-r from-indigo-900 to-slate-900 p-6 rounded-3xl text-white mb-6 shadow-xl flex justify-between items-center">
                 <div>
@@ -436,18 +444,20 @@
 
         // Helper for exact Indian Timezone Dates
         function getLocalDateStr(d = new Date()) {
-            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const indTime = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            return `${indTime.getFullYear()}-${String(indTime.getMonth()+1).padStart(2,'0')}-${String(indTime.getDate()).padStart(2,'0')}`;
         }
 
         // DOM Elements setup on load
-        const tdStr = getLocalDateStr();
+        const tdStr = getLocalDateStr(new Date());
         document.getElementById('startDate').value = tdStr; 
         document.getElementById('endDate').value = tdStr;
         document.getElementById('adminStart').value = tdStr;
         document.getElementById('adminEnd').value = tdStr;
         document.getElementById('manualDate').value = tdStr;
         document.getElementById('fraudDate').value = tdStr;
-        const now = new Date();
+        
+        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         // View Management with Safe Classes
@@ -492,7 +502,6 @@
 
         async function fetchGlobalData(forAdmin = false) {
             try {
-                // Fetch Settings (Needed for both Admin & Employee - Very lightweight)
                 const setSnap = await get(ref(database, 'settings'));
                 if (setSnap.exists()) {
                     let st = setSnap.val();
@@ -502,12 +511,10 @@
                     globalSettings.globalMsgText = st.globalMsgText || '';
                 }
                 
-                // ONLY fetch All Employees Data if it's an Admin (This makes employee login lightning fast!)
                 if (forAdmin) {
                     const empSnap = await get(ref(database, 'employees'));
                     if (empSnap.exists()) allEmployeesData = empSnap.val();
                     
-                    // Populate Admin Dropdowns
                     const sels = ['repEmpSelect', 'manualEmpSelect'];
                     sels.forEach(sId => {
                         const sel = document.getElementById(sId);
@@ -535,14 +542,14 @@
                 if (adminSnap.exists() && adminSnap.val().pin === pin) {
                     isAdmin = true; 
                     currentEmployee = { id: empId, ...adminSnap.val() };
-                    showLoader('Loading Admin Portal...');
-                    await fetchGlobalData(true); // Fetch everything for Admin
+                    showLoader('Loading Admin Portal (Fetching Data)...');
+                    await fetchGlobalData(true); 
                     showView('admin-dashboard', 'Admin Portal');
                     hideLoader(); 
                     return;
                 }
 
-                // Check Employee
+                // Check Employee (Lightning Fast)
                 const empSnap = await get(ref(database, `employees/${empId}`));
                 if (!empSnap.exists()) throw new Error("ID not found.");
                 
@@ -553,7 +560,7 @@
                 isAdmin = false; 
                 currentEmployee = { id: empId, ...empData };
                 
-                await fetchGlobalData(false); // Fetch ONLY settings (Lightning Fast)
+                await fetchGlobalData(false); // Only settings
                 setupEmployeeDashboard();
             } catch (err) { showMessage(err.message, 'error'); } finally { hideLoader(); }
         }
@@ -726,66 +733,105 @@
         checkOffline();
 
         function calculateReport(emp, punches, startStr, endStr) {
-            let start = new Date(`${startStr}T00:00:00`), end = new Date(`${endStr}T00:00:00`);
+            let start = new Date(`${startStr}T00:00:00`);
+            let end = new Date(`${endStr}T00:00:00`);
             let todayStr = getLocalDateStr(new Date());
-            let statuses=[], sum={P:0, PA:0, A:0, L:0, OT:0, WO:0, Tot:0, Net:0};
-            
-            let woDay = 6; // Default Sat
+            let statuses = [], sum = {P:0, PA:0, A:0, L:0, E:0, WO:0, Tot:0, Net:0};
+
+            let woDay = 6; // Default Saturday
             if(globalSettings?.deptWeekOffs?.[emp.department] !== undefined) {
                 woDay = parseInt(globalSettings.deptWeekOffs[emp.department]);
             }
+            
             let totalWODays = 0;
+            // Calculate total days in the selected range to determine if it's a full month
+            let diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-            for(let dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)) {
+            for(let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
                 let dKey = getLocalDateStr(dt);
                 let isFuture = dKey > todayStr;
-                // Agar future date hai toh table mein completely blank dikhaye, absent nahi
-                let s = {date: dKey, st: isFuture ? '' : 'A', in:'-', out:'-', rem:''}; 
-                let p = punches[dKey];
-                
-                if(p && !isFuture) {
-                    if(p.In) { s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.In.remark) s.rem=p.In.remark; }
-                    if(p.Out) { s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.Out.remark && !s.rem) s.rem=p.Out.remark; }
-                    if(p.In && p.Out) {
-                        let iT = new Date(p.In.timestamp), oT = new Date(p.Out.timestamp);
-                        if((oT-iT)/3600000 < 4) s.st='A';
-                        else {
-                            let exp = emp.startTime?emp.startTime.split(':'):null;
-                            if(exp && exp[0]) {
-                                let xIn = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(exp[0]), parseInt(exp[1]||0));
-                                let lateCut = new Date(xIn.getTime() + (emp.allowanceIn||0)*60000);
-                                if(iT >= new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 11, 0)) s.st='P/A';
-                                else if(iT > lateCut) s.st='L'; else s.st='P';
-                            } else s.st='P';
-                        }
-                    } else if(p.In || p.Out) s.st='P/A';
-                }
-
-                if(dt.getDay() === woDay && !isFuture) { 
-                    totalWODays++;
-                    if(s.st==='A') s.st='W/O'; else if(s.st==='P') sum.OT+=1; else if(s.st==='P/A' || s.st==='L') sum.OT+=0.5; 
-                }
+                let s = { date: dKey, st: isFuture ? '' : 'A', in: '-', out: '-', rem: '' };
+                let p = punches ? punches[dKey] : null;
+                let isWODay = (dt.getDay() === woDay);
 
                 if(!isFuture) {
-                    if(s.st==='P') sum.P++; else if(s.st==='P/A') sum.PA++; else if(s.st==='A') sum.A++; else if(s.st==='L') sum.L++;
+                    if(isWODay) totalWODays++;
+                    
+                    if(p) {
+                        if(p.In) { s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.In.remark) s.rem = p.In.remark; }
+                        if(p.Out) { s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.Out.remark && !s.rem) s.rem = p.Out.remark; }
+                        
+                        if(p.In && p.Out) {
+                            let iT = new Date(p.In.timestamp), oT = new Date(p.Out.timestamp);
+                            if((oT - iT) / 3600000 < 4) {
+                                s.st = 'A';
+                            } else {
+                                let exp = emp.startTime ? emp.startTime.split(':') : null;
+                                let outExp = emp.endTime ? emp.endTime.split(':') : null;
+                                
+                                if(exp && exp[0] && outExp && outExp[0]) {
+                                    let xIn = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(exp[0]), parseInt(exp[1] || 0));
+                                    let lateCut = new Date(xIn.getTime() + (emp.allowanceIn || 0) * 60000);
+                                    let halfCut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 11, 0);
+                                    
+                                    let xOut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(outExp[0]), parseInt(outExp[1] || 0));
+                                    if(xOut < xIn) xOut.setDate(xOut.getDate() + 1); // Cross midnight shift handling
+                                    let earlyCut = new Date(xOut.getTime() - (emp.allowanceOut || 0) * 60000);
+
+                                    let isLate = iT > lateCut;
+                                    let isEarly = oT < earlyCut;
+                                    
+                                    if(iT >= halfCut) s.st = 'P/A';
+                                    else if(isLate && isEarly) s.st = 'P/A'; 
+                                    else if(isLate) s.st = 'L';
+                                    else if(isEarly) s.st = 'E';
+                                    else s.st = 'P';
+                                } else {
+                                    s.st = 'P'; 
+                                }
+                            }
+                        } else if(p.In || p.Out) {
+                            s.st = 'P/A'; 
+                        }
+                    }
+                    
+                    // Daily WO Logic Override
+                    if(isWODay && s.st === 'A') s.st = 'W/O';
+                    
+                    // Tally basic statuses
+                    if(s.st === 'P') sum.P++;
+                    else if(s.st === 'P/A') sum.PA++;
+                    else if(s.st === 'A') sum.A++;
+                    else if(s.st === 'L') sum.L++;
+                    else if(s.st === 'E') sum.E++;
+                    else if(s.st === 'W/O') sum.WO++;
                 }
                 statuses.push(s);
             }
             
-            let absents = sum.A;
-            let presents = sum.P + sum.PA + sum.L; 
+            // Deductions
+            let lateDed = Math.floor(sum.L / 3) * 0.5;
+            let earlyDed = Math.floor(sum.E / 3) * 0.5;
             
-            if (presents <= 5) sum.WO = 0;
-            else if (absents >= 20) sum.WO = 1;
-            else if (absents >= 14) sum.WO = 2;
-            else if (absents >= 7) sum.WO = Math.max(0, totalWODays - 1);
-            else sum.WO = totalWODays;
+            // Smart WO Policy (Only applies for long duration checks, e.g. Full Month 20+ days)
+            if (diffDays >= 20) {
+                // EXTREMELY SMART LOGIC: For W/O qualification, if employee physically came to office (even half day), it counts as 1 full Physical Day.
+                let physicalDaysPresent = sum.P + sum.PA + sum.L + sum.E; 
+                let absents = sum.A;
+                
+                if (physicalDaysPresent <= 5) sum.WO = 0;
+                else if (absents >= 20) sum.WO = 1;
+                else if (absents >= 14) sum.WO = 2;
+                else if (absents >= 7) sum.WO = Math.max(0, totalWODays - 1);
+                else sum.WO = totalWODays; // Normal WOs
+            }
+
+            // Final Tally (Here Half day is calculated as 0.5 for salary/net days)
+            sum.Tot = sum.P + (sum.PA * 0.5) + sum.L + sum.E + sum.WO;
+            let totalDed = lateDed + earlyDed;
+            sum.Net = sum.Tot - totalDed;
             
-            sum.Tot = sum.P + (sum.PA*0.5) + sum.OT + sum.L + sum.WO;
-            let lateDed = Math.floor(sum.L/3)*0.5;
-            sum.Net = sum.Tot - lateDed; 
-            
-            return {statuses, sum, emp, lateDed};
+            return { statuses, sum, emp, lateDed, earlyDed, totalDed };
         }
 
         window.showRemark = (txt) => { document.getElementById('remark-modal-text').innerText = txt; document.getElementById('remark-modal').classList.remove('hidden'); document.getElementById('remark-modal').classList.add('flex'); };
@@ -799,14 +845,15 @@
             document.getElementById('sum-pa').innerText = data.sum.PA;
             document.getElementById('sum-a').innerText = data.sum.A;
             document.getElementById('sum-l').innerText = data.sum.L;
+            document.getElementById('sum-e').innerText = data.sum.E;
             document.getElementById('sum-wo').innerText = data.sum.WO;
-            document.getElementById('sum-ld').innerText = data.lateDed;
+            document.getElementById('sum-ded').innerText = data.totalDed;
             document.getElementById('sum-net').innerText = data.sum.Net;
             document.getElementById('report-summary-box').classList.remove('hidden');
 
             let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th></tr></thead><tbody>`;
             data.statuses.forEach(d => {
-                let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L';
+                let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 let inf = d.rem ? `<button onclick="window.showRemark('${d.rem.replace(/'/g,"\\'")}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
                 h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${d.in}</td><td class="font-mono text-xs">${d.out}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
             });
@@ -823,7 +870,7 @@
                 const empDat = isAdmin ? allEmployeesData[empId] : currentEmployee;
                 
                 const snap = await get(ref(database, `attendance/${empId}`));
-                const data = calculateReport(empDat, snap.exists()?snap.val():{}, sd, ed);
+                const data = calculateReport(empDat, snap.exists() ? snap.val() : {}, sd, ed);
                 renderReportUI(data, 'duty-timings', 'report-container', isAdmin);
             } catch(e) { console.error(e); } finally { document.getElementById('btn-text').style.display='block'; document.getElementById('btn-loader').style.display='none'; }
         }
@@ -866,9 +913,11 @@
                     <th class="bg-blue-50 text-blue-700 font-extrabold px-3">P/A</th>
                     <th class="bg-red-50 text-red-700 font-extrabold px-3">A</th>
                     <th class="bg-yellow-50 text-yellow-700 font-extrabold px-3">L</th>
+                    <th class="bg-orange-50 text-orange-700 font-extrabold px-3">E</th>
                     <th class="bg-gray-100 text-gray-600 font-extrabold px-3">W/O</th>
                     <th class="bg-indigo-50 font-extrabold px-3">Tot</th>
-                    <th class="bg-orange-50 text-orange-700 font-extrabold px-3">L.D</th>
+                    <th class="bg-red-100 text-red-900 font-extrabold px-3">L.D</th>
+                    <th class="bg-orange-100 text-orange-900 font-extrabold px-3">E.D</th>
                     <th class="bg-emerald-100 text-emerald-900 font-black px-4 border-l-2 border-emerald-300">Net</th>
                 </tr>`;
                 thead.innerHTML = headHtml;
@@ -876,10 +925,16 @@
                 let bodyHtml = '';
                 Object.entries(allEmployeesData).forEach(([id, emp]) => {
                     const empPunches = allPunches[id] || {};
-                    // Inactive filter with zero punches logic
-                    if ((emp.status === 'inactive' || emp.status === 'Inactive') && Object.keys(empPunches).length === 0) {
-                        return;
+                    // Check if inactive employee has any punches this month
+                    let hasPunchesThisMonth = false;
+                    for(let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+                        if(empPunches[getLocalDateStr(dt)]) { hasPunchesThisMonth = true; break; }
                     }
+                    
+                    if ((emp.status === 'inactive' || emp.status === 'Inactive') && !hasPunchesThisMonth) {
+                        return; // Hide inactive employee completely if no punches this month
+                    }
+
                     const report = calculateReport(emp, empPunches, startStr, endStr);
 
                     let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td>`;
@@ -888,6 +943,7 @@
                         if(day.st === 'P') cellClass += 'bg-green-100 text-green-800';
                         else if(day.st === 'A') cellClass += 'bg-red-100 text-red-800';
                         else if(day.st === 'L') cellClass += 'bg-yellow-100 text-yellow-800';
+                        else if(day.st === 'E') cellClass += 'bg-orange-100 text-orange-800';
                         else if(day.st === 'P/A') cellClass += 'bg-blue-100 text-blue-800';
                         else if(day.st === 'W/O') cellClass += 'bg-gray-100 text-gray-400';
                         rowHtml += `<td class="${cellClass}">${day.st}</td>`;
@@ -898,9 +954,11 @@
                         <td class="bg-blue-50 text-blue-800 font-bold">${report.sum.PA}</td>
                         <td class="bg-red-50 text-red-800 font-bold">${report.sum.A}</td>
                         <td class="bg-yellow-50 text-yellow-800 font-bold">${report.sum.L}</td>
+                        <td class="bg-orange-50 text-orange-800 font-bold">${report.sum.E}</td>
                         <td class="bg-gray-100 text-gray-600 font-bold">${report.sum.WO}</td>
                         <td class="bg-indigo-50 text-indigo-900 font-extrabold">${report.sum.Tot}</td>
-                        <td class="bg-orange-50 text-orange-700 font-bold">${report.lateDed}</td>
+                        <td class="bg-red-100 text-red-900 font-bold">${report.lateDed}</td>
+                        <td class="bg-orange-100 text-orange-900 font-bold">${report.earlyDed}</td>
                         <td class="bg-emerald-100 text-emerald-900 font-black border-l-2 border-emerald-300">${report.sum.Net}</td>
                     </tr>`;
                     bodyHtml += rowHtml;
@@ -1018,7 +1076,7 @@
             let html = '';
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             depts.forEach(d => {
-                let currentWO = globalSettings.deptWeekOffs[d] !== undefined ? globalSettings.deptWeekOffs[d] : 6;
+                let currentWO = globalSettings.deptWeekOffs[d] !== undefined ? globalSettings.deptWeekOffs[d] : 6; // Default Saturday
                 let opts = days.map((day, idx) => `<option value="${idx}" ${currentWO == idx ? 'selected' : ''}>${day}</option>`).join('');
                 html += `<div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
                             <span class="font-bold text-sm text-gray-700">${d}</span>
@@ -1047,7 +1105,7 @@
             } catch(e) { showMessage("Error saving settings.", "error"); } finally { hideLoader(); }
         });
 
-        // Buttons
+        // Basic Listeners
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
         document.getElementById('btn-logout').addEventListener('click', () => { currentEmployee = null; isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
