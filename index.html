@@ -434,8 +434,13 @@
         let allEmployeesData = {};
         let globalSettings = { autoShowMsg: false, deptWeekOffs: {}, msgSource: 'sheet', globalMsgText: '' };
 
+        // Helper for exact Indian Timezone Dates
+        function getLocalDateStr(d = new Date()) {
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
         // DOM Elements setup on load
-        const tdStr = new Date().toISOString().split('T')[0];
+        const tdStr = getLocalDateStr();
         document.getElementById('startDate').value = tdStr; 
         document.getElementById('endDate').value = tdStr;
         document.getElementById('adminStart').value = tdStr;
@@ -580,7 +585,7 @@
                 msgBtn.classList.add('hidden'); 
             }
 
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateStr(new Date());
             const punchSnap = await get(ref(database, `attendance/${currentEmployee.id}/${today}`));
             let status = "None";
             if (punchSnap.exists()) {
@@ -664,7 +669,7 @@
             showLoader(`Punching ${currentPunchTarget}...`);
             document.getElementById('captureSubmitBtn').disabled = true;
             
-            let photoData = "", timeIso = new Date().toISOString(), today = timeIso.split('T')[0];
+            let photoData = "", timeIso = new Date().toISOString(), today = getLocalDateStr(new Date());
             let lat = currentCoordinates ? currentCoordinates.latitude : 'N/A';
             let lng = currentCoordinates ? currentCoordinates.longitude : 'N/A';
 
@@ -711,7 +716,8 @@
                         const fd = new FormData(); fd.append('action', 'uploadPhoto'); fd.append('employeeId', p.empId); fd.append('timestamp', p.timestamp); fd.append('photo', p.photoBase64); fd.append('lat', p.lat); fd.append('lng', p.lng);
                         try { const res = await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body:fd}).then(r=>r.json()); if(res.status==='success'){pUrl=res.photoUrl;tAdd=res.address;} } catch(e){}
                     }
-                    await set(ref(database, `attendance/${p.empId}/${p.timestamp.split('T')[0]}/${p.punchType}`), { timestamp: p.timestamp, latitude: p.lat, longitude: p.lng, address: tAdd, photoUrl: pUrl, location: p.location, department: p.department });
+                    const localDateStr = getLocalDateStr(new Date(p.timestamp));
+                    await set(ref(database, `attendance/${p.empId}/${localDateStr}/${p.punchType}`), { timestamp: p.timestamp, latitude: p.lat, longitude: p.lng, address: tAdd, photoUrl: pUrl, location: p.location, department: p.department });
                 } catch(e) { failed.push(p); }
             }
             localStorage.setItem("offlineP", JSON.stringify(failed)); checkOffline(); hideLoader();
@@ -720,7 +726,9 @@
         checkOffline();
 
         function calculateReport(emp, punches, startStr, endStr) {
-            let start = new Date(startStr), end = new Date(endStr), statuses=[], sum={P:0, PA:0, A:0, L:0, OT:0, WO:0, Tot:0, Net:0};
+            let start = new Date(`${startStr}T00:00:00`), end = new Date(`${endStr}T00:00:00`);
+            let todayStr = getLocalDateStr(new Date());
+            let statuses=[], sum={P:0, PA:0, A:0, L:0, OT:0, WO:0, Tot:0, Net:0};
             
             let woDay = 6; // Default Sat
             if(globalSettings?.deptWeekOffs?.[emp.department] !== undefined) {
@@ -729,9 +737,13 @@
             let totalWODays = 0;
 
             for(let dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)) {
-                let dKey = dt.toISOString().split('T')[0], s = {date: dKey, st:'A', in:'-', out:'-', rem:''}, p = punches[dKey];
+                let dKey = getLocalDateStr(dt);
+                let isFuture = dKey > todayStr;
+                // Agar future date hai toh table mein completely blank dikhaye, absent nahi
+                let s = {date: dKey, st: isFuture ? '' : 'A', in:'-', out:'-', rem:''}; 
+                let p = punches[dKey];
                 
-                if(p) {
+                if(p && !isFuture) {
                     if(p.In) { s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.In.remark) s.rem=p.In.remark; }
                     if(p.Out) { s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.Out.remark && !s.rem) s.rem=p.Out.remark; }
                     if(p.In && p.Out) {
@@ -749,12 +761,14 @@
                     } else if(p.In || p.Out) s.st='P/A';
                 }
 
-                if(dt.getDay() === woDay) { 
+                if(dt.getDay() === woDay && !isFuture) { 
                     totalWODays++;
                     if(s.st==='A') s.st='W/O'; else if(s.st==='P') sum.OT+=1; else if(s.st==='P/A' || s.st==='L') sum.OT+=0.5; 
                 }
 
-                if(s.st==='P') sum.P++; else if(s.st==='P/A') sum.PA++; else if(s.st==='A') sum.A++; else if(s.st==='L') sum.L++;
+                if(!isFuture) {
+                    if(s.st==='P') sum.P++; else if(s.st==='P/A') sum.PA++; else if(s.st==='A') sum.A++; else if(s.st==='L') sum.L++;
+                }
                 statuses.push(s);
             }
             
@@ -834,8 +848,8 @@
                 const [year, month] = monthVal.split('-');
                 const startDate = new Date(year, month - 1, 1);
                 const endDate = new Date(year, month, 0); 
-                const startStr = startDate.toISOString().split('T')[0];
-                const endStr = endDate.toISOString().split('T')[0];
+                const startStr = getLocalDateStr(startDate);
+                const endStr = getLocalDateStr(endDate);
 
                 const snap = await get(ref(database, 'attendance'));
                 const allPunches = snap.exists() ? snap.val() : {};
