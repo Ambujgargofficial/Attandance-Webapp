@@ -31,10 +31,9 @@
         .sticky-col-1 { position: sticky; left: 0; z-index: 20; background-color: #f9fafb; border-right: 1px solid #e5e7eb; }
         .sticky-col-2 { position: sticky; left: 70px; z-index: 20; background-color: #f9fafb; border-right: 2px solid #e5e7eb; min-width: 130px; }
 
-        input[type="date"], input[type="month"] { min-width: 140px; letter-spacing: 0.5px; }
+        input[type="date"], input[type="month"], input[type="time"] { min-width: 140px; letter-spacing: 0.5px; }
         .modal-scroll { max-height: 60vh; overflow-y: auto; }
         
-        /* Safe classes to avoid layout breakage */
         .show-block { display: block !important; }
         .show-flex { display: flex !important; }
         
@@ -53,7 +52,7 @@
             <button id="btn-logout" class="hidden text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors">Logout</button>
         </div>
 
-        <!-- Offline Sync Banner -->
+        <!-- Offline Banner -->
         <div id="offline-banner" class="hidden bg-yellow-50 border border-yellow-300 text-yellow-800 p-3 mb-4 rounded-xl shadow-sm justify-between items-center transition-all mx-auto max-w-md">
             <div class="flex items-center gap-3">
                 <span class="text-2xl">⚠️</span>
@@ -65,6 +64,7 @@
             <button id="syncOfflineBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md ml-2 shrink-0">Sync Now</button>
         </div>
 
+        <!-- Login Section -->
         <div id="login-section" class="space-y-5 max-w-sm mx-auto mt-10 show-block">
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Employee ID:</label>
@@ -121,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- Dynamic Punch Buttons -->
             <div id="emp-action-buttons" class="space-y-4"></div>
 
             <button id="openReportDirectBtn" class="w-full bg-[#1e293b] text-white py-4 px-4 rounded-2xl hover:bg-black font-extrabold text-[15px] shadow-lg transition-all flex justify-center items-center gap-2 mt-4">
@@ -129,7 +128,7 @@
             </button>
         </div>
 
-        <!-- Camera Section -->
+        <!-- Camera / Attendance Section -->
         <div id="attendance-section" class="hidden space-y-4 max-w-sm mx-auto">
             <div class="flex justify-between items-center mb-1">
                 <h2 id="camera-title" class="text-lg font-bold text-gray-800">Mark Duty</h2>
@@ -159,14 +158,14 @@
             </button>
         </div>
 
-        <!-- Report Section -->
+        <!-- Reports Section (Used by both Employee and Admin) -->
         <div id="report-section" class="hidden w-full flex-col">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-gray-800">Attendance Report</h2>
                 <button class="back-to-dash-btn text-sm font-bold text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
             </div>
 
-            <!-- Dynamic Summary Box (Updated for Early Leave) -->
+            <!-- Detailed Summary Box (Fixed with Early and clean deductions) -->
             <div id="report-summary-box" class="mb-4 hidden space-y-3">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-gray-500 font-bold uppercase">Total Days</span><span id="sum-tot" class="text-lg font-extrabold text-gray-800">0</span></div>
@@ -213,7 +212,10 @@
                 <button id="admin-btn-settings" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl transition-colors" title="Settings">⚙️</button>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div id="admin-btn-daywise" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
+                    <div class="text-3xl mb-3">📆</div><h3 class="font-bold text-lg text-gray-800">Daywise Report</h3>
+                </div>
                 <div id="admin-btn-reports" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
                     <div class="text-3xl mb-3">📊</div><h3 class="font-bold text-lg text-gray-800">Employee Reports</h3>
                 </div>
@@ -232,7 +234,55 @@
             </div>
         </div>
         
-        <!-- Admin Sub View: Reports -->
+        <!-- Admin Sub View: Daywise Report -->
+        <div id="admin-daywise-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold">📆 Daywise Report</h2>
+                <button class="admin-back-btn text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">← Back</button>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col md:flex-row gap-3 items-end">
+                <div class="w-full">
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Select Date</label>
+                    <input type="date" id="daywiseDate" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-gray-50">
+                </div>
+                <div class="w-full">
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Department</label>
+                    <select id="daywiseDeptFilter" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-gray-50">
+                        <option value="all">All Departments</option>
+                    </select>
+                </div>
+                <div class="w-full">
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Location</label>
+                    <select id="daywiseLocFilter" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-gray-50">
+                        <option value="all">All Locations</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button id="fetchDaywiseBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0 transition-colors">Fetch</button>
+                    <button id="exportDaywiseBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 p-2 rounded-xl h-[42px] w-[42px] flex items-center justify-center shrink-0 transition-colors shadow-sm" title="Export CSV">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="daywise-container" class="report-table-wrapper bg-white hidden">
+                <table class="report-table text-[11px]" id="daywiseTable">
+                    <thead>
+                        <tr>
+                            <th class="sticky-col-1">ID</th>
+                            <th class="sticky-col-2">Name</th>
+                            <th>Shift</th>
+                            <th>IN Time</th>
+                            <th>OUT Time</th>
+                            <th>Status</th>
+                            <th>Remark / Address</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daywiseBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Admin Sub View: Individual Reports -->
         <div id="admin-reports-view" class="hidden w-full flex-col space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Individual Reports</h2>
@@ -322,20 +372,25 @@
         <!-- Admin Sub View: Employee Directory -->
         <div id="admin-empdir-view" class="hidden w-full flex-col space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">Employee Directory</h2>
+                <h2 class="text-xl font-bold">👥 Employee Directory</h2>
                 <button class="admin-back-btn text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">← Back</button>
             </div>
-            <div class="bg-white p-4 rounded-2xl border shadow-sm">
-                <label class="block text-sm font-bold mb-2">Filter by Status</label>
-                <select id="empDirStatusFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none">
-                    <option value="all">All Employees</option>
-                    <option value="active" selected>Active Only</option>
-                    <option value="inactive">Inactive Only</option>
-                </select>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm flex justify-between items-end gap-4">
+                <div class="w-full">
+                    <label class="block text-sm font-bold mb-2">Filter by Status</label>
+                    <select id="empDirStatusFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none">
+                        <option value="all">All Employees</option>
+                        <option value="active" selected>Active Only</option>
+                        <option value="inactive">Inactive Only</option>
+                    </select>
+                </div>
+                <button id="addEmployeeBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-xl shrink-0 h-[42px] shadow-md transition-colors flex items-center gap-2">
+                    <span>+ Add Employee</span>
+                </button>
             </div>
             <div class="report-table-wrapper bg-white mt-2">
                 <table class="report-table text-[12px]">
-                    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Location</th><th>Shift</th><th>Status</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Location</th><th>Shift</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="empdirBody"></tbody>
                 </table>
             </div>
@@ -361,6 +416,7 @@
                     </div>
                 </div>
 
+                <!-- MSG Source Selector -->
                 <div class="border-b pb-4">
                     <h3 class="font-bold text-gray-800 mb-2">Message Source</h3>
                     <p class="text-xs text-gray-500 mb-3">Chunein ki employees ko kiska message dikhega.</p>
@@ -375,6 +431,26 @@
                     </div>
                 </div>
 
+                <!-- Penalty / Deduction Rules -->
+                <div class="border-b pb-4">
+                    <h3 class="font-bold text-gray-800 mb-2">Penalty / Deduction Rules</h3>
+                    <p class="text-xs text-gray-500 mb-3">Kitni baar Late/Early aane par Half Day (0.5) katega? Aur kitne ghante jaldi jaane par direct Half Day lagega?</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Late Marks count</label>
+                            <input type="number" id="lateThreshold" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="1" value="3">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Early Leaves count</label>
+                            <input type="number" id="earlyThreshold" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="1" value="3">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1" title="Agar isse zyada jaldi gaya, toh P/A lagega (Default 2 hrs)">Direct Half-Day (Hrs Early)</label>
+                            <input type="number" id="veryEarlyThreshold" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="0.5" step="0.5" value="2">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Dept Week Off Config -->
                 <div>
                     <h3 class="font-bold text-gray-800 mb-2">Department Weekly Off Days</h3>
@@ -383,12 +459,36 @@
                         <!-- Populated dynamically -->
                     </div>
                 </div>
+
+                <!-- Dynamic Departments & Locations Config -->
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-gray-800 mb-2">Manage Departments & Locations</h3>
+                    <p class="text-xs text-gray-500 mb-4">Ye options naye employee add karte time dropdown me dikhenge.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Departments</label>
+                            <div class="flex gap-2 mb-3">
+                                <input type="text" id="newDeptInput" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" placeholder="e.g. Sales">
+                                <button id="addDeptBtn" class="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-colors">Add</button>
+                            </div>
+                            <div id="deptList" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Locations</label>
+                            <div class="flex gap-2 mb-3">
+                                <input type="text" id="newLocInput" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" placeholder="e.g. Branch 1">
+                                <button id="addLocBtn" class="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-colors">Add</button>
+                            </div>
+                            <div id="locList" class="flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                </div>
                 
                 <button id="saveSettingsBtn" class="w-full bg-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-700 shadow-md">Save Settings</button>
             </div>
         </div>
 
-        <!-- Loaders and Overlays -->
+        <!-- Loaders and Modals -->
         <div id="loader-overlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-70 flex-col items-center justify-center z-50 backdrop-blur-sm">
             <div class="loader"></div>
             <p id="loader-message" class="text-white mt-5 text-lg font-bold tracking-wide text-center px-4"></p>
@@ -398,7 +498,6 @@
             <p id="message-text"></p>
         </div>
 
-        <!-- Modals -->
         <div id="msg-modal" class="fixed inset-0 bg-black/60 hidden flex-col items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
                 <h3 class="text-lg font-extrabold text-blue-800 border-b pb-2 mb-3">✉️ Important Message</h3>
@@ -415,12 +514,54 @@
                 <button class="close-modal-btn w-full bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl hover:bg-gray-300">Close</button>
             </div>
         </div>
+
+        <!-- Add/Edit Employee Modal -->
+        <div id="emp-modal" class="fixed inset-0 bg-black/60 hidden flex-col items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <h3 id="emp-modal-title" class="text-xl font-extrabold text-gray-800 border-b pb-3 mb-4">Add/Edit Employee</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Emp ID (Unique)</label><input type="text" id="mod-emp-id" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Name</label><input type="text" id="mod-emp-name" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">PIN (4-digit)</label><input type="text" id="mod-emp-pin" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Email (For OTP)</label><input type="email" id="mod-emp-email" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 uppercase">Department</label>
+                        <select id="mod-emp-dept" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 uppercase">Location</label>
+                        <select id="mod-emp-loc" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Shift Start (HH:MM)</label><input type="time" id="mod-emp-start" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Shift End (HH:MM)</label><input type="time" id="mod-emp-end" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Grace IN (Mins)</label><input type="number" id="mod-emp-all-in" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value="0" min="0"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Grace OUT (Mins)</label><input type="number" id="mod-emp-all-out" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value="0" min="0"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Base Salary</label><input type="number" id="mod-emp-salary" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value="0" min="0"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Status</label>
+                        <select id="mod-emp-status" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button id="saveEmpDetailsBtn" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 shadow-md transition-colors">Save Details</button>
+                    <button class="close-modal-btn flex-1 bg-gray-200 text-gray-800 font-bold py-3 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- MAIN JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, get, set, update, child } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
+        // 1. Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBTxsmXcmNECtLkht-OVtqXqFNrJvO-ja8", 
             authDomain: "attandancemasha.firebaseapp.com",
@@ -435,20 +576,20 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Global State
+        // 2. Global State Variables
         let currentEmployee = null;
         let isAdmin = false;
         let currentStream, gpsWatchId, currentCoordinates, currentPunchTarget;
         let allEmployeesData = {};
-        let globalSettings = { autoShowMsg: false, deptWeekOffs: {}, msgSource: 'sheet', globalMsgText: '' };
+        let globalSettings = { autoShowMsg: false, deptWeekOffs: {}, msgSource: 'sheet', globalMsgText: '', lateThreshold: 3, earlyThreshold: 3, veryEarlyThreshold: 2, departments: ['Head'], locations: ['Showroom', 'Workshop'] };
 
-        // Helper for exact Indian Timezone Dates
+        // Helper for exact Indian Timezone Dates 
         function getLocalDateStr(d = new Date()) {
             const indTime = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
             return `${indTime.getFullYear()}-${String(indTime.getMonth()+1).padStart(2,'0')}-${String(indTime.getDate()).padStart(2,'0')}`;
         }
 
-        // DOM Elements setup on load
+        // Setup DOM Elements (Dates)
         const tdStr = getLocalDateStr(new Date());
         document.getElementById('startDate').value = tdStr; 
         document.getElementById('endDate').value = tdStr;
@@ -456,13 +597,14 @@
         document.getElementById('adminEnd').value = tdStr;
         document.getElementById('manualDate').value = tdStr;
         document.getElementById('fraudDate').value = tdStr;
+        document.getElementById('daywiseDate').value = tdStr;
         
         const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-        // View Management with Safe Classes
+        // View Switcher
         function showView(viewId, titleText = "Smart Attendance") {
-            const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view'];
+            const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -485,7 +627,7 @@
             else logoutBtn.classList.remove('hidden');
         }
 
-        // Helpers
+        // Messages & Loaders
         function showMessage(text, type = 'info') {
             const box = document.getElementById('message-box');
             document.getElementById('message-text').textContent = text;
@@ -498,10 +640,13 @@
         window.closeModals = () => {
             document.getElementById('msg-modal').classList.replace('flex', 'hidden');
             document.getElementById('remark-modal').classList.replace('flex', 'hidden');
+            document.getElementById('emp-modal').classList.replace('flex', 'hidden');
         };
 
+        // Fetch Global Data (Settings & Employees)
         async function fetchGlobalData(forAdmin = false) {
             try {
+                // Settings load 
                 const setSnap = await get(ref(database, 'settings'));
                 if (setSnap.exists()) {
                     let st = setSnap.val();
@@ -509,11 +654,20 @@
                     globalSettings.deptWeekOffs = st.deptWeekOffs || {};
                     globalSettings.msgSource = st.msgSource || 'sheet';
                     globalSettings.globalMsgText = st.globalMsgText || '';
+                    globalSettings.lateThreshold = st.lateThreshold || 3;
+                    globalSettings.earlyThreshold = st.earlyThreshold || 3;
+                    globalSettings.veryEarlyThreshold = st.veryEarlyThreshold !== undefined ? st.veryEarlyThreshold : 2;
+                    globalSettings.departments = st.departments || ['Head'];
+                    globalSettings.locations = st.locations || ['Showroom', 'Workshop'];
                 }
                 
+                // Employees ka data sirf admin ke login me fetch hoga
                 if (forAdmin) {
                     const empSnap = await get(ref(database, 'employees'));
                     if (empSnap.exists()) allEmployeesData = empSnap.val();
+                    
+                    const depts = new Set();
+                    const locs = new Set();
                     
                     const sels = ['repEmpSelect', 'manualEmpSelect'];
                     sels.forEach(sId => {
@@ -521,15 +675,31 @@
                         if(sel) {
                             sel.innerHTML = '<option value="">-- Select Employee --</option>';
                             Object.entries(allEmployeesData).forEach(([id, emp]) => {
-                                let label = emp.status === 'inactive' ? `(Inactive)` : '';
+                                let label = (emp.status === 'inactive' || emp.status === 'Inactive') ? `(Inactive)` : '';
                                 sel.innerHTML += `<option value="${id}">${emp.name || 'N/A'} (${id}) ${label}</option>`;
+                                
+                                if(emp.department) depts.add(emp.department);
+                                if(emp.location) locs.add(emp.location);
                             });
                         }
                     });
+
+                    // Update Daywise Filters automatically
+                    const deptSel = document.getElementById('daywiseDeptFilter');
+                    if (deptSel) {
+                        deptSel.innerHTML = '<option value="all">All Departments</option>';
+                        depts.forEach(d => deptSel.innerHTML += `<option value="${d}">${d}</option>`);
+                    }
+                    const locSel = document.getElementById('daywiseLocFilter');
+                    if (locSel) {
+                        locSel.innerHTML = '<option value="all">All Locations</option>';
+                        locs.forEach(l => locSel.innerHTML += `<option value="${l}">${l}</option>`);
+                    }
                 }
             } catch(e) { console.error("Global fetch err:", e); }
         }
 
+        // Login System (Lightning fast for Employees)
         async function verifyLogin() {
             const empId = document.getElementById('employeeId').value.trim();
             const pin = document.getElementById('employeePin').value.trim();
@@ -537,7 +707,7 @@
             
             showLoader('Verifying Identity...');
             try {
-                // Check Admin
+                // Admin Check
                 const adminSnap = await get(ref(database, `admins/${empId}`));
                 if (adminSnap.exists() && adminSnap.val().pin === pin) {
                     isAdmin = true; 
@@ -549,22 +719,24 @@
                     return;
                 }
 
-                // Check Employee (Lightning Fast)
+                // Employee Check (Fast Check)
                 const empSnap = await get(ref(database, `employees/${empId}`));
                 if (!empSnap.exists()) throw new Error("ID not found.");
                 
                 const empData = empSnap.val();
                 if (empData.pin.toString() !== pin) throw new Error("Incorrect PIN.");
-                if (empData.status === 'inactive') throw new Error("Account inactive.");
+                if (empData.status === 'inactive') throw new Error("Account inactive. Contact Admin.");
 
                 isAdmin = false; 
                 currentEmployee = { id: empId, ...empData };
                 
-                await fetchGlobalData(false); // Only settings
+                // Employees ke liye fetchGlobalData(false) use kiya taaki heavy data load na ho
+                await fetchGlobalData(false);
                 setupEmployeeDashboard();
             } catch (err) { showMessage(err.message, 'error'); } finally { hideLoader(); }
         }
 
+        // Employee Dashboard Setup
         async function setupEmployeeDashboard() {
             document.getElementById('emp-name-dash').textContent = currentEmployee.name;
             document.getElementById('emp-details-dash').textContent = `ID: ${currentEmployee.id} | ${currentEmployee.department || ''} | ${currentEmployee.location || ''}`;
@@ -576,7 +748,7 @@
 
             if (globalSettings.msgSource === 'global' && globalSettings.globalMsgText) {
                 textToDisplay = globalSettings.globalMsgText;
-                timeToDisplay = "Global Update by Mr. Ambuj";
+                timeToDisplay = "Global Update by Mr. Ambuj"; 
                 hasMsg = true;
             } else if (globalSettings.msgSource === 'sheet' && currentEmployee.msg && currentEmployee.msg.text) {
                 textToDisplay = currentEmployee.msg.text;
@@ -626,6 +798,7 @@
             }
         }
 
+        // Camera & GPS Handling
         function startPunchSequence(type) {
             currentPunchTarget = type;
             document.getElementById('camera-title').innerText = `Mark Duty ${type}`;
@@ -672,18 +845,22 @@
 
         function stopCamera() { if (currentStream) currentStream.getTracks().forEach(t => t.stop()); if (gpsWatchId) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; } }
 
+        // Punch Submission
         async function handlePunch() {
             showLoader(`Punching ${currentPunchTarget}...`);
             document.getElementById('captureSubmitBtn').disabled = true;
             
-            let photoData = "", timeIso = new Date().toISOString(), today = getLocalDateStr(new Date());
+            const indTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            let timeIso = indTime.toISOString(); 
+            let today = getLocalDateStr(indTime);
+            
             let lat = currentCoordinates ? currentCoordinates.latitude : 'N/A';
             let lng = currentCoordinates ? currentCoordinates.longitude : 'N/A';
 
             try {
                 const vid = document.getElementById('camera-feed'), cvs = document.getElementById('photo-canvas'), ctx = cvs.getContext('2d');
                 cvs.width = vid.videoWidth; cvs.height = vid.videoHeight; ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
-                photoData = cvs.toDataURL('image/jpeg', 0.5); 
+                let photoData = cvs.toDataURL('image/jpeg', 0.5); 
                 
                 const punchData = { empId: currentEmployee.id, punchType: currentPunchTarget, timestamp: timeIso, lat: lat, lng: lng, photoBase64: photoData.split(',')[1], location: currentEmployee.location || 'N/A', department: currentEmployee.department || 'N/A' };
 
@@ -706,6 +883,7 @@
             } finally { hideLoader(); }
         }
 
+        // Offline Management
         function savePunchOffline(data) { let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); arr.push(data); localStorage.setItem("offlineP", JSON.stringify(arr)); checkOffline(); }
         function checkOffline() { 
             let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); const ban = document.getElementById('offline-banner'); 
@@ -723,7 +901,8 @@
                         const fd = new FormData(); fd.append('action', 'uploadPhoto'); fd.append('employeeId', p.empId); fd.append('timestamp', p.timestamp); fd.append('photo', p.photoBase64); fd.append('lat', p.lat); fd.append('lng', p.lng);
                         try { const res = await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body:fd}).then(r=>r.json()); if(res.status==='success'){pUrl=res.photoUrl;tAdd=res.address;} } catch(e){}
                     }
-                    const localDateStr = getLocalDateStr(new Date(p.timestamp));
+                    const pDateObj = new Date(p.timestamp);
+                    const localDateStr = getLocalDateStr(pDateObj);
                     await set(ref(database, `attendance/${p.empId}/${localDateStr}/${p.punchType}`), { timestamp: p.timestamp, latitude: p.lat, longitude: p.lng, address: tAdd, photoUrl: pUrl, location: p.location, department: p.department });
                 } catch(e) { failed.push(p); }
             }
@@ -732,20 +911,23 @@
         }
         checkOffline();
 
+        // -------------------------------------------------------------------------------------------------------
+        // CALCULATIONS (Reports & Logic)
+        // -------------------------------------------------------------------------------------------------------
         function calculateReport(emp, punches, startStr, endStr) {
             let start = new Date(`${startStr}T00:00:00`);
             let end = new Date(`${endStr}T00:00:00`);
             let todayStr = getLocalDateStr(new Date());
             let statuses = [], sum = {P:0, PA:0, A:0, L:0, E:0, WO:0, Tot:0, Net:0};
 
-            let woDay = 6; // Default Saturday
+            let woDay = 6; 
             if(globalSettings?.deptWeekOffs?.[emp.department] !== undefined) {
                 woDay = parseInt(globalSettings.deptWeekOffs[emp.department]);
             }
             
             let totalWODays = 0;
-            // Calculate total days in the selected range to determine if it's a full month
             let diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            let physicalDaysPresent = 0; 
 
             for(let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
                 let dKey = getLocalDateStr(dt);
@@ -763,6 +945,10 @@
                         
                         if(p.In && p.Out) {
                             let iT = new Date(p.In.timestamp), oT = new Date(p.Out.timestamp);
+                            
+                            // Seconds completely ignored (Grace period support)
+                            iT.setSeconds(0, 0); oT.setSeconds(0, 0);
+
                             if((oT - iT) / 3600000 < 4) {
                                 s.st = 'A';
                             } else {
@@ -770,18 +956,23 @@
                                 let outExp = emp.endTime ? emp.endTime.split(':') : null;
                                 
                                 if(exp && exp[0] && outExp && outExp[0]) {
-                                    let xIn = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(exp[0]), parseInt(exp[1] || 0));
+                                    let xIn = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(exp[0]), parseInt(exp[1] || 0), 0);
                                     let lateCut = new Date(xIn.getTime() + (emp.allowanceIn || 0) * 60000);
-                                    let halfCut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 11, 0);
+                                    let halfCut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 11, 0, 0);
                                     
-                                    let xOut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(outExp[0]), parseInt(outExp[1] || 0));
-                                    if(xOut < xIn) xOut.setDate(xOut.getDate() + 1); // Cross midnight shift handling
+                                    let xOut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(outExp[0]), parseInt(outExp[1] || 0), 0);
+                                    if(xOut < xIn) xOut.setDate(xOut.getDate() + 1); 
                                     let earlyCut = new Date(xOut.getTime() - (emp.allowanceOut || 0) * 60000);
+                                    
+                                    let veHours = globalSettings.veryEarlyThreshold !== undefined ? globalSettings.veryEarlyThreshold : 2;
+                                    let veryEarlyCut = new Date(xOut.getTime() - veHours * 60 * 60000);
 
                                     let isLate = iT > lateCut;
                                     let isEarly = oT < earlyCut;
+                                    let isVeryEarly = oT < veryEarlyCut;
                                     
                                     if(iT >= halfCut) s.st = 'P/A';
+                                    else if(isVeryEarly) s.st = 'P/A'; 
                                     else if(isLate && isEarly) s.st = 'P/A'; 
                                     else if(isLate) s.st = 'L';
                                     else if(isEarly) s.st = 'E';
@@ -795,40 +986,38 @@
                         }
                     }
                     
-                    // Daily WO Logic Override
                     if(isWODay && s.st === 'A') s.st = 'W/O';
                     
-                    // Tally basic statuses
-                    if(s.st === 'P') sum.P++;
-                    else if(s.st === 'P/A') sum.PA++;
+                    // Smart physical presence calculation
+                    if(s.st === 'P') { sum.P++; physicalDaysPresent++; }
+                    else if(s.st === 'P/A') { sum.PA++; physicalDaysPresent++; }
                     else if(s.st === 'A') sum.A++;
-                    else if(s.st === 'L') sum.L++;
-                    else if(s.st === 'E') sum.E++;
+                    else if(s.st === 'L') { sum.L++; physicalDaysPresent++; }
+                    else if(s.st === 'E') { sum.E++; physicalDaysPresent++; }
                     else if(s.st === 'W/O') sum.WO++;
                 }
                 statuses.push(s);
             }
             
-            // Deductions
-            let lateDed = Math.floor(sum.L / 3) * 0.5;
-            let earlyDed = Math.floor(sum.E / 3) * 0.5;
+            let lThresh = globalSettings.lateThreshold || 3;
+            let eThresh = globalSettings.earlyThreshold || 3;
+            let lateDed = Math.floor(sum.L / lThresh) * 0.5;
+            let earlyDed = Math.floor(sum.E / eThresh) * 0.5;
+            let totalDed = lateDed + earlyDed;
             
-            // Smart WO Policy (Only applies for long duration checks, e.g. Full Month 20+ days)
             if (diffDays >= 20) {
-                // EXTREMELY SMART LOGIC: For W/O qualification, if employee physically came to office (even half day), it counts as 1 full Physical Day.
-                let physicalDaysPresent = sum.P + sum.PA + sum.L + sum.E; 
                 let absents = sum.A;
-                
                 if (physicalDaysPresent <= 5) sum.WO = 0;
                 else if (absents >= 20) sum.WO = 1;
                 else if (absents >= 14) sum.WO = 2;
                 else if (absents >= 7) sum.WO = Math.max(0, totalWODays - 1);
-                else sum.WO = totalWODays; // Normal WOs
+                else sum.WO = totalWODays; 
+            } else {
+                sum.WO = totalWODays; 
             }
 
-            // Final Tally (Here Half day is calculated as 0.5 for salary/net days)
+            // Net Calc: Half Day ALWAYS 0.5
             sum.Tot = sum.P + (sum.PA * 0.5) + sum.L + sum.E + sum.WO;
-            let totalDed = lateDed + earlyDed;
             sum.Net = sum.Tot - totalDed;
             
             return { statuses, sum, emp, lateDed, earlyDed, totalDed };
@@ -886,6 +1075,7 @@
             fetchMyReport();
         }
 
+        // Master Grid Generation
         async function generateGrid() {
             const monthVal = document.getElementById('gridMonth').value;
             if(!monthVal) return showMessage('Please select a month', 'error');
@@ -925,14 +1115,13 @@
                 let bodyHtml = '';
                 Object.entries(allEmployeesData).forEach(([id, emp]) => {
                     const empPunches = allPunches[id] || {};
-                    // Check if inactive employee has any punches this month
                     let hasPunchesThisMonth = false;
                     for(let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
                         if(empPunches[getLocalDateStr(dt)]) { hasPunchesThisMonth = true; break; }
                     }
                     
                     if ((emp.status === 'inactive' || emp.status === 'Inactive') && !hasPunchesThisMonth) {
-                        return; // Hide inactive employee completely if no punches this month
+                        return; 
                     }
 
                     const report = calculateReport(emp, empPunches, startStr, endStr);
@@ -946,7 +1135,7 @@
                         else if(day.st === 'E') cellClass += 'bg-orange-100 text-orange-800';
                         else if(day.st === 'P/A') cellClass += 'bg-blue-100 text-blue-800';
                         else if(day.st === 'W/O') cellClass += 'bg-gray-100 text-gray-400';
-                        rowHtml += `<td class="${cellClass}">${day.st}</td>`;
+                        rowHtml += `<td class="${cellClass}">${day.st === '' ? '-' : day.st}</td>`;
                     });
                     
                     rowHtml += `
@@ -970,6 +1159,7 @@
             finally { hideLoader(); }
         }
 
+        // Manual Punch
         async function submitManualPunch() {
             const empId = document.getElementById('manualEmpSelect').value;
             const date = document.getElementById('manualDate').value;
@@ -997,6 +1187,7 @@
             } catch(e) { showMessage('Error saving punch.', 'error'); } finally { hideLoader(); }
         }
 
+        // Fraud Check
         async function runFraudCheck() {
             const checkDate = document.getElementById('fraudDate').value;
             if(!checkDate) return showMessage('Select Date', 'error');
@@ -1033,6 +1224,7 @@
             } catch(e) { showMessage('Error in Fraud check', 'error'); } finally { hideLoader(); }
         }
 
+        // Employee Directory & CRUD Operations
         function renderEmpDirectory() {
             const tbody = document.getElementById('empdirBody');
             const filter = document.getElementById('empDirStatusFilter').value;
@@ -1052,16 +1244,100 @@
                     <td>${emp.location || '-'}</td>
                     <td class="font-mono text-xs">${emp.startTime||'00:00'} - ${emp.endTime||'00:00'}</td>
                     <td>${badge}</td>
+                    <td><button onclick="window.openEmpModal('${id}')" class="bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 rounded p-1 text-xs font-bold" title="Edit/View Full Details">✏️ Edit</button></td>
                 </tr>`;
             });
             tbody.innerHTML = html;
         }
 
+        window.openEmpModal = (empId = null) => {
+            const modal = document.getElementById('emp-modal');
+            document.getElementById('emp-modal-title').innerText = empId ? "Edit Employee Details" : "Add New Employee";
+            
+            // Populate Dropdowns dynamically
+            const deptSel = document.getElementById('mod-emp-dept');
+            deptSel.innerHTML = globalSettings.departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            
+            const locSel = document.getElementById('mod-emp-loc');
+            locSel.innerHTML = globalSettings.locations.map(l => `<option value="${l}">${l}</option>`).join('');
+
+            const idInput = document.getElementById('mod-emp-id');
+            idInput.value = empId || '';
+            idInput.readOnly = empId !== null; 
+            idInput.className = empId ? "w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-200 font-bold outline-none text-gray-500 cursor-not-allowed" : "w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500";
+
+            if (empId && allEmployeesData[empId]) {
+                const emp = allEmployeesData[empId];
+                document.getElementById('mod-emp-name').value = emp.name || '';
+                document.getElementById('mod-emp-pin').value = emp.pin || '';
+                document.getElementById('mod-emp-email').value = emp.email || '';
+                document.getElementById('mod-emp-dept').value = emp.department || (globalSettings.departments[0] || '');
+                document.getElementById('mod-emp-loc').value = emp.location || (globalSettings.locations[0] || '');
+                document.getElementById('mod-emp-start').value = emp.startTime || '';
+                document.getElementById('mod-emp-end').value = emp.endTime || '';
+                document.getElementById('mod-emp-all-in').value = emp.allowanceIn || 0;
+                document.getElementById('mod-emp-all-out').value = emp.allowanceOut || 0;
+                document.getElementById('mod-emp-salary').value = emp.salary || 0;
+                document.getElementById('mod-emp-status').value = emp.status ? emp.status.toLowerCase() : 'active';
+            } else {
+                document.getElementById('mod-emp-name').value = '';
+                document.getElementById('mod-emp-pin').value = '';
+                document.getElementById('mod-emp-email').value = '';
+                document.getElementById('mod-emp-dept').value = globalSettings.departments[0] || '';
+                document.getElementById('mod-emp-loc').value = globalSettings.locations[0] || '';
+                document.getElementById('mod-emp-start').value = '';
+                document.getElementById('mod-emp-end').value = '';
+                document.getElementById('mod-emp-all-in').value = 0;
+                document.getElementById('mod-emp-all-out').value = 0;
+                document.getElementById('mod-emp-salary').value = 0;
+                document.getElementById('mod-emp-status').value = 'active';
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        document.getElementById('saveEmpDetailsBtn').addEventListener('click', async () => {
+            // ... (employee saving code)
+        });
+
+        // Settings Render & Save
+        window.renderWeekOffs = () => {
+            const depts = globalSettings.departments || [];
+            let html = '';
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            
+            // Current selections ko save karein taaki naya add hone par purana reset na ho
+            const currentSelections = {};
+            document.querySelectorAll('.dept-wo-select').forEach(sel => {
+                currentSelections[sel.getAttribute('data-dept')] = parseInt(sel.value);
+            });
+
+            depts.forEach(d => {
+                let currentWO = 6; // Default Saturday
+                if (currentSelections[d] !== undefined) {
+                     currentWO = currentSelections[d];
+                } else if (globalSettings.deptWeekOffs[d] !== undefined) {
+                     currentWO = globalSettings.deptWeekOffs[d];
+                }
+
+                let opts = days.map((day, idx) => `<option value="${idx}" ${currentWO == idx ? 'selected' : ''}>${day}</option>`).join('');
+                html += `<div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
+                            <span class="font-bold text-sm text-gray-700">${d}</span>
+                            <select class="dept-wo-select p-2 border border-gray-300 rounded-lg text-sm bg-white font-medium outline-none" data-dept="${d}">${opts}</select>
+                         </div>`;
+            });
+            document.getElementById('dept-wo-container').innerHTML = html;
+        };
+
         function renderSettingsUI() {
             document.getElementById('autoShowMsgToggle').checked = globalSettings.autoShowMsg;
-            
             document.getElementById('msgSourceSelect').value = globalSettings.msgSource;
             document.getElementById('globalMsgText').value = globalSettings.globalMsgText;
+            document.getElementById('lateThreshold').value = globalSettings.lateThreshold;
+            document.getElementById('earlyThreshold').value = globalSettings.earlyThreshold;
+            document.getElementById('veryEarlyThreshold').value = globalSettings.veryEarlyThreshold;
+
             const gContainer = document.getElementById('globalMsgContainer');
             if(globalSettings.msgSource === 'global') gContainer.classList.remove('hidden');
             else gContainer.classList.add('hidden');
@@ -1071,20 +1347,48 @@
                 else gContainer.classList.add('hidden');
             };
 
-            const depts = [...new Set(Object.values(allEmployeesData).map(e => e.department).filter(Boolean))];
-            
-            let html = '';
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            depts.forEach(d => {
-                let currentWO = globalSettings.deptWeekOffs[d] !== undefined ? globalSettings.deptWeekOffs[d] : 6; // Default Saturday
-                let opts = days.map((day, idx) => `<option value="${idx}" ${currentWO == idx ? 'selected' : ''}>${day}</option>`).join('');
-                html += `<div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
-                            <span class="font-bold text-sm text-gray-700">${d}</span>
-                            <select class="dept-wo-select p-2 border border-gray-300 rounded-lg text-sm bg-white font-medium outline-none" data-dept="${d}">${opts}</select>
-                         </div>`;
-            });
-            document.getElementById('dept-wo-container').innerHTML = html;
+            window.renderWeekOffs();
+            window.renderDeptLocLists();
         }
+
+        window.renderDeptLocLists = () => {
+            document.getElementById('deptList').innerHTML = globalSettings.departments.map((d, i) => 
+                `<span class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2">${d} <button onclick="window.removeDeptLoc('dept', ${i})" class="text-red-500 hover:text-red-700 text-lg leading-none">&times;</button></span>`
+            ).join('');
+            document.getElementById('locList').innerHTML = globalSettings.locations.map((l, i) => 
+                `<span class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2">${l} <button onclick="window.removeDeptLoc('loc', ${i})" class="text-red-500 hover:text-red-700 text-lg leading-none">&times;</button></span>`
+            ).join('');
+        };
+
+        window.removeDeptLoc = (type, index) => {
+            if (type === 'dept') {
+                globalSettings.departments.splice(index, 1);
+                window.renderWeekOffs(); // Naya add/remove hote hi turant update hoga
+            }
+            if (type === 'loc') {
+                globalSettings.locations.splice(index, 1);
+            }
+            window.renderDeptLocLists();
+        };
+
+        document.getElementById('addDeptBtn').addEventListener('click', () => {
+            const val = document.getElementById('newDeptInput').value.trim();
+            if(val && !globalSettings.departments.includes(val)) { 
+                globalSettings.departments.push(val); 
+                window.renderDeptLocLists(); 
+                window.renderWeekOffs(); // Naya add/remove hote hi turant update hoga
+                document.getElementById('newDeptInput').value = ''; 
+            }
+        });
+
+        document.getElementById('addLocBtn').addEventListener('click', () => {
+            const val = document.getElementById('newLocInput').value.trim();
+            if(val && !globalSettings.locations.includes(val)) { 
+                globalSettings.locations.push(val); 
+                window.renderDeptLocLists(); 
+                document.getElementById('newLocInput').value = ''; 
+            }
+        });
 
         document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
             showLoader("Saving settings...");
@@ -1093,7 +1397,12 @@
                     autoShowMsg: document.getElementById('autoShowMsgToggle').checked,
                     msgSource: document.getElementById('msgSourceSelect').value,
                     globalMsgText: document.getElementById('globalMsgText').value.trim(),
-                    deptWeekOffs: {}
+                    lateThreshold: parseInt(document.getElementById('lateThreshold').value) || 3,
+                    earlyThreshold: parseInt(document.getElementById('earlyThreshold').value) || 3,
+                    veryEarlyThreshold: parseFloat(document.getElementById('veryEarlyThreshold').value) || 2,
+                    deptWeekOffs: {},
+                    departments: globalSettings.departments,
+                    locations: globalSettings.locations
                 };
                 document.querySelectorAll('.dept-wo-select').forEach(sel => {
                     newSettings.deptWeekOffs[sel.getAttribute('data-dept')] = parseInt(sel.value);
@@ -1105,11 +1414,145 @@
             } catch(e) { showMessage("Error saving settings.", "error"); } finally { hideLoader(); }
         });
 
-        // Basic Listeners
+        // Daywise Report Data Fetch
+        async function fetchDaywiseReport() {
+            const checkDate = document.getElementById('daywiseDate').value;
+            const deptFilter = document.getElementById('daywiseDeptFilter').value;
+            const locFilter = document.getElementById('daywiseLocFilter').value;
+            
+            if(!checkDate) return showMessage('Select Date', 'error');
+            showLoader('Fetching Daywise Data...');
+            
+            try {
+                const snap = await get(ref(database, `attendance`));
+                const allPunches = snap.exists() ? snap.val() : {};
+                const tbody = document.getElementById('daywiseBody');
+                let html = '';
+                let hasRecords = false;
+
+                Object.entries(allEmployeesData).forEach(([id, emp]) => {
+                    if(deptFilter !== 'all' && emp.department !== deptFilter) return;
+                    if(locFilter !== 'all' && emp.location !== locFilter) return;
+
+                    const empPunches = allPunches[id] || {};
+                    const dayPunch = empPunches[checkDate];
+
+                    if ((emp.status === 'inactive' || emp.status === 'Inactive') && !dayPunch) return;
+
+                    let inTime = '-'; let outTime = '-'; let remarkTxt = '';
+                    
+                    if (dayPunch) {
+                        if (dayPunch.In) { 
+                            inTime = new Date(dayPunch.In.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            remarkTxt += `[IN: ${dayPunch.In.remark || dayPunch.In.address}] `;
+                        }
+                        if (dayPunch.Out) { 
+                            outTime = new Date(dayPunch.Out.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            remarkTxt += `[OUT: ${dayPunch.Out.remark || dayPunch.Out.address}]`;
+                        }
+                        if (!remarkTxt) remarkTxt = 'No location data';
+                    } else {
+                        remarkTxt = '-';
+                    }
+
+                    const report = calculateReport(emp, empPunches, checkDate, checkDate);
+                    const st = report.statuses[0].st;
+                    
+                    let stBadge = '';
+                    if(st === 'P') stBadge = '<span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">P</span>';
+                    else if(st === 'P/A') stBadge = '<span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">P/A</span>';
+                    else if(st === 'A') stBadge = '<span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">A</span>';
+                    else if(st === 'L') stBadge = '<span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">L</span>';
+                    else if(st === 'E') stBadge = '<span class="bg-orange-100 text-orange-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">E</span>';
+                    else if(st === 'W/O') stBadge = '<span class="bg-gray-100 text-gray-500 font-bold px-2 py-0.5 text-[10px] rounded uppercase">W/O</span>';
+
+                    let shift = `${emp.startTime || '00:00'} - ${emp.endTime || '00:00'}`;
+
+                    html += `<tr>
+                        <td class="sticky-col-1 font-bold text-gray-700">${id}</td>
+                        <td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td>
+                        <td class="font-mono text-xs text-gray-600">${shift}</td>
+                        <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${inTime}</td>
+                        <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${outTime}</td>
+                        <td class="text-center" data-status="${st}">${stBadge}</td>
+                        <td class="text-left text-[10px] max-w-sm truncate" title="${remarkTxt.replace(/\"/g, "'")}">${remarkTxt}</td>
+                    </tr>`;
+                    hasRecords = true;
+                });
+                
+                if(!html) html = `<tr><td colspan="7" class="text-center py-4 text-gray-500 font-bold">No records found for selected filters.</td></tr>`;
+                tbody.innerHTML = html;
+                document.getElementById('daywise-container').classList.remove('hidden');
+                
+                if (hasRecords) {
+                    document.getElementById('exportDaywiseBtn').classList.remove('hidden');
+                } else {
+                    document.getElementById('exportDaywiseBtn').classList.add('hidden');
+                }
+                
+            } catch(e) { showMessage('Error fetching daywise report', 'error'); } finally { hideLoader(); }
+        }
+        
+        // Export Daywise to CSV
+        function exportDaywiseCsv() {
+            const dateStr = document.getElementById('daywiseDate').value;
+            const deptFilter = document.getElementById('daywiseDeptFilter');
+            const locFilter = document.getElementById('daywiseLocFilter');
+            
+            const deptText = deptFilter.options[deptFilter.selectedIndex].text;
+            const locText = locFilter.options[locFilter.selectedIndex].text;
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Add Metadata Header
+            csvContent += `Daywise Attendance Report\n`;
+            csvContent += `Date:,${dateStr}\n`;
+            csvContent += `Department:,${deptText}\n`;
+            csvContent += `Location:,${locText}\n\n`;
+            
+            // Add Table Headers
+            const table = document.getElementById('daywiseTable');
+            const headers = [];
+            for (let i = 0; i < table.rows[0].cells.length; i++) {
+                headers.push('"' + table.rows[0].cells[i].innerText.replace(/"/g, '""') + '"');
+            }
+            csvContent += headers.join(",") + "\n";
+            
+            // Add Table Rows
+            const tbody = document.getElementById('daywiseBody');
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                if(row.cells.length === 1) continue;
+                
+                const rowData = [];
+                for (let j = 0; j < row.cells.length; j++) {
+                    let cellText = "";
+                    if (j === 5) { // Status column
+                        cellText = row.cells[j].getAttribute('data-status') || row.cells[j].innerText;
+                    } else {
+                        cellText = row.cells[j].innerText;
+                    }
+                    rowData.push('"' + cellText.replace(/"/g, '""') + '"');
+                }
+                csvContent += rowData.join(",") + "\n";
+            }
+            
+            // Download the file
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Daywise_Report_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // -------------------------------------------------------------------------------------------------------
+        // EVENT LISTENERS
+        // -------------------------------------------------------------------------------------------------------
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
         document.getElementById('btn-logout').addEventListener('click', () => { currentEmployee = null; isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
-        // Dashboard
         document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); });
         document.getElementById('openReportDirectBtn').addEventListener('click', () => { 
             document.getElementById('emp-report-controls').classList.remove('hidden');
@@ -1117,7 +1560,6 @@
             fetchMyReport(); 
         });
         
-        // OTP Logic
         document.getElementById('showForgotBtn').addEventListener('click', () => showView('forgot-pin-section', 'Reset Password (PIN)'));
         document.getElementById('resetOtpFormsBtn').addEventListener('click', () => {
             document.getElementById('otp-request-box').classList.remove('hidden'); document.getElementById('otp-verify-box').classList.add('hidden');
@@ -1147,31 +1589,30 @@
             } catch(e) { showMessage('Network error.', 'error'); } finally { hideLoader(); }
         });
 
-        // Camera Logic
         document.getElementById('cancelPunchBtn').addEventListener('click', () => { stopCamera(); showView('employee-dashboard', 'Employee Dashboard'); });
         document.getElementById('startLocationTrackingBtn').addEventListener('click', startLocationTracking);
         document.getElementById('captureSubmitBtn').addEventListener('click', handlePunch);
         
-        // Report Logic
         document.getElementById('fetchMyReportBtn').addEventListener('click', fetchMyReport);
         document.getElementById('syncOfflineBtn').addEventListener('click', syncOfflineData);
         document.querySelectorAll('.back-to-dash-btn').forEach(btn => btn.addEventListener('click', () => showView(isAdmin ? 'admin-dashboard' : 'employee-dashboard')));
         
-        // Modal Closers
         document.querySelectorAll('.close-modal-btn').forEach(btn => btn.addEventListener('click', window.closeModals));
         
-        // Admin Navigation Safe attachment
         document.getElementById('admin-btn-reports').addEventListener('click', () => showView('admin-reports-view', 'Individual Reports'));
+        document.getElementById('admin-btn-daywise').addEventListener('click', () => showView('admin-daywise-view', 'Daywise Report'));
         document.getElementById('admin-btn-grid').addEventListener('click', () => showView('admin-master-grid-view', 'Monthly Master Grid'));
         document.getElementById('admin-btn-manual').addEventListener('click', () => showView('admin-manual-view', 'Manual Punch'));
         document.getElementById('admin-btn-fraud').addEventListener('click', () => showView('admin-fraud-view', 'Fraud Check'));
         document.getElementById('admin-btn-empdir').addEventListener('click', () => { renderEmpDirectory(); showView('admin-empdir-view', 'Employee Directory'); });
         document.getElementById('empDirStatusFilter').addEventListener('change', renderEmpDirectory);
+        document.getElementById('addEmployeeBtn').addEventListener('click', () => window.openEmpModal(null));
         document.getElementById('admin-btn-settings').addEventListener('click', () => { renderSettingsUI(); showView('admin-settings-view', 'System Settings'); });
         document.querySelectorAll('.admin-back-btn').forEach(btn => btn.addEventListener('click', () => { document.getElementById('report-summary-box').classList.add('hidden'); showView('admin-dashboard', 'Admin Portal'); }));
         
-        // Admin Executions
         document.getElementById('fetchAdminReportBtn').addEventListener('click', fetchAdminReport);
+        document.getElementById('fetchDaywiseBtn').addEventListener('click', fetchDaywiseReport);
+        document.getElementById('exportDaywiseBtn').addEventListener('click', exportDaywiseCsv);
         document.getElementById('generateGridBtn').addEventListener('click', generateGrid);
         document.getElementById('submitManualPunchBtn').addEventListener('click', submitManualPunch);
         document.getElementById('fetchFraudBtn').addEventListener('click', runFraudCheck);
