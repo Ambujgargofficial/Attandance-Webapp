@@ -940,9 +940,18 @@
                     if(isWODay) totalWODays++;
                     
                     if(p) {
-                        if(p.In) { s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.In.remark) s.rem = p.In.remark; }
-                        if(p.Out) { s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.Out.remark && !s.rem) s.rem = p.Out.remark; }
-                        
+                        // NAYA LOGIC: Sirf Admin Remarks dikhayenge, GPS Address ko ignore karenge
+                        let dayRems = [];
+                        if(p.In) { 
+                            s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
+                            if(p.In.remark) dayRems.push(`[IN: ${p.In.remark}]`);
+                        }
+                        if(p.Out) { 
+                            s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
+                            if(p.Out.remark) dayRems.push(`[OUT: ${p.Out.remark}]`);
+                        }
+                        s.rem = dayRems.join("  |  ");
+
                         if(p.In && p.Out) {
                             let iT = new Date(p.In.timestamp), oT = new Date(p.Out.timestamp);
                             
@@ -1043,7 +1052,8 @@
             let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th></tr></thead><tbody>`;
             data.statuses.forEach(d => {
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
-                let inf = d.rem ? `<button onclick="window.showRemark('${d.rem.replace(/'/g,"\\'")}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
+                let escapedRem = d.rem ? d.rem.replace(/'/g,"\\'").replace(/\n/g,"\\n") : '';
+                let inf = d.rem ? `<button onclick="window.showRemark('${escapedRem}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
                 h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${d.in}</td><td class="font-mono text-xs">${d.out}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
             });
             h+= `</tbody></table>`;
