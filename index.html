@@ -259,8 +259,8 @@
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
                     <button id="fetchDaywiseBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0 transition-colors">Fetch</button>
-                    <button id="exportDaywiseBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 p-2 rounded-xl h-[42px] w-[42px] flex items-center justify-center shrink-0 transition-colors shadow-sm" title="Export CSV">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    <button id="exportDaywiseBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-xl h-[42px] w-[42px] flex items-center justify-center shrink-0 transition-colors shadow-sm" title="Export CSV">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                     </button>
                 </div>
             </div>
@@ -435,7 +435,7 @@
                 <div class="border-b pb-4">
                     <h3 class="font-bold text-gray-800 mb-2">Penalty / Deduction Rules</h3>
                     <p class="text-xs text-gray-500 mb-3">Kitni baar Late/Early aane par Half Day (0.5) katega? Aur kitne ghante jaldi jaane par direct Half Day lagega?</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Late Marks count</label>
                             <input type="number" id="lateThreshold" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="1" value="3">
@@ -447,6 +447,10 @@
                         <div>
                             <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1" title="Agar isse zyada jaldi gaya, toh P/A lagega (Default 2 hrs)">Direct Half-Day (Hrs Early)</label>
                             <input type="number" id="veryEarlyThreshold" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="0.5" step="0.5" value="2">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1" title="Agar isse kam ghante kaam kiya, toh seedha Absent (Default 4 hrs)">Min Hrs for Half Day</label>
+                            <input type="number" id="minHoursForHalfDay" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="1" step="0.5" value="4">
                         </div>
                     </div>
                 </div>
@@ -579,7 +583,8 @@
         let isAdmin = false;
         let currentStream, gpsWatchId, currentCoordinates, currentPunchTarget;
         let allEmployeesData = {};
-        let globalSettings = { autoShowMsg: false, deptWeekOffs: {}, msgSource: 'sheet', globalMsgText: '', lateThreshold: 3, earlyThreshold: 3, veryEarlyThreshold: 2, departments: ['Head'], locations: ['Showroom', 'Workshop'] };
+        // Naya variable minHoursForHalfDay add kiya gaya
+        let globalSettings = { autoShowMsg: false, deptWeekOffs: {}, msgSource: 'sheet', globalMsgText: '', lateThreshold: 3, earlyThreshold: 3, veryEarlyThreshold: 2, minHoursForHalfDay: 4, departments: ['Head'], locations: ['Showroom', 'Workshop'] };
 
         function getLocalDateStr(d = new Date()) {
             const indTime = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
@@ -638,7 +643,7 @@
         };
 
         window.showRemark = (txt) => { 
-            // text ko properly innerHTML mein load karenge break lines ke sath
+            // Ab line breaks safe format mein show honge
             document.getElementById('remark-modal-text').innerHTML = txt; 
             document.getElementById('remark-modal').classList.remove('hidden'); 
             document.getElementById('remark-modal').classList.add('flex'); 
@@ -655,7 +660,8 @@
                     globalSettings.globalMsgText = st.globalMsgText || '';
                     globalSettings.lateThreshold = st.lateThreshold || 3;
                     globalSettings.earlyThreshold = st.earlyThreshold || 3;
-                    globalSettings.veryEarlyThreshold = st.veryEarlyThreshold !== undefined ? st.veryEarlyThreshold : 2;
+                    globalSettings.veryEarlyThreshold = st.veryEarlyThreshold !== undefined ? parseFloat(st.veryEarlyThreshold) : 2;
+                    globalSettings.minHoursForHalfDay = st.minHoursForHalfDay !== undefined ? parseFloat(st.minHoursForHalfDay) : 4;
                     globalSettings.departments = st.departments || ['Head'];
                     globalSettings.locations = st.locations || ['Showroom', 'Workshop'];
                 }
@@ -676,7 +682,6 @@
                         }
                     });
 
-                    // Dropdowns Daywise report ke liye dynamic banaye
                     const deptSel = document.getElementById('daywiseDeptFilter');
                     if (deptSel) {
                         deptSel.innerHTML = '<option value="all">All Departments</option>';
@@ -735,7 +740,7 @@
 
             if (globalSettings.msgSource === 'global' && globalSettings.globalMsgText) {
                 textToDisplay = globalSettings.globalMsgText;
-                timeToDisplay = "Global Update by Mr. Ambuj"; 
+                timeToDisplay = "Global Update by Admin"; 
                 hasMsg = true;
             } else if (globalSettings.msgSource === 'sheet' && currentEmployee.msg && currentEmployee.msg.text) {
                 textToDisplay = currentEmployee.msg.text;
@@ -922,29 +927,33 @@
                     
                     if(p) {
                         let dayRems = [];
-                        // Kewal admin remarks show honge jo address ke equal nahi hote
+                        let hasOldData = false;
+                        
                         if(p.In) { 
                             s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
-                            if(p.In.remark && p.In.remark !== p.In.address && p.In.remark !== "Old Data Imported") { 
-                                dayRems.push(`[IN: ${p.In.remark}]`); 
+                            if(p.In.remark && p.In.remark !== p.In.address) {
+                                if(p.In.remark === "Old Data Imported") hasOldData = true;
+                                else dayRems.push(`[IN: ${p.In.remark}]`); 
                             }
                         }
                         if(p.Out) { 
                             s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
-                            if(p.Out.remark && p.Out.remark !== p.Out.address && p.Out.remark !== "Old Data Imported") { 
-                                dayRems.push(`[OUT: ${p.Out.remark}]`); 
+                            if(p.Out.remark && p.Out.remark !== p.Out.address) { 
+                                if(p.Out.remark === "Old Data Imported") hasOldData = true;
+                                else dayRems.push(`[OUT: ${p.Out.remark}]`); 
                             }
                         }
-                        // HTML new line rendering ke liye <br> jodein
-                        s.rem = dayRems.join("<br>");
+                        s.rem = dayRems.join("\\n");
 
                         if(p.In && p.Out) {
                             let iT = new Date(p.In.timestamp), oT = new Date(p.Out.timestamp);
                             
-                            // Seconds completely ignored (Grace period support)
+                            // Exact calculation: Ignore seconds
                             iT.setSeconds(0, 0); oT.setSeconds(0, 0);
+                            
+                            let minHalfDayHrs = globalSettings.minHoursForHalfDay !== undefined ? globalSettings.minHoursForHalfDay : 4;
 
-                            if((oT - iT) / 3600000 < 4) {
+                            if((oT - iT) / 3600000 < minHalfDayHrs) {
                                 s.st = 'A';
                             } else {
                                 let exp = emp.startTime ? emp.startTime.split(':') : null;
@@ -983,7 +992,6 @@
                     
                     if(isWODay && s.st === 'A') s.st = 'W/O';
                     
-                    // Smart physical presence calculation
                     if(s.st === 'P') { sum.P++; physicalDaysPresent++; }
                     else if(s.st === 'P/A') { sum.PA++; physicalDaysPresent++; }
                     else if(s.st === 'A') sum.A++;
@@ -1011,7 +1019,6 @@
                 sum.WO = totalWODays; 
             }
 
-            // Net Calc: Half Day ALWAYS 0.5
             sum.Tot = sum.P + (sum.PA * 0.5) + sum.L + sum.E + sum.WO;
             sum.Net = sum.Tot - totalDed;
             
@@ -1036,9 +1043,11 @@
             let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th></tr></thead><tbody>`;
             data.statuses.forEach(d => {
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
-                // Koi newline (\\n) handle karne ki zarurat nahi, humne sidhe <br> use kiya hai calculate me
+                
                 let escapedRem = d.rem ? d.rem.replace(/'/g,"\\'") : '';
-                let inf = d.rem ? `<button onclick="window.showRemark('${escapedRem}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
+                // New line character ko HTML mein pass karne ke liye <br> nahi balki text format mein window call kiya hai.
+                let inf = d.rem ? `<button onclick="window.showRemark('${escapedRem.replace(/\\n/g, '<br>')}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
+                
                 h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${d.in}</td><td class="font-mono text-xs">${d.out}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
             });
             h+= `</tbody></table>`;
@@ -1350,6 +1359,7 @@
             document.getElementById('lateThreshold').value = globalSettings.lateThreshold;
             document.getElementById('earlyThreshold').value = globalSettings.earlyThreshold;
             document.getElementById('veryEarlyThreshold').value = globalSettings.veryEarlyThreshold;
+            document.getElementById('minHoursForHalfDay').value = globalSettings.minHoursForHalfDay;
 
             const gContainer = document.getElementById('globalMsgContainer');
             if(globalSettings.msgSource === 'global') gContainer.classList.remove('hidden');
@@ -1413,6 +1423,7 @@
                     lateThreshold: parseInt(document.getElementById('lateThreshold').value) || 3,
                     earlyThreshold: parseInt(document.getElementById('earlyThreshold').value) || 3,
                     veryEarlyThreshold: parseFloat(document.getElementById('veryEarlyThreshold').value) || 2,
+                    minHoursForHalfDay: parseFloat(document.getElementById('minHoursForHalfDay').value) || 4,
                     deptWeekOffs: {},
                     departments: globalSettings.departments,
                     locations: globalSettings.locations
