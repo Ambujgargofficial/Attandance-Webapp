@@ -925,13 +925,13 @@
                         // Kewal admin remarks show honge jo address ke equal nahi hote
                         if(p.In) { 
                             s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
-                            if(p.In.remark && p.In.remark !== p.In.address) { 
+                            if(p.In.remark && p.In.remark !== p.In.address && p.In.remark !== "Old Data Imported") { 
                                 dayRems.push(`[IN: ${p.In.remark}]`); 
                             }
                         }
                         if(p.Out) { 
                             s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
-                            if(p.Out.remark && p.Out.remark !== p.Out.address) { 
+                            if(p.Out.remark && p.Out.remark !== p.Out.address && p.Out.remark !== "Old Data Imported") { 
                                 dayRems.push(`[OUT: ${p.Out.remark}]`); 
                             }
                         }
