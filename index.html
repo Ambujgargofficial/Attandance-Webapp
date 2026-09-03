@@ -6,6 +6,7 @@
     <title>Smart Attendance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; touch-action: manipulation; }
         
@@ -596,7 +597,7 @@
             autoShowMsg: false, 
             deptWeekOffs: {}, 
             deptFraudKeywords: {}, 
-            deptFraudStrictKeywords: {}, // Added for Red Flag Keywords
+            deptFraudStrictKeywords: {}, 
             msgSource: 'sheet', 
             globalMsgText: '', 
             lateThreshold: 3, 
@@ -664,7 +665,7 @@
         };
 
         window.showRemark = (txt) => { 
-            document.getElementById('remark-modal-text').innerHTML = txt; 
+            document.getElementById('remark-modal-text').innerText = txt; 
             document.getElementById('remark-modal').classList.remove('hidden'); 
             document.getElementById('remark-modal').classList.add('flex'); 
         };
@@ -677,7 +678,7 @@
                     globalSettings.autoShowMsg = st.autoShowMsg || false;
                     globalSettings.deptWeekOffs = st.deptWeekOffs || {};
                     globalSettings.deptFraudKeywords = st.deptFraudKeywords || {};
-                    globalSettings.deptFraudStrictKeywords = st.deptFraudStrictKeywords || {}; // Fetch Strict Keywords
+                    globalSettings.deptFraudStrictKeywords = st.deptFraudStrictKeywords || {}; 
                     globalSettings.msgSource = st.msgSource || 'sheet';
                     globalSettings.globalMsgText = st.globalMsgText || '';
                     globalSettings.lateThreshold = st.lateThreshold || 3;
@@ -944,31 +945,33 @@
                 let s = { date: dKey, st: isFuture ? '' : 'A', in: '-', out: '-', rem: '' };
                 let p = punches ? punches[dKey] : null;
                 let isWODay = (dt.getDay() === woDay);
+                let dayRems = [];
 
                 if(!isFuture) {
                     if(isWODay) totalWODays++;
                     
                     if(p) {
-                        let dayRems = [];
-                        let hasOldData = false;
-                        
                         if(p.In) { 
                             s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
-                            if(p.In.remark && p.In.remark !== p.In.address) {
-                                if(p.In.remark.toLowerCase() === "old data imported") hasOldData = true;
-                                else dayRems.push(`[IN: ${p.In.remark}]`); 
+                            let inRem = p.In.remark ? String(p.In.remark).trim() : "";
+                            if (inRem && inRem.toLowerCase() !== "old data imported") {
+                                dayRems.push(`[IN: ${inRem}]`);
+                            } else if (p.In.address === "Manual Entry by Admin") {
+                                dayRems.push(`[IN: Manual Entry]`);
                             }
                         }
                         if(p.Out) { 
                             s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
-                            if(p.Out.remark && p.Out.remark !== p.Out.address) { 
-                                if(p.Out.remark.toLowerCase() === "old data imported") hasOldData = true;
-                                else dayRems.push(`[OUT: ${p.Out.remark}]`); 
+                            let outRem = p.Out.remark ? String(p.Out.remark).trim() : "";
+                            if (outRem && outRem.toLowerCase() !== "old data imported") {
+                                dayRems.push(`[OUT: ${outRem}]`);
+                            } else if (p.Out.address === "Manual Entry by Admin") {
+                                dayRems.push(`[OUT: Manual Entry]`);
                             }
                         }
-                        
-                        if(!hasOldData && dayRems.length > 0) {
-                            s.rem = dayRems.join("\n"); 
+
+                        if(dayRems.length > 0) {
+                            s.rem = dayRems.join("\n");
                         }
 
                         if(p.In && p.Out) {
@@ -1229,12 +1232,10 @@
                 Object.keys(allPunches).forEach(empId => {
                     const empDept = allEmployeesData[empId] ? allEmployeesData[empId].department : 'Unknown';
                     
-                    // Fetch Safe Keywords
                     let safeKeywordsStr = globalSettings.deptFraudKeywords[empDept] || '';
-                    if(!safeKeywordsStr && empDept === 'Head') safeKeywordsStr = globalSettings.deptFraudKeywords['Head'] || 'shikar pur, shikarpur, devpuri, hans'; // Fallback
+                    if(!safeKeywordsStr && empDept === 'Head') safeKeywordsStr = 'shikar pur, shikarpur, devpuri, hans';
                     const safeKeywords = safeKeywordsStr.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
 
-                    // Fetch Strict (Red Flag) Keywords
                     let strictKeywordsStr = globalSettings.deptFraudStrictKeywords[empDept] || '';
                     const strictKeywords = strictKeywordsStr.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
 
@@ -1252,7 +1253,6 @@
                                 if (addr === 'manual entry by admin' || remark === 'manual entry by admin' || remark === 'old data imported') {
                                     isSafe = true;
                                 } else {
-                                    // Step 1: Check Red Flags (Strict keywords) first
                                     for(let keyword of strictKeywords) {
                                         if(addr.includes(keyword)) {
                                             isStrictlyBanned = true;
@@ -1261,7 +1261,6 @@
                                         }
                                     }
 
-                                    // Step 2: Check Safe keywords (Only if not banned)
                                     if (!isStrictlyBanned) {
                                         for(let keyword of safeKeywords) {
                                             if(addr.includes(keyword)) {
@@ -1572,19 +1571,25 @@
                     let inTime = '-'; let outTime = '-'; let remarkTxt = '';
                     
                     if (dayPunch) {
-                        if (dayPunch.In) { 
+                        if (dayPunch.In) {
                             inTime = new Date(dayPunch.In.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            if (dayPunch.In.remark && dayPunch.In.remark.toLowerCase() !== "old data imported") {
-                                remarkTxt += `[IN: ${dayPunch.In.remark}] `;
-                            } else if (!dayPunch.In.remark) {
-                                remarkTxt += `[IN: ${dayPunch.In.address}] `;
+                            let inRem = dayPunch.In.remark;
+                            if (inRem && String(inRem).toLowerCase() !== "old data imported") {
+                                remarkTxt += `[IN: ${inRem}] \n`;
+                            } else if (dayPunch.In.address === "Manual Entry by Admin") {
+                                remarkTxt += `[IN: Manual Entry] \n`;
+                            } else if (!inRem && dayPunch.In.address) {
+                                remarkTxt += `[IN: ${dayPunch.In.address}] \n`;
                             }
                         }
-                        if (dayPunch.Out) { 
+                        if (dayPunch.Out) {
                             outTime = new Date(dayPunch.Out.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            if (dayPunch.Out.remark && dayPunch.Out.remark.toLowerCase() !== "old data imported") {
-                                remarkTxt += `[OUT: ${dayPunch.Out.remark}] `;
-                            } else if (!dayPunch.Out.remark) {
+                            let outRem = dayPunch.Out.remark;
+                            if (outRem && String(outRem).toLowerCase() !== "old data imported") {
+                                remarkTxt += `[OUT: ${outRem}]`;
+                            } else if (dayPunch.Out.address === "Manual Entry by Admin") {
+                                remarkTxt += `[OUT: Manual Entry]`;
+                            } else if (!outRem && dayPunch.Out.address) {
                                 remarkTxt += `[OUT: ${dayPunch.Out.address}]`;
                             }
                         }
@@ -1613,7 +1618,7 @@
                         <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${inTime}</td>
                         <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${outTime}</td>
                         <td class="text-center" data-status="${st}">${stBadge}</td>
-                        <td class="text-left text-[10px] max-w-sm truncate" title="${remarkTxt.replace(/\"/g, "'")}">${remarkTxt}</td>
+                        <td class="text-left text-[10px] max-w-sm" style="white-space: pre-wrap;" title="${remarkTxt.replace(/\"/g, "'")}">${remarkTxt}</td>
                     </tr>`;
                     hasRecords = true;
                 });
