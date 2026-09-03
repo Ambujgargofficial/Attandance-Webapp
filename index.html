@@ -214,26 +214,26 @@
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-                <div id="admin-btn-daywise" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">📆</div><h3 class="font-bold text-lg text-gray-800">Daywise</h3>
+                <div id="admin-btn-daywise" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">📆</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Daywise Report</h3>
                 </div>
-                <div id="admin-btn-reports" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">📊</div><h3 class="font-bold text-lg text-gray-800">Reports</h3>
+                <div id="admin-btn-reports" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">📊</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Individual Reports</h3>
                 </div>
-                <div id="admin-btn-grid" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">📅</div><h3 class="font-bold text-lg text-gray-800">Grid</h3>
+                <div id="admin-btn-grid" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">📅</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Monthly Grid</h3>
                 </div>
-                <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-lg text-gray-800">Punch</h3>
+                <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
-                <div id="admin-btn-fraud" class="bg-white p-5 rounded-3xl shadow-sm border border-red-100 cursor-pointer hover:shadow-md transition-all bg-red-50">
-                    <div class="text-3xl mb-3">🚨</div><h3 class="font-bold text-lg text-red-800">Fraud</h3>
+                <div id="admin-btn-fraud" class="bg-white p-5 rounded-3xl shadow-sm border border-red-100 cursor-pointer hover:shadow-md transition-all bg-red-50 flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">🚨</div><h3 class="font-bold text-[15px] leading-tight text-red-800">Fraud Check</h3>
                 </div>
-                <div id="admin-btn-empdir" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">👥</div><h3 class="font-bold text-lg text-gray-800">Directory</h3>
+                <div id="admin-btn-empdir" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">👥</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Emp Directory</h3>
                 </div>
-                <div id="admin-btn-special" class="bg-indigo-50 p-5 rounded-3xl shadow-sm border border-indigo-200 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">🎉</div><h3 class="font-bold text-lg text-indigo-800">Events</h3>
+                <div id="admin-btn-special" class="bg-indigo-50 p-5 rounded-3xl shadow-sm border border-indigo-200 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">🎉</div><h3 class="font-bold text-[15px] leading-tight text-indigo-800">Special Events</h3>
                 </div>
             </div>
         </div>
@@ -374,7 +374,10 @@
                 </div>
                 <button id="generateGridBtn" class="bg-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0">Generate Grid</button>
             </div>
-            <p class="text-xs text-gray-500 text-right">Tip: You can select and copy this table to Excel.</p>
+            <div class="flex justify-between items-center px-1">
+                <p class="text-xs text-gray-500">View and copy monthly attendance grid.</p>
+                <button id="copyGridBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1">📋 Copy to Excel</button>
+            </div>
             <div id="grid-container" class="report-table-wrapper bg-white hidden">
                 <table id="gridTable" class="report-table text-[11px]"><thead id="gridHead"></thead><tbody id="gridBody"></tbody></table>
             </div>
@@ -1227,7 +1230,7 @@
                 const tbody = document.getElementById('gridBody');
                 
                 const daysInMonth = endDate.getDate();
-                let headHtml = `<tr><th class="sticky-col-1">ID</th><th class="sticky-col-2">Name</th>`;
+                let headHtml = `<tr><th class="sticky-col-1">ID</th><th class="sticky-col-2">Name</th><th class="bg-gray-100">Email</th>`;
                 for(let i=1; i<=daysInMonth; i++) headHtml += `<th class="bg-gray-50">${i}</th>`;
                 
                 headHtml += `
@@ -1258,7 +1261,7 @@
 
                     const report = calculateReport(emp, empPunches, startStr, endStr);
 
-                    let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td>`;
+                    let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td><td class="text-gray-500 text-left font-normal">${emp.email || '-'}</td>`;
                     report.statuses.forEach(day => {
                         let cellClass = 'font-bold ';
                         if(day.st === 'P') cellClass += 'bg-green-100 text-green-800';
@@ -1287,8 +1290,35 @@
 
                 tbody.innerHTML = bodyHtml;
                 document.getElementById('grid-container').classList.remove('hidden');
+                document.getElementById('copyGridBtn').classList.remove('hidden');
             } catch(e) { showMessage('Error generating grid.', 'error'); }
             finally { hideLoader(); }
+        }
+
+        async function copyGridToExcel() {
+            const table = document.getElementById('gridTable');
+            let tsv = "";
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = table.rows[i];
+                let rowData = [];
+                for (let j = 0; j < row.cells.length; j++) {
+                    let text = row.cells[j].innerText.replace(/\n/g, ' ').replace(/\t/g, ' ');
+                    rowData.push(text);
+                }
+                tsv += rowData.join("\t") + "\n";
+            }
+            
+            try {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = tsv;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                showMessage('Grid copied! Paste it in Excel.', 'success');
+            } catch(e) {
+                showMessage('Failed to copy grid.', 'error');
+            }
         }
 
         async function submitManualPunch() {
@@ -1927,6 +1957,7 @@
         document.getElementById('fetchDaywiseBtn').addEventListener('click', fetchDaywiseReport);
         document.getElementById('exportDaywiseBtn').addEventListener('click', exportDaywiseCsv);
         document.getElementById('generateGridBtn').addEventListener('click', generateGrid);
+        document.getElementById('copyGridBtn').addEventListener('click', copyGridToExcel);
         document.getElementById('submitManualPunchBtn').addEventListener('click', submitManualPunch);
         document.getElementById('fetchFraudBtn').addEventListener('click', runFraudCheck);
 
