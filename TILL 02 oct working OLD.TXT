@@ -6,6 +6,7 @@
     <title>Smart Attendance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; touch-action: manipulation; }
         
@@ -165,7 +166,7 @@
                 <button class="back-to-dash-btn text-sm font-bold text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
             </div>
 
-            <!-- Detailed Summary Box (Fixed with Early and clean deductions) -->
+            <!-- Detailed Summary Box -->
             <div id="report-summary-box" class="mb-4 hidden space-y-3">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-gray-500 font-bold uppercase">Total Days</span><span id="sum-tot" class="text-lg font-extrabold text-gray-800">0</span></div>
@@ -212,32 +213,91 @@
                 <button id="admin-btn-settings" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl transition-colors" title="Settings">⚙️</button>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div id="admin-btn-daywise" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">📆</div><h3 class="font-bold text-lg text-gray-800">Daywise Report</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+                <div id="admin-btn-daywise" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">📆</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Daywise Report</h3>
                 </div>
-                <div id="admin-btn-reports" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">📊</div><h3 class="font-bold text-lg text-gray-800">Employee Reports</h3>
+                <div id="admin-btn-reports" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">📊</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Individual Reports</h3>
                 </div>
-                <div id="admin-btn-grid" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">📅</div><h3 class="font-bold text-lg text-gray-800">Master Grid</h3>
+                <div id="admin-btn-grid" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">📅</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Monthly Grid</h3>
                 </div>
-                <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-lg text-gray-800">Manual Punch</h3>
+                <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
-                <div id="admin-btn-fraud" class="bg-white p-5 rounded-3xl shadow-sm border border-red-100 cursor-pointer hover:shadow-md transition-all bg-red-50">
-                    <div class="text-3xl mb-3">🚨</div><h3 class="font-bold text-lg text-red-800">Fraud Check</h3>
+                <div id="admin-btn-fraud" class="bg-white p-5 rounded-3xl shadow-sm border border-red-100 cursor-pointer hover:shadow-md transition-all bg-red-50 flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">🚨</div><h3 class="font-bold text-[15px] leading-tight text-red-800">Fraud Check</h3>
                 </div>
-                <div id="admin-btn-empdir" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                    <div class="text-3xl mb-3">👥</div><h3 class="font-bold text-lg text-gray-800">Employee Directory</h3>
+                <div id="admin-btn-empdir" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">👥</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Emp Directory</h3>
                 </div>
+                <div id="admin-btn-special" class="bg-indigo-50 p-5 rounded-3xl shadow-sm border border-indigo-200 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="text-3xl mb-3">🎉</div><h3 class="font-bold text-[15px] leading-tight text-indigo-800">Special Events</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Sub View: Special Days -->
+        <div id="admin-special-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold flex items-center gap-2">🎉 Special Days & Events</h2>
+                <button class="admin-back-btn text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">← Back</button>
+            </div>
+            
+            <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
+                <h3 class="font-bold text-gray-800 border-b pb-2">Add New Special Day Rule</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Select Date</label>
+                        <input type="date" id="spDate" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Department</label>
+                        <select id="spDept" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Max Allowed IN Time (Optional)</label>
+                        <input type="time" id="spIn" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50" title="Leave blank to use regular shift IN time">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Min Allowed OUT Time (Optional)</label>
+                        <input type="time" id="spOut" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50" title="Leave blank to use regular shift OUT time">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Min Hours for Half Day (Optional)</label>
+                        <input type="number" id="spHrs" step="0.5" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50" placeholder="e.g. 3">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Event Name / Remark (Required)</label>
+                        <input type="text" id="spRemark" placeholder="e.g. Rakshabandhan Early Leave" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50">
+                    </div>
+                </div>
+                <button id="saveSpecialDayBtn" class="w-full md:w-auto bg-indigo-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-indigo-700 shadow-md">Save Rule</button>
+            </div>
+
+            <div class="report-table-wrapper bg-white mt-4">
+                <table class="report-table text-[12px]">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Department</th>
+                            <th>Allowed IN</th>
+                            <th>Allowed OUT</th>
+                            <th>Min Hrs (P/A)</th>
+                            <th>Remark</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="specialDaysBody"></tbody>
+                </table>
             </div>
         </div>
         
         <!-- Admin Sub View: Daywise Report -->
         <div id="admin-daywise-view" class="hidden w-full flex-col space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">📆 Daywise Report</h2>
+                <h2 class="text-xl font-bold flex items-center gap-2">📆 Daywise Report</h2>
                 <button class="admin-back-btn text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">← Back</button>
             </div>
             <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col md:flex-row gap-3 items-end">
@@ -259,8 +319,8 @@
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
                     <button id="fetchDaywiseBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0 transition-colors">Fetch</button>
-                    <button id="exportDaywiseBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 p-2 rounded-xl h-[42px] w-[42px] flex items-center justify-center shrink-0 transition-colors shadow-sm" title="Export CSV">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    <button id="exportDaywiseBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-xl h-[42px] w-[42px] flex items-center justify-center shrink-0 transition-colors shadow-sm" title="Export CSV">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                     </button>
                 </div>
             </div>
@@ -314,7 +374,10 @@
                 </div>
                 <button id="generateGridBtn" class="bg-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0">Generate Grid</button>
             </div>
-            <p class="text-xs text-gray-500 text-right">Tip: You can select and copy this table to Excel.</p>
+            <div class="flex justify-between items-center px-1">
+                <p class="text-xs text-gray-500">View and copy monthly attendance grid.</p>
+                <button id="copyGridBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1">📋 Copy to Excel</button>
+            </div>
             <div id="grid-container" class="report-table-wrapper bg-white hidden">
                 <table id="gridTable" class="report-table text-[11px]"><thead id="gridHead"></thead><tbody id="gridBody"></tbody></table>
             </div>
@@ -435,7 +498,7 @@
                 <div class="border-b pb-4">
                     <h3 class="font-bold text-gray-800 mb-2">Penalty / Deduction Rules</h3>
                     <p class="text-xs text-gray-500 mb-3">Kitni baar Late/Early aane par Half Day (0.5) katega? Aur kitne ghante jaldi jaane par direct Half Day lagega?</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Late Marks count</label>
                             <input type="number" id="lateThreshold" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="1" value="3">
@@ -448,20 +511,33 @@
                             <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1" title="Agar isse zyada jaldi gaya, toh P/A lagega (Default 2 hrs)">Direct Half-Day (Hrs Early)</label>
                             <input type="number" id="veryEarlyThreshold" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="0.5" step="0.5" value="2">
                         </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1" title="Agar isse kam ghante kaam kiya, toh seedha Absent (Default 4 hrs)">Min Hrs for Half Day</label>
+                            <input type="number" id="minHoursForHalfDay" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none" min="1" step="0.5" value="4">
+                        </div>
                     </div>
                 </div>
 
                 <!-- Dept Week Off Config -->
-                <div>
+                <div class="border-b pb-4">
                     <h3 class="font-bold text-gray-800 mb-2">Department Weekly Off Days</h3>
                     <p class="text-xs text-gray-500 mb-4">Set which day of the week is considered a Week Off for each department. By default, it's Saturday.</p>
                     <div id="dept-wo-container" class="space-y-2">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
+                
+                <!-- Fraud Keywords Config -->
+                <div class="border-b pb-4">
+                    <h3 class="font-bold text-gray-800 mb-2">Fraud Check Keywords Config</h3>
+                    <p class="text-xs text-gray-500 mb-4">Department-wise Safe (Allowed) aur Red Flag (Strictly Not Allowed) locations daalein. Comma se separate karein.</p>
+                    <div id="dept-fraud-container" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
 
                 <!-- Dynamic Departments & Locations Config -->
-                <div class="border-t pt-4">
+                <div class="pt-2">
                     <h3 class="font-bold text-gray-800 mb-2">Manage Departments & Locations</h3>
                     <p class="text-xs text-gray-500 mb-4">Ye options naye employee add karte time dropdown me dikhenge.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -501,7 +577,7 @@
         <div id="msg-modal" class="fixed inset-0 bg-black/60 hidden flex-col items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
                 <h3 class="text-lg font-extrabold text-blue-800 border-b pb-2 mb-3">✉️ Important Message</h3>
-                <div class="modal-scroll"><p id="msg-modal-text" class="text-gray-800 text-sm leading-relaxed mb-2 font-medium"></p></div>
+                <div class="modal-scroll"><p id="msg-modal-text" class="text-gray-800 text-sm leading-relaxed mb-2 font-medium whitespace-pre-wrap"></p></div>
                 <p id="msg-modal-time" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-right mb-4"></p>
                 <button class="close-modal-btn w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700">Close</button>
             </div>
@@ -510,7 +586,7 @@
         <div id="remark-modal" class="fixed inset-0 bg-black/60 hidden flex-col items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
                 <h3 class="text-lg font-extrabold text-gray-800 border-b pb-2 mb-3">Admin Remark</h3>
-                <p id="remark-modal-text" class="text-gray-700 text-sm leading-relaxed mb-4"></p>
+                <p id="remark-modal-text" class="text-gray-700 text-sm leading-relaxed mb-4 whitespace-pre-wrap"></p>
                 <button class="close-modal-btn w-full bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl hover:bg-gray-300">Close</button>
             </div>
         </div>
@@ -561,7 +637,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, get, set, update, child } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
-        // 1. Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBTxsmXcmNECtLkht-OVtqXqFNrJvO-ja8", 
             authDomain: "attandancemasha.firebaseapp.com",
@@ -576,20 +651,31 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // 2. Global State Variables
         let currentEmployee = null;
         let isAdmin = false;
         let currentStream, gpsWatchId, currentCoordinates, currentPunchTarget;
         let allEmployeesData = {};
-        let globalSettings = { autoShowMsg: false, deptWeekOffs: {}, msgSource: 'sheet', globalMsgText: '', lateThreshold: 3, earlyThreshold: 3, veryEarlyThreshold: 2, departments: ['Head'], locations: ['Showroom', 'Workshop'] };
+        let globalSettings = { 
+            autoShowMsg: false, 
+            deptWeekOffs: {}, 
+            deptFraudKeywords: {}, 
+            deptFraudStrictKeywords: {}, 
+            msgSource: 'sheet', 
+            globalMsgText: '', 
+            lateThreshold: 3, 
+            earlyThreshold: 3, 
+            veryEarlyThreshold: 2, 
+            minHoursForHalfDay: 4, 
+            departments: ['Head', 'Showroom', 'Workshop'], 
+            locations: ['Showroom', 'Workshop'],
+            specialDays: {}
+        };
 
-        // Helper for exact Indian Timezone Dates 
         function getLocalDateStr(d = new Date()) {
             const indTime = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
             return `${indTime.getFullYear()}-${String(indTime.getMonth()+1).padStart(2,'0')}-${String(indTime.getDate()).padStart(2,'0')}`;
         }
 
-        // Setup DOM Elements (Dates)
         const tdStr = getLocalDateStr(new Date());
         document.getElementById('startDate').value = tdStr; 
         document.getElementById('endDate').value = tdStr;
@@ -602,9 +688,8 @@
         const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-        // View Switcher
         function showView(viewId, titleText = "Smart Attendance") {
-            const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view'];
+            const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -627,7 +712,6 @@
             else logoutBtn.classList.remove('hidden');
         }
 
-        // Messages & Loaders
         function showMessage(text, type = 'info') {
             const box = document.getElementById('message-box');
             document.getElementById('message-text').textContent = text;
@@ -643,31 +727,35 @@
             document.getElementById('emp-modal').classList.replace('flex', 'hidden');
         };
 
-        // Fetch Global Data (Settings & Employees)
+        window.showRemark = (txt) => { 
+            document.getElementById('remark-modal-text').innerText = txt; 
+            document.getElementById('remark-modal').classList.remove('hidden'); 
+            document.getElementById('remark-modal').classList.add('flex'); 
+        };
+
         async function fetchGlobalData(forAdmin = false) {
             try {
-                // Settings load 
                 const setSnap = await get(ref(database, 'settings'));
                 if (setSnap.exists()) {
                     let st = setSnap.val();
                     globalSettings.autoShowMsg = st.autoShowMsg || false;
                     globalSettings.deptWeekOffs = st.deptWeekOffs || {};
+                    globalSettings.deptFraudKeywords = st.deptFraudKeywords || {};
+                    globalSettings.deptFraudStrictKeywords = st.deptFraudStrictKeywords || {}; 
                     globalSettings.msgSource = st.msgSource || 'sheet';
                     globalSettings.globalMsgText = st.globalMsgText || '';
                     globalSettings.lateThreshold = st.lateThreshold || 3;
                     globalSettings.earlyThreshold = st.earlyThreshold || 3;
-                    globalSettings.veryEarlyThreshold = st.veryEarlyThreshold !== undefined ? st.veryEarlyThreshold : 2;
-                    globalSettings.departments = st.departments || ['Head'];
+                    globalSettings.veryEarlyThreshold = st.veryEarlyThreshold !== undefined ? parseFloat(st.veryEarlyThreshold) : 2;
+                    globalSettings.minHoursForHalfDay = st.minHoursForHalfDay !== undefined ? parseFloat(st.minHoursForHalfDay) : 4;
+                    globalSettings.departments = st.departments || ['Head', 'Showroom', 'Workshop'];
                     globalSettings.locations = st.locations || ['Showroom', 'Workshop'];
+                    globalSettings.specialDays = st.specialDays || {};
                 }
                 
-                // Employees ka data sirf admin ke login me fetch hoga
                 if (forAdmin) {
                     const empSnap = await get(ref(database, 'employees'));
                     if (empSnap.exists()) allEmployeesData = empSnap.val();
-                    
-                    const depts = new Set();
-                    const locs = new Set();
                     
                     const sels = ['repEmpSelect', 'manualEmpSelect'];
                     sels.forEach(sId => {
@@ -677,29 +765,24 @@
                             Object.entries(allEmployeesData).forEach(([id, emp]) => {
                                 let label = (emp.status === 'inactive' || emp.status === 'Inactive') ? `(Inactive)` : '';
                                 sel.innerHTML += `<option value="${id}">${emp.name || 'N/A'} (${id}) ${label}</option>`;
-                                
-                                if(emp.department) depts.add(emp.department);
-                                if(emp.location) locs.add(emp.location);
                             });
                         }
                     });
 
-                    // Update Daywise Filters automatically
                     const deptSel = document.getElementById('daywiseDeptFilter');
                     if (deptSel) {
                         deptSel.innerHTML = '<option value="all">All Departments</option>';
-                        depts.forEach(d => deptSel.innerHTML += `<option value="${d}">${d}</option>`);
+                        globalSettings.departments.forEach(d => deptSel.innerHTML += `<option value="${d}">${d}</option>`);
                     }
                     const locSel = document.getElementById('daywiseLocFilter');
                     if (locSel) {
                         locSel.innerHTML = '<option value="all">All Locations</option>';
-                        locs.forEach(l => locSel.innerHTML += `<option value="${l}">${l}</option>`);
+                        globalSettings.locations.forEach(l => locSel.innerHTML += `<option value="${l}">${l}</option>`);
                     }
                 }
             } catch(e) { console.error("Global fetch err:", e); }
         }
 
-        // Login System (Lightning fast for Employees)
         async function verifyLogin() {
             const empId = document.getElementById('employeeId').value.trim();
             const pin = document.getElementById('employeePin').value.trim();
@@ -707,7 +790,6 @@
             
             showLoader('Verifying Identity...');
             try {
-                // Admin Check
                 const adminSnap = await get(ref(database, `admins/${empId}`));
                 if (adminSnap.exists() && adminSnap.val().pin === pin) {
                     isAdmin = true; 
@@ -719,7 +801,6 @@
                     return;
                 }
 
-                // Employee Check (Fast Check)
                 const empSnap = await get(ref(database, `employees/${empId}`));
                 if (!empSnap.exists()) throw new Error("ID not found.");
                 
@@ -730,13 +811,11 @@
                 isAdmin = false; 
                 currentEmployee = { id: empId, ...empData };
                 
-                // Employees ke liye fetchGlobalData(false) use kiya taaki heavy data load na ho
                 await fetchGlobalData(false);
                 setupEmployeeDashboard();
             } catch (err) { showMessage(err.message, 'error'); } finally { hideLoader(); }
         }
 
-        // Employee Dashboard Setup
         async function setupEmployeeDashboard() {
             document.getElementById('emp-name-dash').textContent = currentEmployee.name;
             document.getElementById('emp-details-dash').textContent = `ID: ${currentEmployee.id} | ${currentEmployee.department || ''} | ${currentEmployee.location || ''}`;
@@ -748,7 +827,7 @@
 
             if (globalSettings.msgSource === 'global' && globalSettings.globalMsgText) {
                 textToDisplay = globalSettings.globalMsgText;
-                timeToDisplay = "Global Update by Mr. Ambuj"; 
+                timeToDisplay = "Global Update by Admin"; 
                 hasMsg = true;
             } else if (globalSettings.msgSource === 'sheet' && currentEmployee.msg && currentEmployee.msg.text) {
                 textToDisplay = currentEmployee.msg.text;
@@ -798,7 +877,6 @@
             }
         }
 
-        // Camera & GPS Handling
         function startPunchSequence(type) {
             currentPunchTarget = type;
             document.getElementById('camera-title').innerText = `Mark Duty ${type}`;
@@ -845,7 +923,6 @@
 
         function stopCamera() { if (currentStream) currentStream.getTracks().forEach(t => t.stop()); if (gpsWatchId) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; } }
 
-        // Punch Submission
         async function handlePunch() {
             showLoader(`Punching ${currentPunchTarget}...`);
             document.getElementById('captureSubmitBtn').disabled = true;
@@ -883,13 +960,13 @@
             } finally { hideLoader(); }
         }
 
-        // Offline Management
         function savePunchOffline(data) { let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); arr.push(data); localStorage.setItem("offlineP", JSON.stringify(arr)); checkOffline(); }
         function checkOffline() { 
             let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); const ban = document.getElementById('offline-banner'); 
             if(arr.length>0){ ban.classList.remove('hidden'); ban.classList.add('flex'); document.getElementById('offline-count').textContent=arr.length; } 
             else { ban.classList.remove('flex'); ban.classList.add('hidden'); } 
         }
+        
         async function syncOfflineData() {
             if(!navigator.onLine) return showMessage("No Internet!", "error");
             let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); if(arr.length===0) return;
@@ -911,9 +988,6 @@
         }
         checkOffline();
 
-        // -------------------------------------------------------------------------------------------------------
-        // CALCULATIONS (Reports & Logic)
-        // -------------------------------------------------------------------------------------------------------
         function calculateReport(emp, punches, startStr, endStr) {
             let start = new Date(`${startStr}T00:00:00`);
             let end = new Date(`${endStr}T00:00:00`);
@@ -935,37 +1009,100 @@
                 let s = { date: dKey, st: isFuture ? '' : 'A', in: '-', out: '-', rem: '' };
                 let p = punches ? punches[dKey] : null;
                 let isWODay = (dt.getDay() === woDay);
+                let dayRems = [];
+
+                let sRule = null;
+                if (globalSettings.specialDays && globalSettings.specialDays[dKey]) {
+                    if (globalSettings.specialDays[dKey][emp.department]) sRule = globalSettings.specialDays[dKey][emp.department];
+                    else if (globalSettings.specialDays[dKey]['all']) sRule = globalSettings.specialDays[dKey]['all'];
+                }
 
                 if(!isFuture) {
                     if(isWODay) totalWODays++;
-                    
+
                     if(p) {
-                        if(p.In) { s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.In.remark) s.rem = p.In.remark; }
-                        if(p.Out) { s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); if(p.Out.remark && !s.rem) s.rem = p.Out.remark; }
+                        // Special Day remark only if they actually punched
+                        if (sRule && sRule.remark) {
+                            let timeInfo = [];
+                            if(sRule.inTime) timeInfo.push(`IN: ${sRule.inTime}`);
+                            if(sRule.outTime) timeInfo.push(`OUT: ${sRule.outTime}`);
+                            let timeStr = timeInfo.length > 0 ? ` (${timeInfo.join(', ')})` : '';
+                            dayRems.push(`[⭐ ${sRule.remark}${timeStr}]`);
+                        }
+
+                        if(p.In) { 
+                            s.in = new Date(p.In.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
+                            let inRem = p.In.remark ? String(p.In.remark).trim() : "";
+                            
+                            if (inRem && inRem.toLowerCase() !== "old data imported") {
+                                dayRems.push(`[IN: ${inRem}]`);
+                            } else if (!inRem && p.In.address === "Manual Entry by Admin") {
+                                dayRems.push(`[IN: Manual Entry]`);
+                            }
+                        }
                         
+                        if(p.Out) { 
+                            s.out = new Date(p.Out.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
+                            let outRem = p.Out.remark ? String(p.Out.remark).trim() : "";
+                            
+                            if (outRem && outRem.toLowerCase() !== "old data imported") {
+                                dayRems.push(`[OUT: ${outRem}]`);
+                            } else if (!outRem && p.Out.address === "Manual Entry by Admin") {
+                                dayRems.push(`[OUT: Manual Entry]`);
+                            }
+                        }
+
+                        if(dayRems.length > 0) {
+                            s.rem = dayRems.join("\n");
+                        }
+
                         if(p.In && p.Out) {
                             let iT = new Date(p.In.timestamp), oT = new Date(p.Out.timestamp);
-                            
-                            // Seconds completely ignored (Grace period support)
                             iT.setSeconds(0, 0); oT.setSeconds(0, 0);
+                            
+                            let minHalfDayHrs = globalSettings.minHoursForHalfDay !== undefined ? globalSettings.minHoursForHalfDay : 4;
+                            if (sRule && sRule.minHrs) minHalfDayHrs = parseFloat(sRule.minHrs);
 
-                            if((oT - iT) / 3600000 < 4) {
+                            if((oT - iT) / 3600000 < minHalfDayHrs) {
                                 s.st = 'A';
                             } else {
                                 let exp = emp.startTime ? emp.startTime.split(':') : null;
                                 let outExp = emp.endTime ? emp.endTime.split(':') : null;
                                 
                                 if(exp && exp[0] && outExp && outExp[0]) {
+                                    // IN Logic
                                     let xIn = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(exp[0]), parseInt(exp[1] || 0), 0);
                                     let lateCut = new Date(xIn.getTime() + (emp.allowanceIn || 0) * 60000);
-                                    let halfCut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 11, 0, 0);
-                                    
+                                    let baseInTime = xIn;
+
+                                    if (sRule && sRule.inTime) {
+                                        let sIn = sRule.inTime.split(':');
+                                        baseInTime = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(sIn[0]), parseInt(sIn[1]), 0);
+                                        // Added Grace Time to Special Rule
+                                        lateCut = new Date(baseInTime.getTime() + (emp.allowanceIn || 0) * 60000);
+                                    }
+
+                                    // 90 minutes after base in-time is half-day cutoff
+                                    let halfCut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 11, 0, 0); // Default fallback
+                                    if (sRule && sRule.inTime) {
+                                        halfCut = new Date(baseInTime.getTime() + 90 * 60000); 
+                                    }
+
+                                    // OUT Logic
                                     let xOut = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(outExp[0]), parseInt(outExp[1] || 0), 0);
-                                    if(xOut < xIn) xOut.setDate(xOut.getDate() + 1); 
+                                    if(xOut < baseInTime) xOut.setDate(xOut.getDate() + 1); 
                                     let earlyCut = new Date(xOut.getTime() - (emp.allowanceOut || 0) * 60000);
                                     
+                                    if (sRule && sRule.outTime) {
+                                        let sOut = sRule.outTime.split(':');
+                                        let specialOutDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), parseInt(sOut[0]), parseInt(sOut[1]), 0);
+                                        if(specialOutDate < baseInTime) specialOutDate.setDate(specialOutDate.getDate() + 1);
+                                        // Added Grace Time to Special Rule
+                                        earlyCut = new Date(specialOutDate.getTime() - (emp.allowanceOut || 0) * 60000);
+                                    }
+
                                     let veHours = globalSettings.veryEarlyThreshold !== undefined ? globalSettings.veryEarlyThreshold : 2;
-                                    let veryEarlyCut = new Date(xOut.getTime() - veHours * 60 * 60000);
+                                    let veryEarlyCut = new Date(earlyCut.getTime() - veHours * 60 * 60000);
 
                                     let isLate = iT > lateCut;
                                     let isEarly = oT < earlyCut;
@@ -988,7 +1125,6 @@
                     
                     if(isWODay && s.st === 'A') s.st = 'W/O';
                     
-                    // Smart physical presence calculation
                     if(s.st === 'P') { sum.P++; physicalDaysPresent++; }
                     else if(s.st === 'P/A') { sum.PA++; physicalDaysPresent++; }
                     else if(s.st === 'A') sum.A++;
@@ -1016,15 +1152,12 @@
                 sum.WO = totalWODays; 
             }
 
-            // Net Calc: Half Day ALWAYS 0.5
             sum.Tot = sum.P + (sum.PA * 0.5) + sum.L + sum.E + sum.WO;
             sum.Net = sum.Tot - totalDed;
             
             return { statuses, sum, emp, lateDed, earlyDed, totalDed };
         }
 
-        window.showRemark = (txt) => { document.getElementById('remark-modal-text').innerText = txt; document.getElementById('remark-modal').classList.remove('hidden'); document.getElementById('remark-modal').classList.add('flex'); };
-        
         function renderReportUI(data, headId, contId, isAdminMode) {
             document.getElementById(headId).innerHTML = `<strong>${data.emp.name || 'N/A'}</strong> | Shift: ${data.emp.startTime||'00:00'} to ${data.emp.endTime||'00:00'}`;
             document.getElementById(headId).classList.remove('hidden');
@@ -1043,7 +1176,10 @@
             let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th></tr></thead><tbody>`;
             data.statuses.forEach(d => {
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
-                let inf = d.rem ? `<button onclick="window.showRemark('${d.rem.replace(/'/g,"\\'")}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
+                
+                let escapedRem = d.rem ? d.rem.replace(/'/g,"\\'") : '';
+                let inf = d.rem ? `<button onclick="window.showRemark('${escapedRem.replace(/\n/g, '\\n')}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
+                
                 h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${d.in}</td><td class="font-mono text-xs">${d.out}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
             });
             h+= `</tbody></table>`;
@@ -1075,7 +1211,6 @@
             fetchMyReport();
         }
 
-        // Master Grid Generation
         async function generateGrid() {
             const monthVal = document.getElementById('gridMonth').value;
             if(!monthVal) return showMessage('Please select a month', 'error');
@@ -1095,7 +1230,7 @@
                 const tbody = document.getElementById('gridBody');
                 
                 const daysInMonth = endDate.getDate();
-                let headHtml = `<tr><th class="sticky-col-1">ID</th><th class="sticky-col-2">Name</th>`;
+                let headHtml = `<tr><th class="sticky-col-1">ID</th><th class="sticky-col-2">Name</th><th class="bg-gray-100">Email</th>`;
                 for(let i=1; i<=daysInMonth; i++) headHtml += `<th class="bg-gray-50">${i}</th>`;
                 
                 headHtml += `
@@ -1126,7 +1261,7 @@
 
                     const report = calculateReport(emp, empPunches, startStr, endStr);
 
-                    let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td>`;
+                    let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td><td class="text-gray-500 text-left font-normal">${emp.email || '-'}</td>`;
                     report.statuses.forEach(day => {
                         let cellClass = 'font-bold ';
                         if(day.st === 'P') cellClass += 'bg-green-100 text-green-800';
@@ -1155,11 +1290,37 @@
 
                 tbody.innerHTML = bodyHtml;
                 document.getElementById('grid-container').classList.remove('hidden');
+                document.getElementById('copyGridBtn').classList.remove('hidden');
             } catch(e) { showMessage('Error generating grid.', 'error'); }
             finally { hideLoader(); }
         }
 
-        // Manual Punch
+        async function copyGridToExcel() {
+            const table = document.getElementById('gridTable');
+            let tsv = "";
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = table.rows[i];
+                let rowData = [];
+                for (let j = 0; j < row.cells.length; j++) {
+                    let text = row.cells[j].innerText.replace(/\n/g, ' ').replace(/\t/g, ' ');
+                    rowData.push(text);
+                }
+                tsv += rowData.join("\t") + "\n";
+            }
+            
+            try {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = tsv;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                showMessage('Grid copied! Paste it in Excel.', 'success');
+            } catch(e) {
+                showMessage('Failed to copy grid.', 'error');
+            }
+        }
+
         async function submitManualPunch() {
             const empId = document.getElementById('manualEmpSelect').value;
             const date = document.getElementById('manualDate').value;
@@ -1187,11 +1348,10 @@
             } catch(e) { showMessage('Error saving punch.', 'error'); } finally { hideLoader(); }
         }
 
-        // Fraud Check
         async function runFraudCheck() {
             const checkDate = document.getElementById('fraudDate').value;
             if(!checkDate) return showMessage('Select Date', 'error');
-            showLoader('Analyzing Addresses...');
+            showLoader('Analyzing Addresses with Red Flags...');
             try {
                 const snap = await get(ref(database, `attendance`));
                 const allPunches = snap.exists() ? snap.val() : {};
@@ -1202,15 +1362,63 @@
                 let susCount = 0;
 
                 Object.keys(allPunches).forEach(empId => {
+                    const empDept = allEmployeesData[empId] ? allEmployeesData[empId].department : 'Unknown';
+                    
+                    let safeKeywordsStr = globalSettings.deptFraudKeywords[empDept] || '';
+                    if(!safeKeywordsStr && empDept === 'Head') safeKeywordsStr = 'shikar pur, shikarpur, devpuri, hans';
+                    const safeKeywords = safeKeywordsStr.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
+
+                    let strictKeywordsStr = globalSettings.deptFraudStrictKeywords[empDept] || '';
+                    const strictKeywords = strictKeywordsStr.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
+
                     if (allPunches[empId][checkDate]) {
                         ['In', 'Out'].forEach(type => {
                             if (allPunches[empId][checkDate][type]) {
                                 let p = allPunches[empId][checkDate][type];
                                 let addr = (p.address || "").toLowerCase();
-                                if (!addr.includes('shikar pur') && !addr.includes('shikarpur') && !addr.includes('devpuri') && !addr.includes('hans') && addr !== 'manual entry by admin') {
+                                let remark = (p.remark || "").toLowerCase();
+                                
+                                let isSafe = false;
+                                let isStrictlyBanned = false;
+                                let fraudReason = "Location not in Safe list";
+                                
+                                if (addr === 'manual entry by admin' || remark === 'manual entry by admin' || remark === 'old data imported') {
+                                    isSafe = true;
+                                } else {
+                                    for(let keyword of strictKeywords) {
+                                        if(addr.includes(keyword)) {
+                                            isStrictlyBanned = true;
+                                            fraudReason = `Strictly Banned Keyword: "${keyword}"`;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!isStrictlyBanned) {
+                                        for(let keyword of safeKeywords) {
+                                            if(addr.includes(keyword)) {
+                                                isSafe = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (!isSafe || isStrictlyBanned) {
                                     susCount++;
                                     let timeStr = new Date(p.timestamp).toLocaleTimeString();
-                                    html += `<tr><td class="font-bold">${empId}</td><td>${type}</td><td>${timeStr}</td><td class="text-xs text-left max-w-xs truncate" title="${p.address}">${p.address} <br><a href="${p.photoUrl}" target="_blank" class="text-blue-600 underline">View Photo</a></td></tr>`;
+                                    let highlightClass = isStrictlyBanned ? "bg-red-50" : "";
+                                    let reasonClass = isStrictlyBanned ? "text-red-700" : "text-orange-600";
+                                    
+                                    html += `<tr class="${highlightClass}">
+                                        <td class="font-bold">${empId}</td>
+                                        <td>${type}</td>
+                                        <td>${timeStr}</td>
+                                        <td class="text-xs text-left max-w-xs truncate" title="${p.address}">
+                                            ${p.address} <br>
+                                            <span class="${reasonClass} font-bold text-[10px] uppercase">Reason: ${fraudReason}</span> | 
+                                            <a href="${p.photoUrl}" target="_blank" class="text-blue-600 underline">View Photo</a>
+                                        </td>
+                                    </tr>`;
                                 }
                             }
                         });
@@ -1224,7 +1432,6 @@
             } catch(e) { showMessage('Error in Fraud check', 'error'); } finally { hideLoader(); }
         }
 
-        // Employee Directory & CRUD Operations
         function renderEmpDirectory() {
             const tbody = document.getElementById('empdirBody');
             const filter = document.getElementById('empDirStatusFilter').value;
@@ -1254,7 +1461,6 @@
             const modal = document.getElementById('emp-modal');
             document.getElementById('emp-modal-title').innerText = empId ? "Edit Employee Details" : "Add New Employee";
             
-            // Populate Dropdowns dynamically
             const deptSel = document.getElementById('mod-emp-dept');
             deptSel.innerHTML = globalSettings.departments.map(d => `<option value="${d}">${d}</option>`).join('');
             
@@ -1298,37 +1504,143 @@
         };
 
         document.getElementById('saveEmpDetailsBtn').addEventListener('click', async () => {
-            // ... (employee saving code)
+            const empId = document.getElementById('mod-emp-id').value.trim();
+            if(!empId) return showMessage('Employee ID is required.', 'error');
+            
+            showLoader("Saving Employee...");
+            try {
+                const newEmpData = {
+                    name: document.getElementById('mod-emp-name').value.trim(),
+                    pin: document.getElementById('mod-emp-pin').value.trim(),
+                    email: document.getElementById('mod-emp-email').value.trim(),
+                    department: document.getElementById('mod-emp-dept').value,
+                    location: document.getElementById('mod-emp-loc').value,
+                    startTime: document.getElementById('mod-emp-start').value,
+                    endTime: document.getElementById('mod-emp-end').value,
+                    allowanceIn: parseInt(document.getElementById('mod-emp-all-in').value) || 0,
+                    allowanceOut: parseInt(document.getElementById('mod-emp-all-out').value) || 0,
+                    salary: parseFloat(document.getElementById('mod-emp-salary').value) || 0,
+                    status: document.getElementById('mod-emp-status').value
+                };
+                
+                await update(ref(database), { [`employees/${empId}`]: newEmpData });
+                allEmployeesData[empId] = newEmpData; 
+                
+                showMessage("Employee Saved Successfully!", "success");
+                window.closeModals();
+                renderEmpDirectory(); 
+            } catch(e) { showMessage("Error saving employee.", "error"); } finally { hideLoader(); }
         });
 
-        // Settings Render & Save
         window.renderWeekOffs = () => {
             const depts = globalSettings.departments || [];
-            let html = '';
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             
-            // Current selections ko save karein taaki naya add hone par purana reset na ho
+            let woHtml = '';
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const currentSelections = {};
-            document.querySelectorAll('.dept-wo-select').forEach(sel => {
-                currentSelections[sel.getAttribute('data-dept')] = parseInt(sel.value);
-            });
-
+            document.querySelectorAll('.dept-wo-select').forEach(sel => { currentSelections[sel.getAttribute('data-dept')] = parseInt(sel.value); });
             depts.forEach(d => {
-                let currentWO = 6; // Default Saturday
-                if (currentSelections[d] !== undefined) {
-                     currentWO = currentSelections[d];
-                } else if (globalSettings.deptWeekOffs[d] !== undefined) {
-                     currentWO = globalSettings.deptWeekOffs[d];
-                }
-
+                let currentWO = currentSelections[d] !== undefined ? currentSelections[d] : (globalSettings.deptWeekOffs[d] !== undefined ? globalSettings.deptWeekOffs[d] : 6);
                 let opts = days.map((day, idx) => `<option value="${idx}" ${currentWO == idx ? 'selected' : ''}>${day}</option>`).join('');
-                html += `<div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
-                            <span class="font-bold text-sm text-gray-700">${d}</span>
-                            <select class="dept-wo-select p-2 border border-gray-300 rounded-lg text-sm bg-white font-medium outline-none" data-dept="${d}">${opts}</select>
-                         </div>`;
+                woHtml += `<div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-200"><span class="font-bold text-sm text-gray-700">${d}</span><select class="dept-wo-select p-2 border border-gray-300 rounded-lg text-sm bg-white font-medium outline-none" data-dept="${d}">${opts}</select></div>`;
             });
-            document.getElementById('dept-wo-container').innerHTML = html;
+            document.getElementById('dept-wo-container').innerHTML = woHtml;
+
+            let fraudHtml = '';
+            const currentFraudSelections = {};
+            const currentStrictSelections = {};
+            document.querySelectorAll('.dept-fraud-input').forEach(inp => { currentFraudSelections[inp.getAttribute('data-dept')] = inp.value; });
+            document.querySelectorAll('.dept-strict-input').forEach(inp => { currentStrictSelections[inp.getAttribute('data-dept')] = inp.value; });
+            
+            depts.forEach(d => {
+                let defaultVal = (d === 'Head' && !globalSettings.deptFraudKeywords['Head']) ? 'shikar pur, shikarpur, devpuri, hans' : '';
+                let currentKW = currentFraudSelections[d] !== undefined ? currentFraudSelections[d] : (globalSettings.deptFraudKeywords[d] !== undefined ? globalSettings.deptFraudKeywords[d] : defaultVal);
+                let currentStrictKW = currentStrictSelections[d] !== undefined ? currentStrictSelections[d] : (globalSettings.deptFraudStrictKeywords[d] !== undefined ? globalSettings.deptFraudStrictKeywords[d] : '');
+
+                fraudHtml += `
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-2 shadow-sm">
+                        <h4 class="font-bold text-sm text-gray-800 border-b pb-2 mb-2">${d}</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-green-700 uppercase mb-1">Allowed Keywords (Safe Zone)</label>
+                                <input type="text" class="dept-fraud-input w-full p-2.5 border border-green-300 rounded-lg bg-white text-xs font-medium outline-none focus:ring-1 focus:ring-green-500" data-dept="${d}" placeholder="e.g. noida, delhi" value="${currentKW}">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-red-700 uppercase mb-1">Strictly Not Allowed (Red Flag)</label>
+                                <input type="text" class="dept-strict-input w-full p-2.5 border border-red-300 rounded-lg bg-white text-xs font-medium outline-none focus:ring-1 focus:ring-red-500" data-dept="${d}" placeholder="e.g. home, cafe, market" value="${currentStrictKW}">
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('dept-fraud-container').innerHTML = fraudHtml;
         };
+
+        window.renderSpecialDaysUI = () => {
+            const deptSel = document.getElementById('spDept');
+            deptSel.innerHTML = '<option value="all">All Departments</option>' + 
+                globalSettings.departments.map(d => `<option value="${d}">${d}</option>`).join('');
+
+            const tbody = document.getElementById('specialDaysBody');
+            let html = '';
+            const spDays = globalSettings.specialDays || {};
+            
+            Object.keys(spDays).sort().reverse().forEach(date => {
+                Object.keys(spDays[date]).forEach(dept => {
+                    const rule = spDays[date][dept];
+                    html += `<tr>
+                        <td class="font-bold text-gray-700">${date.split('-').reverse().join('/')}</td>
+                        <td class="font-bold">${dept === 'all' ? 'All Depts' : dept}</td>
+                        <td class="font-mono text-xs text-green-700">${rule.inTime || '-'}</td>
+                        <td class="font-mono text-xs text-blue-700">${rule.outTime || '-'}</td>
+                        <td class="text-xs font-bold text-indigo-700">${rule.minHrs ? rule.minHrs + ' hrs' : '-'}</td>
+                        <td class="text-xs font-medium max-w-[150px] truncate" title="${rule.remark}">${rule.remark}</td>
+                        <td><button onclick="window.deleteSpecialDay('${date}', '${dept}')" class="text-red-500 hover:text-red-700 font-bold text-[10px] bg-red-50 border border-red-200 px-2 py-1 rounded transition-colors uppercase">Delete</button></td>
+                    </tr>`;
+                });
+            });
+            if(!html) html = `<tr><td colspan="7" class="text-center py-6 text-gray-500 font-bold bg-gray-50 rounded-b-xl border border-t-0">No Special Days Added Yet.</td></tr>`;
+            tbody.innerHTML = html;
+        };
+
+        window.deleteSpecialDay = async (date, dept) => {
+            if(!confirm(`Kya aap ${date} (${dept === 'all' ? 'All Depts' : dept}) ka rule delete karna chahte hain?`)) return;
+            showLoader("Deleting Rule...");
+            try {
+                delete globalSettings.specialDays[date][dept];
+                if(Object.keys(globalSettings.specialDays[date]).length === 0) delete globalSettings.specialDays[date];
+                await set(ref(database, 'settings/specialDays'), globalSettings.specialDays);
+                showMessage("Rule Deleted Successfully!", "success");
+                window.renderSpecialDaysUI();
+            } catch(e) { showMessage("Error deleting rule", "error"); } finally { hideLoader(); }
+        };
+
+        document.getElementById('saveSpecialDayBtn').addEventListener('click', async () => {
+            const date = document.getElementById('spDate').value;
+            const dept = document.getElementById('spDept').value;
+            const inT = document.getElementById('spIn').value;
+            const outT = document.getElementById('spOut').value;
+            const hrs = document.getElementById('spHrs').value;
+            const rem = document.getElementById('spRemark').value.trim();
+
+            if(!date || !rem) return showMessage("Date aur Remark daalna zaroori hai!", "error");
+
+            showLoader("Saving Event Rule...");
+            try {
+                if(!globalSettings.specialDays) globalSettings.specialDays = {};
+                if(!globalSettings.specialDays[date]) globalSettings.specialDays[date] = {};
+                
+                globalSettings.specialDays[date][dept] = { inTime: inT, outTime: outT, minHrs: hrs, remark: rem };
+                
+                await set(ref(database, 'settings/specialDays'), globalSettings.specialDays);
+                showMessage("Special Day Rule Saved Successfully!", "success");
+                
+                document.getElementById('spIn').value = '';
+                document.getElementById('spOut').value = '';
+                document.getElementById('spHrs').value = '';
+                document.getElementById('spRemark').value = '';
+                window.renderSpecialDaysUI();
+            } catch(e) { showMessage("Error saving rule", "error"); } finally { hideLoader(); }
+        });
 
         function renderSettingsUI() {
             document.getElementById('autoShowMsgToggle').checked = globalSettings.autoShowMsg;
@@ -1337,6 +1649,7 @@
             document.getElementById('lateThreshold').value = globalSettings.lateThreshold;
             document.getElementById('earlyThreshold').value = globalSettings.earlyThreshold;
             document.getElementById('veryEarlyThreshold').value = globalSettings.veryEarlyThreshold;
+            document.getElementById('minHoursForHalfDay').value = globalSettings.minHoursForHalfDay;
 
             const gContainer = document.getElementById('globalMsgContainer');
             if(globalSettings.msgSource === 'global') gContainer.classList.remove('hidden');
@@ -1347,8 +1660,8 @@
                 else gContainer.classList.add('hidden');
             };
 
-            window.renderWeekOffs();
             window.renderDeptLocLists();
+            window.renderWeekOffs();
         }
 
         window.renderDeptLocLists = () => {
@@ -1362,8 +1675,12 @@
 
         window.removeDeptLoc = (type, index) => {
             if (type === 'dept') {
+                const deletedDept = globalSettings.departments[index];
                 globalSettings.departments.splice(index, 1);
-                window.renderWeekOffs(); // Naya add/remove hote hi turant update hoga
+                delete globalSettings.deptWeekOffs[deletedDept];
+                delete globalSettings.deptFraudKeywords[deletedDept];
+                delete globalSettings.deptFraudStrictKeywords[deletedDept];
+                window.renderWeekOffs(); 
             }
             if (type === 'loc') {
                 globalSettings.locations.splice(index, 1);
@@ -1376,7 +1693,7 @@
             if(val && !globalSettings.departments.includes(val)) { 
                 globalSettings.departments.push(val); 
                 window.renderDeptLocLists(); 
-                window.renderWeekOffs(); // Naya add/remove hote hi turant update hoga
+                window.renderWeekOffs(); 
                 document.getElementById('newDeptInput').value = ''; 
             }
         });
@@ -1400,12 +1717,25 @@
                     lateThreshold: parseInt(document.getElementById('lateThreshold').value) || 3,
                     earlyThreshold: parseInt(document.getElementById('earlyThreshold').value) || 3,
                     veryEarlyThreshold: parseFloat(document.getElementById('veryEarlyThreshold').value) || 2,
+                    minHoursForHalfDay: parseFloat(document.getElementById('minHoursForHalfDay').value) || 4,
                     deptWeekOffs: {},
+                    deptFraudKeywords: {},
+                    deptFraudStrictKeywords: {},
                     departments: globalSettings.departments,
-                    locations: globalSettings.locations
+                    locations: globalSettings.locations,
+                    specialDays: globalSettings.specialDays 
                 };
+                
                 document.querySelectorAll('.dept-wo-select').forEach(sel => {
                     newSettings.deptWeekOffs[sel.getAttribute('data-dept')] = parseInt(sel.value);
+                });
+
+                document.querySelectorAll('.dept-fraud-input').forEach(inp => {
+                    newSettings.deptFraudKeywords[inp.getAttribute('data-dept')] = inp.value.trim();
+                });
+                
+                document.querySelectorAll('.dept-strict-input').forEach(inp => {
+                    newSettings.deptFraudStrictKeywords[inp.getAttribute('data-dept')] = inp.value.trim();
                 });
                 
                 await set(ref(database, 'settings'), newSettings);
@@ -1414,7 +1744,6 @@
             } catch(e) { showMessage("Error saving settings.", "error"); } finally { hideLoader(); }
         });
 
-        // Daywise Report Data Fetch
         async function fetchDaywiseReport() {
             const checkDate = document.getElementById('daywiseDate').value;
             const deptFilter = document.getElementById('daywiseDeptFilter').value;
@@ -1441,16 +1770,37 @@
 
                     let inTime = '-'; let outTime = '-'; let remarkTxt = '';
                     
+                    let sRule = null;
+                    if (globalSettings.specialDays && globalSettings.specialDays[checkDate]) {
+                        if (globalSettings.specialDays[checkDate][emp.department]) sRule = globalSettings.specialDays[checkDate][emp.department];
+                        else if (globalSettings.specialDays[checkDate]['all']) sRule = globalSettings.specialDays[checkDate]['all'];
+                    }
+
                     if (dayPunch) {
-                        if (dayPunch.In) { 
+                        if (sRule && sRule.remark) {
+                            let timeInfo = [];
+                            if(sRule.inTime) timeInfo.push(`IN: ${sRule.inTime}`);
+                            if(sRule.outTime) timeInfo.push(`OUT: ${sRule.outTime}`);
+                            let timeStr = timeInfo.length > 0 ? ` (${timeInfo.join(', ')})` : '';
+                            remarkTxt += `[⭐ ${sRule.remark}${timeStr}]\n`;
+                        }
+                        
+                        if (dayPunch.In) {
                             inTime = new Date(dayPunch.In.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            remarkTxt += `[IN: ${dayPunch.In.remark || dayPunch.In.address}] `;
+                            let inRem = dayPunch.In.remark;
+                            if (inRem && String(inRem).toLowerCase() !== "old data imported") remarkTxt += `[IN: ${inRem}]\n`;
+                            else if (!inRem && dayPunch.In.address === "Manual Entry by Admin") remarkTxt += `[IN: Manual Entry]\n`;
+                            else if (!inRem && dayPunch.In.address) remarkTxt += `[IN: ${dayPunch.In.address}]\n`;
                         }
-                        if (dayPunch.Out) { 
+                        if (dayPunch.Out) {
                             outTime = new Date(dayPunch.Out.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            remarkTxt += `[OUT: ${dayPunch.Out.remark || dayPunch.Out.address}]`;
+                            let outRem = dayPunch.Out.remark;
+                            if (outRem && String(outRem).toLowerCase() !== "old data imported") remarkTxt += `[OUT: ${outRem}]`;
+                            else if (!outRem && dayPunch.Out.address === "Manual Entry by Admin") remarkTxt += `[OUT: Manual Entry]`;
+                            else if (!outRem && dayPunch.Out.address) remarkTxt += `[OUT: ${dayPunch.Out.address}]`;
                         }
-                        if (!remarkTxt) remarkTxt = 'No location data';
+                        remarkTxt = remarkTxt.trim();
+                        if (!remarkTxt) remarkTxt = '-';
                     } else {
                         remarkTxt = '-';
                     }
@@ -1475,7 +1825,7 @@
                         <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${inTime}</td>
                         <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${outTime}</td>
                         <td class="text-center" data-status="${st}">${stBadge}</td>
-                        <td class="text-left text-[10px] max-w-sm truncate" title="${remarkTxt.replace(/\"/g, "'")}">${remarkTxt}</td>
+                        <td class="text-left text-[10px] max-w-sm" style="white-space: pre-wrap;" title="${remarkTxt.replace(/\"/g, "'")}">${remarkTxt}</td>
                     </tr>`;
                     hasRecords = true;
                 });
@@ -1493,7 +1843,6 @@
             } catch(e) { showMessage('Error fetching daywise report', 'error'); } finally { hideLoader(); }
         }
         
-        // Export Daywise to CSV
         function exportDaywiseCsv() {
             const dateStr = document.getElementById('daywiseDate').value;
             const deptFilter = document.getElementById('daywiseDeptFilter');
@@ -1504,13 +1853,11 @@
             
             let csvContent = "data:text/csv;charset=utf-8,";
             
-            // Add Metadata Header
             csvContent += `Daywise Attendance Report\n`;
             csvContent += `Date:,${dateStr}\n`;
             csvContent += `Department:,${deptText}\n`;
             csvContent += `Location:,${locText}\n\n`;
             
-            // Add Table Headers
             const table = document.getElementById('daywiseTable');
             const headers = [];
             for (let i = 0; i < table.rows[0].cells.length; i++) {
@@ -1518,7 +1865,6 @@
             }
             csvContent += headers.join(",") + "\n";
             
-            // Add Table Rows
             const tbody = document.getElementById('daywiseBody');
             for (let i = 0; i < tbody.rows.length; i++) {
                 const row = tbody.rows[i];
@@ -1527,7 +1873,7 @@
                 const rowData = [];
                 for (let j = 0; j < row.cells.length; j++) {
                     let cellText = "";
-                    if (j === 5) { // Status column
+                    if (j === 5) { 
                         cellText = row.cells[j].getAttribute('data-status') || row.cells[j].innerText;
                     } else {
                         cellText = row.cells[j].innerText;
@@ -1537,7 +1883,6 @@
                 csvContent += rowData.join(",") + "\n";
             }
             
-            // Download the file
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -1547,9 +1892,6 @@
             document.body.removeChild(link);
         }
 
-        // -------------------------------------------------------------------------------------------------------
-        // EVENT LISTENERS
-        // -------------------------------------------------------------------------------------------------------
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
         document.getElementById('btn-logout').addEventListener('click', () => { currentEmployee = null; isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
@@ -1605,6 +1947,7 @@
         document.getElementById('admin-btn-manual').addEventListener('click', () => showView('admin-manual-view', 'Manual Punch'));
         document.getElementById('admin-btn-fraud').addEventListener('click', () => showView('admin-fraud-view', 'Fraud Check'));
         document.getElementById('admin-btn-empdir').addEventListener('click', () => { renderEmpDirectory(); showView('admin-empdir-view', 'Employee Directory'); });
+        document.getElementById('admin-btn-special').addEventListener('click', () => { window.renderSpecialDaysUI(); showView('admin-special-view', 'Special Days & Events'); });
         document.getElementById('empDirStatusFilter').addEventListener('change', renderEmpDirectory);
         document.getElementById('addEmployeeBtn').addEventListener('click', () => window.openEmpModal(null));
         document.getElementById('admin-btn-settings').addEventListener('click', () => { renderSettingsUI(); showView('admin-settings-view', 'System Settings'); });
@@ -1614,6 +1957,7 @@
         document.getElementById('fetchDaywiseBtn').addEventListener('click', fetchDaywiseReport);
         document.getElementById('exportDaywiseBtn').addEventListener('click', exportDaywiseCsv);
         document.getElementById('generateGridBtn').addEventListener('click', generateGrid);
+        document.getElementById('copyGridBtn').addEventListener('click', copyGridToExcel);
         document.getElementById('submitManualPunchBtn').addEventListener('click', submitManualPunch);
         document.getElementById('fetchFraudBtn').addEventListener('click', runFraudCheck);
 
