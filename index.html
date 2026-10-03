@@ -60,6 +60,8 @@
         /* Toggle Switch CSS */
         .toggle-checkbox:checked { right: 0; border-color: #68D391; }
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
+        #emp-report-controls input[type="date"] { min-width: 0; }
+        #report-summary-box span { line-height: 1.25; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -188,36 +190,40 @@
                 <button class="back-to-dash-btn text-sm font-bold text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
             </div>
 
-            <!-- Detailed Summary Box -->
-            <div id="report-summary-box" class="mb-4 hidden space-y-3">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-gray-500 font-bold uppercase">Total Days</span><span id="sum-tot" class="text-lg font-extrabold text-gray-800">0</span></div>
-                    <div class="bg-green-50 border border-green-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-green-600 font-bold uppercase">Present (P)</span><span id="sum-p" class="text-lg font-extrabold text-green-700">0</span></div>
-                    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-blue-600 font-bold uppercase">Half (P/A)</span><span id="sum-pa" class="text-lg font-extrabold text-blue-700">0</span></div>
-                    <div class="bg-red-50 border border-red-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-red-600 font-bold uppercase">Absent (A)</span><span id="sum-a" class="text-lg font-extrabold text-red-700">0</span></div>
-                    <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-yellow-600 font-bold uppercase">Late (L)</span><span id="sum-l" class="text-lg font-extrabold text-yellow-700">0</span></div>
-                    <div class="bg-orange-50 border border-orange-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-orange-600 font-bold uppercase">Early (E)</span><span id="sum-e" class="text-lg font-extrabold text-orange-700">0</span></div>
-                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-indigo-600 font-bold uppercase">Week Off (W/O)</span><span id="sum-wo" class="text-lg font-extrabold text-indigo-700">0</span></div>
-                    <div class="bg-red-100 border border-red-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm"><span class="text-[10px] text-red-700 font-bold uppercase">Total Ded.</span><span id="sum-ded" class="text-lg font-extrabold text-red-800">0</span></div>
-                </div>
-                <div class="bg-emerald-100 border border-emerald-300 p-4 rounded-xl flex flex-col items-center justify-center shadow-md w-full"><span class="text-xs text-emerald-800 font-extrabold uppercase tracking-wide">Net Pay Days</span><span id="sum-net" class="text-3xl font-black text-emerald-900 mt-1">0</span></div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-3 mb-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm items-end w-full" id="emp-report-controls">
-                <div class="flex-1 w-full">
+            <div class="grid grid-cols-2 gap-2 mb-3 bg-white p-3 rounded-2xl border border-gray-200 shadow-sm items-end w-full" id="emp-report-controls">
+                <div class="min-w-0 w-full">
                     <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Start Date</label>
-                    <input type="date" id="startDate" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="date" id="startDate" class="w-full min-w-0 border border-gray-300 rounded-xl p-2.5 text-sm font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
-                <div class="flex-1 w-full">
+                <div class="min-w-0 w-full">
                     <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">End Date</label>
-                    <input type="date" id="endDate" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="date" id="endDate" class="w-full min-w-0 border border-gray-300 rounded-xl p-2.5 text-sm font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
-                <button id="fetchMyReportBtn" class="w-full sm:w-auto bg-[#1e293b] text-white py-2.5 px-6 rounded-xl hover:bg-black font-bold h-[42px] flex items-center justify-center shadow-md">
+                <div class="col-span-2 flex flex-wrap gap-1.5 items-center">
+                    <button id="reportMtdBtn" type="button" class="text-xs font-bold px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg" title="Current month: first day to today">MTD</button>
+                    <button id="reportPrevMtdBtn" type="button" class="text-xs font-bold px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg" title="Previous month: first to last day">N-1 MTD</button>
+                <button id="fetchMyReportBtn" class="ml-auto bg-[#1e293b] text-white py-2.5 px-6 rounded-xl hover:bg-black font-bold h-[42px] flex items-center justify-center shadow-md">
                     <span id="btn-text">Fetch</span>
                     <div id="btn-loader" class="small-loader hidden"></div>
                 </button>
+                </div>
             </div>
             
+            <!-- Detailed Summary Box -->
+            <div id="report-summary-box" class="mb-4 hidden space-y-2">
+                <div class="grid grid-cols-4 gap-1.5">
+                    <div class="bg-gray-50 border border-gray-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-gray-500 font-bold uppercase">Total Days</span><span id="sum-tot" class="text-base font-extrabold text-gray-800">0</span></div>
+                    <div class="bg-green-50 border border-green-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-green-600 font-bold uppercase">Present (P)</span><span id="sum-p" class="text-base font-extrabold text-green-700">0</span></div>
+                    <div class="bg-blue-50 border border-blue-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-blue-600 font-bold uppercase">Half (P/A)</span><span id="sum-pa" class="text-base font-extrabold text-blue-700">0</span></div>
+                    <div class="bg-red-50 border border-red-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-red-600 font-bold uppercase">Absent (A)</span><span id="sum-a" class="text-base font-extrabold text-red-700">0</span></div>
+                    <div class="bg-yellow-50 border border-yellow-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-yellow-600 font-bold uppercase">Late (L)</span><span id="sum-l" class="text-base font-extrabold text-yellow-700">0</span></div>
+                    <div class="bg-orange-50 border border-orange-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-orange-600 font-bold uppercase">Early (E)</span><span id="sum-e" class="text-base font-extrabold text-orange-700">0</span></div>
+                    <div class="bg-indigo-50 border border-indigo-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-indigo-600 font-bold uppercase">Week Off (W/O)</span><span id="sum-wo" class="text-base font-extrabold text-indigo-700">0</span></div>
+                    <div class="bg-red-100 border border-red-200 p-2 rounded-lg flex flex-col items-center justify-center shadow-sm"><span class="text-[9px] text-red-700 font-bold uppercase">Total Ded.</span><span id="sum-ded" class="text-base font-extrabold text-red-800">0</span></div>
+                </div>
+                <div class="bg-emerald-100 border border-emerald-300 px-3 py-2 rounded-lg flex flex-row gap-3 items-center justify-center shadow-md w-full"><span class="text-xs text-emerald-800 font-extrabold uppercase tracking-wide">Net Pay Days</span><span id="sum-net" class="text-xl font-black text-emerald-900 ">0</span></div>
+            </div>
+
             <div id="duty-timings" class="mb-4 p-4 bg-indigo-50 rounded-2xl text-sm border border-indigo-100 text-indigo-900 hidden shadow-inner"></div>
             
             <div id="report-container" class="report-table-wrapper bg-white">
@@ -235,7 +241,7 @@
                 <button id="admin-btn-settings" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl transition-colors" title="Settings">⚙️</button>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div id="admin-btn-daywise" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">📆</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Daywise Report</h3>
                 </div>
@@ -248,6 +254,9 @@
                 <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
+                <button id="admin-btn-delete" type="button" class="bg-red-50 p-5 rounded-3xl shadow-sm border border-red-200 hover:shadow-md flex flex-col items-center text-center">
+                    <span class="text-3xl mb-3">🗑️</span><span class="font-bold text-[15px] text-red-700">Delete Attendance</span>
+                </button>
                 <div id="admin-btn-fraud" class="bg-white p-5 rounded-3xl shadow-sm border border-red-100 cursor-pointer hover:shadow-md transition-all bg-red-50 flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">🚨</div><h3 class="font-bold text-[15px] leading-tight text-red-800">Fraud Check</h3>
                 </div>
@@ -371,6 +380,10 @@
                 <button class="admin-back-btn text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">← Back</button>
             </div>
             <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col md:flex-row gap-3 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                    <div><label for="repDeptFilter" class="block text-xs font-bold text-gray-600 mb-1">Department</label><select id="repDeptFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Departments</option></select></div>
+                    <div><label for="repLocFilter" class="block text-xs font-bold text-gray-600 mb-1">Location</label><select id="repLocFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Locations</option></select></div>
+                </div>
                 <div class="w-full">
                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Select Employee</label>
                     <select id="repEmpSelect" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"></select>
@@ -406,12 +419,43 @@
         </div>
 
         <!-- Admin Sub View: Manual Punch -->
+        <div id="admin-delete-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold">Delete Attendance</h2>
+                <button class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button>
+            </div>
+            <div class="bg-white border border-red-100 rounded-2xl p-4 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                    <div><label for="deleteDeptFilter" class="block text-xs font-bold text-gray-600 mb-1">Department</label><select id="deleteDeptFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Departments</option></select></div>
+                    <div><label for="deleteLocFilter" class="block text-xs font-bold text-gray-600 mb-1">Location</label><select id="deleteLocFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Locations</option></select></div>
+                </div>
+                <div><label for="deleteEmpSelect" class="block text-sm font-bold mb-1">Employee</label><select id="deleteEmpSelect" class="w-full border rounded-xl p-3"></select></div>
+                <div><label for="deleteDate" class="block text-sm font-bold mb-1">Attendance Date</label><input id="deleteDate" type="date" class="w-full border rounded-xl p-3"></div>
+                <div id="deletePunchPreview" class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3" aria-live="polite">
+                    <div class="flex justify-between items-center gap-2"><h3 class="text-sm font-bold text-slate-800">Saved attendance · IST</h3><button id="refreshDeletePreviewBtn" type="button" class="text-xs font-bold text-indigo-700 px-2 py-1 rounded-lg bg-indigo-50">↻ Refresh</button></div>
+                    <p id="deletePreviewStatus" class="text-xs text-slate-600">Employee aur date select karein.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="bg-white border border-green-100 rounded-lg p-3"><p class="text-xs font-bold text-green-700">PUNCH IN</p><p id="deletePreviewIn" class="text-sm font-bold text-slate-800 mt-1">—</p><p id="deletePreviewInDetails" class="text-xs text-slate-500 mt-1 whitespace-pre-line break-words"></p></div>
+                        <div class="bg-white border border-red-100 rounded-lg p-3"><p class="text-xs font-bold text-red-700">PUNCH OUT</p><p id="deletePreviewOut" class="text-sm font-bold text-slate-800 mt-1">—</p><p id="deletePreviewOutDetails" class="text-xs text-slate-500 mt-1 whitespace-pre-line break-words"></p></div>
+                    </div>
+                </div>
+                <div><label for="deletePunchType" class="block text-sm font-bold mb-1">Punch to Delete</label><select id="deletePunchType" class="w-full border rounded-xl p-3"><option value="In">IN only</option><option value="Out">OUT only</option><option value="Both">IN + OUT (both)</option></select></div>
+                <p class="text-xs text-gray-500">Sirf selected employee aur date ke selected punches delete honge. Delete se pehle confirmation aayega.</p>
+                <button id="deleteAttendanceBtn" disabled class="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl p-3 font-bold">Delete Selected Punch</button>
+                <p id="deleteAttendanceResult" class="text-sm font-medium" role="status"></p>
+            </div>
+        </div>
+
         <div id="admin-manual-view" class="hidden w-full flex-col space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Manual Punch</h2>
                 <button class="admin-back-btn text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">← Back</button>
             </div>
             <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                    <div><label for="manualDeptFilter" class="block text-xs font-bold text-gray-600 mb-1">Department</label><select id="manualDeptFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Departments</option></select></div>
+                    <div><label for="manualLocFilter" class="block text-xs font-bold text-gray-600 mb-1">Location</label><select id="manualLocFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Locations</option></select></div>
+                </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Select Employee</label>
                     <select id="manualEmpSelect" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"></select>
@@ -684,7 +728,7 @@
         // REST responses come from Firebase, never from the SDK offline cache or device clock.
         // Existing deployment must authorize attendanceClock/<employee>/<session> writes.
         // Do not make database rules public to enable this. PIN login is not Firebase Auth.
-        async function databaseRequest(path, options = {}) {
+        async function databaseRequest(path, options = {}, withEtag = false) {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 15000);
             try {
@@ -692,10 +736,11 @@
                     ...options, cache: 'no-store', signal: controller.signal
                 });
                 if (!response.ok) {
-                    if (response.status === 412) throw new Error('Yeh punch pehle se saved hai. Dashboard refresh karein.');
+                    if (response.status === 412) throw new Error('Record pehle se saved hai ya change hua hai. Refresh karke check karein.');
                     throw new Error('Server verification failed. Internet / Firebase permissions check karein.');
                 }
-                return await response.json();
+                const data = await response.json();
+                return withEtag ? { data, etag: response.headers.get('ETag') } : data;
             } finally { clearTimeout(timer); }
         }
 
@@ -805,6 +850,73 @@
             btn.classList.toggle('opacity-50', btn.disabled);
         }
         let allEmployeesData = {};
+        function employeeIsActive(emp) {
+            return !!emp && String(emp.status ?? 'active').trim().toLowerCase() === 'active';
+        }
+
+        function sortedEmployeeEntries() {
+            return Object.entries(allEmployeesData)
+                .sort(([idA, a], [idB, b]) => String(a.name || '').trim().localeCompare(String(b.name || '').trim(), 'en', { sensitivity: 'base', numeric: true }) || idA.localeCompare(idB));
+        }
+
+        function activeEmployeeEntries() {
+            return sortedEmployeeEntries().filter(([, emp]) => employeeIsActive(emp));
+        }
+
+        const employeePickerConfigs = [
+            { prefix: 'rep', select: 'repEmpSelect' },
+            { prefix: 'manual', select: 'manualEmpSelect' },
+            { prefix: 'delete', select: 'deleteEmpSelect' }
+        ];
+
+        function fillPickerFilter(id, values, label) {
+            const select = document.getElementById(id), previous = select.value;
+            select.replaceChildren();
+            const all = document.createElement('option');
+            all.value = ''; all.textContent = label; select.appendChild(all);
+            const unique = [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base', numeric: true }));
+            unique.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value; option.textContent = value; select.appendChild(option);
+            });
+            select.value = unique.includes(previous) ? previous : '';
+        }
+
+        function filteredPickerEmployees(prefix) {
+            const department = document.getElementById(`${prefix}DeptFilter`).value;
+            const location = document.getElementById(`${prefix}LocFilter`).value;
+            return activeEmployeeEntries().filter(([, emp]) =>
+                (!department || String(emp.department || '').trim() === department) &&
+                (!location || String(emp.location || '').trim() === location));
+        }
+
+        function populateEmployeePicker(config) {
+            const select = document.getElementById(config.select), previous = select.value;
+            const employees = filteredPickerEmployees(config.prefix);
+            select.replaceChildren();
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = employees.length ? '-- Select Employee --' : 'No active employees match these filters';
+            select.appendChild(placeholder);
+            employees.forEach(([id, emp]) => {
+                const option = document.createElement('option');
+                option.value = id; option.textContent = `${emp.name || 'N/A'} (${id})`;
+                select.appendChild(option);
+            });
+            select.value = employees.some(([id]) => id === previous) ? previous : '';
+            select.disabled = employees.length === 0;
+        }
+
+        function populateEmployeeSelects() {
+            const active = activeEmployeeEntries().map(([, emp]) => emp);
+            employeePickerConfigs.forEach(config => {
+                fillPickerFilter(`${config.prefix}DeptFilter`, [...globalSettings.departments, ...active.map(emp => emp.department)], 'All Departments');
+                fillPickerFilter(`${config.prefix}LocFilter`, [...globalSettings.locations, ...active.map(emp => emp.location)], 'All Locations');
+                populateEmployeePicker(config);
+            });
+        }
+
         let globalSettings = { 
             autoShowMsg: false, 
             deptWeekOffs: {}, 
@@ -839,7 +951,7 @@
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         function showView(viewId, titleText = "Smart Attendance") {
-            const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
+            const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -907,17 +1019,7 @@
                     const empSnap = await get(ref(database, 'employees'));
                     if (empSnap.exists()) allEmployeesData = empSnap.val();
                     
-                    const sels = ['repEmpSelect', 'manualEmpSelect'];
-                    sels.forEach(sId => {
-                        const sel = document.getElementById(sId);
-                        if(sel) {
-                            sel.innerHTML = '<option value="">-- Select Employee --</option>';
-                            Object.entries(allEmployeesData).forEach(([id, emp]) => {
-                                let label = (emp.status === 'inactive' || emp.status === 'Inactive') ? `(Inactive)` : '';
-                                sel.innerHTML += `<option value="${id}">${emp.name || 'N/A'} (${id}) ${label}</option>`;
-                            });
-                        }
-                    });
+                    populateEmployeeSelects();
 
                     const deptSel = document.getElementById('daywiseDeptFilter');
                     if (deptSel) {
@@ -956,7 +1058,7 @@
                 
                 const empData = empSnap.val();
                 if (empData.pin.toString() !== pin) throw new Error("Incorrect PIN.");
-                if (empData.status === 'inactive') throw new Error("Account inactive. Contact Admin.");
+                if (!employeeIsActive(empData)) throw new Error("Account inactive. Contact Admin.");
 
                 isAdmin = false; 
                 currentEmployee = { id: empId, ...empData };
@@ -1473,17 +1575,8 @@
                 thead.innerHTML = headHtml;
 
                 let bodyHtml = '';
-                Object.entries(allEmployeesData).forEach(([id, emp]) => {
+                activeEmployeeEntries().forEach(([id, emp]) => {
                     const empPunches = allPunches[id] || {};
-                    let hasPunchesThisMonth = false;
-                    for(let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
-                        if(empPunches[getLocalDateStr(dt)]) { hasPunchesThisMonth = true; break; }
-                    }
-                    
-                    if ((emp.status === 'inactive' || emp.status === 'Inactive') && !hasPunchesThisMonth) {
-                        return; 
-                    }
-
                     const report = calculateReport(emp, empPunches, startStr, endStr);
 
                     let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td><td class="text-gray-500 text-left font-normal">${emp.email || '-'}</td>`;
@@ -1546,6 +1639,126 @@
             }
         }
 
+        function reportDateRange(preset, nowMs) {
+            const today = getLocalDateStr(new Date(nowMs));
+            const [year, month] = today.split('-').map(Number);
+            if (preset === 'MTD') return { start: `${year}-${String(month).padStart(2, '0')}-01`, end: today };
+            const last = new Date(Date.UTC(year, month - 1, 0));
+            const end = last.toISOString().slice(0, 10);
+            return { start: end.slice(0, 7) + '-01', end };
+        }
+
+        async function applyReportPreset(preset) {
+            try {
+                const range = reportDateRange(preset, await ensureAppTime());
+                document.getElementById('startDate').value = range.start;
+                document.getElementById('endDate').value = range.end;
+                document.getElementById('report-summary-box').classList.add('hidden');
+                document.getElementById('report-container').innerHTML = '<p class="text-center text-gray-500 py-6">Dates selected. Click Fetch to view report.</p>';
+            } catch (err) { showMessage(err.message, 'error'); }
+        }
+
+        let deletePreviewVersion = 0, deletePreview = null;
+
+        function formatDeletePunch(punch) {
+            if (!punch) return 'Not punched';
+            const timestamp = punch.timestamp;
+            if (timestamp === null || timestamp === undefined || timestamp === '') return 'Punch saved · time unavailable';
+            const date = new Date(timestamp);
+            if (!Number.isFinite(date.getTime())) return 'Punch saved · time unavailable';
+            return date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }) + ' IST';
+        }
+
+        function deleteSelectionMatches(empId, date) {
+            return document.getElementById('deleteEmpSelect').value === empId && document.getElementById('deleteDate').value === date;
+        }
+
+        function updateDeleteButton() {
+            const type = document.getElementById('deletePunchType').value;
+            const keys = type === 'Both' ? ['In', 'Out'] : [type];
+            const ready = isAdmin && deletePreview && deleteSelectionMatches(deletePreview.empId, deletePreview.date) && keys.some(key => deletePreview.data[key] != null);
+            document.getElementById('deleteAttendanceBtn').disabled = deleteInFlight || !ready;
+        }
+
+        function renderDeletePreview(empId, date, data) {
+            deletePreview = { empId, date, data: data || {} };
+            ['In', 'Out'].forEach(type => {
+                const punch = deletePreview.data[type];
+                document.getElementById(`deletePreview${type}`).textContent = formatDeletePunch(punch);
+                document.getElementById(`deletePreview${type}Details`).textContent = punch
+                    ? [punch.address, punch.remark ? `Remark: ${punch.remark}` : ''].filter(Boolean).join('\n') : '';
+            });
+            const name = allEmployeesData[empId]?.name || empId;
+            document.getElementById('deletePreviewStatus').textContent = `${name} (${empId}) · ${date}` +
+                (!deletePreview.data.In && !deletePreview.data.Out ? ' · Is date par koi punch nahi hai.' : ' · Delete se pehle times check karein.');
+            updateDeleteButton();
+        }
+
+        async function loadDeletePreview() {
+            const version = ++deletePreviewVersion;
+            deletePreview = null;
+            updateDeleteButton();
+            ['In', 'Out'].forEach(type => {
+                document.getElementById(`deletePreview${type}`).textContent = '—';
+                document.getElementById(`deletePreview${type}Details`).textContent = '';
+            });
+            const status = document.getElementById('deletePreviewStatus');
+            const empId = document.getElementById('deleteEmpSelect').value, date = document.getElementById('deleteDate').value;
+            if (!isAdmin || !currentEmployee || !employeeIsActive(allEmployeesData[empId]) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                status.textContent = 'Employee aur date select karein.'; return;
+            }
+            const adminId = currentEmployee.id;
+            status.textContent = 'Saved IN / OUT load ho rahe hain…';
+            try {
+                if (!navigator.onLine) throw new Error('Internet connected nahi hai.');
+                const data = await databaseRequest(`attendance/${encodeURIComponent(empId)}/${date}`);
+                if (version !== deletePreviewVersion || !isAdmin || currentEmployee?.id !== adminId || !deleteSelectionMatches(empId, date)) return;
+                renderDeletePreview(empId, date, data);
+            } catch (err) {
+                if (version === deletePreviewVersion) status.textContent = 'Attendance load nahi hui. Internet check karke Refresh dabayein.';
+            }
+        }
+
+        let deleteInFlight = false;
+        async function deleteSelectedAttendance() {
+            if (!isAdmin || !currentEmployee) return showMessage('Admin access required.', 'error');
+            if (deleteInFlight) return;
+            const adminId = currentEmployee.id;
+            const empId = document.getElementById('deleteEmpSelect').value;
+            const date = document.getElementById('deleteDate').value;
+            const type = document.getElementById('deletePunchType').value;
+            if (!employeeIsActive(allEmployeesData[empId]) || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !['In', 'Out', 'Both'].includes(type)) {
+                return showMessage('Active employee, date aur punch select karein.', 'error');
+            }
+            deleteInFlight = true;
+            const btn = document.getElementById('deleteAttendanceBtn'), result = document.getElementById('deleteAttendanceResult');
+            btn.disabled = true; result.textContent = 'Selected attendance check ho rahi hai…';
+            try {
+                if (!navigator.onLine) throw new Error('Delete ke liye internet zaroori hai.');
+                const path = `attendance/${encodeURIComponent(empId)}/${date}`;
+                const snapshot = await databaseRequest(path, { headers: { 'X-Firebase-ETag': 'true' } }, true);
+                if (!isAdmin || currentEmployee?.id !== adminId || !deleteSelectionMatches(empId, date)) throw new Error('Selection/session changed. Dobara check karein.');
+                ++deletePreviewVersion;
+                const existing = snapshot.data || {};
+                renderDeletePreview(empId, date, existing);
+                const keys = (type === 'Both' ? ['In', 'Out'] : [type]).filter(key => existing[key] != null);
+                if (!keys.length) { result.textContent = 'Selected punch is date par nahi mila. Kuch delete nahi hua.'; return; }
+                if (!snapshot.etag) throw new Error('Record verify nahi hua. Dobara try karein.');
+                const description = `${allEmployeesData[empId].name || empId} (${empId})\nDate: ${date}\nDelete: ${keys.join(' + ').toUpperCase()}\n${keys.map(key => `${key.toUpperCase()}: ${formatDeletePunch(existing[key])}`).join('\n')}`;
+                if (!window.confirm(`${description}\n\nYe punches permanently delete honge. Confirm?`)) { result.textContent = 'Cancelled. Kuch delete nahi hua.'; return; }
+                if (!isAdmin || currentEmployee?.id !== adminId) throw new Error('Admin session changed. Login again.');
+                const remaining = { ...existing };
+                keys.forEach(key => delete remaining[key]);
+                // Match the previewed version so concurrent edits/punches are never overwritten.
+                await databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify(Object.keys(remaining).length ? remaining : null) });
+                renderDeletePreview(empId, date, remaining);
+                result.textContent = `${date}: ${keys.join(' + ').toUpperCase()} deleted for ${allEmployeesData[empId].name || empId}.`;
+                document.getElementById('report-summary-box').classList.add('hidden');
+                showMessage('Selected attendance deleted.', 'success');
+            } catch (err) { result.textContent = err.message + ' Delete confirm nahi hua; record dobara check karein.'; }
+            finally { deleteInFlight = false; updateDeleteButton(); }
+        }
+
         async function submitManualPunch() {
             const empId = document.getElementById('manualEmpSelect').value;
             const date = document.getElementById('manualDate').value;
@@ -1586,7 +1799,8 @@
                 let html = '';
                 let susCount = 0;
 
-                Object.keys(allPunches).forEach(empId => {
+                activeEmployeeEntries().forEach(([empId]) => {
+                    if (!allPunches[empId]) return;
                     const empDept = allEmployeesData[empId] ? allEmployeesData[empId].department : 'Unknown';
                     
                     let safeKeywordsStr = globalSettings.deptFraudKeywords[empDept] || '';
@@ -1661,8 +1875,8 @@
             const tbody = document.getElementById('empdirBody');
             const filter = document.getElementById('empDirStatusFilter').value;
             let html = '';
-            Object.entries(allEmployeesData).forEach(([id, emp]) => {
-                let stat = emp.status ? emp.status.toLowerCase() : 'active';
+            sortedEmployeeEntries().forEach(([id, emp]) => {
+                let stat = String(emp.status ?? 'active').trim().toLowerCase();
                 if(filter !== 'all' && stat !== filter) return;
                 
                 let badge = stat === 'active' 
@@ -1709,7 +1923,7 @@
                 document.getElementById('mod-emp-all-in').value = emp.allowanceIn || 0;
                 document.getElementById('mod-emp-all-out').value = emp.allowanceOut || 0;
                 document.getElementById('mod-emp-salary').value = emp.salary || 0;
-                document.getElementById('mod-emp-status').value = emp.status ? emp.status.toLowerCase() : 'active';
+                document.getElementById('mod-emp-status').value = employeeIsActive(emp) ? 'active' : 'inactive';
             } else {
                 document.getElementById('mod-emp-name').value = '';
                 document.getElementById('mod-emp-pin').value = '';
@@ -1749,7 +1963,8 @@
                 };
                 
                 await update(ref(database), { [`employees/${empId}`]: newEmpData });
-                allEmployeesData[empId] = newEmpData; 
+                allEmployeesData[empId] = newEmpData;
+                populateEmployeeSelects(); 
                 
                 showMessage("Employee Saved Successfully!", "success");
                 window.closeModals();
@@ -1984,14 +2199,13 @@
                 let html = '';
                 let hasRecords = false;
 
-                Object.entries(allEmployeesData).forEach(([id, emp]) => {
+                activeEmployeeEntries().forEach(([id, emp]) => {
                     if(deptFilter !== 'all' && emp.department !== deptFilter) return;
                     if(locFilter !== 'all' && emp.location !== locFilter) return;
 
                     const empPunches = allPunches[id] || {};
                     const dayPunch = empPunches[checkDate];
 
-                    if ((emp.status === 'inactive' || emp.status === 'Inactive') && !dayPunch) return;
 
                     let inTime = '-'; let outTime = '-'; let remarkTxt = '';
                     
@@ -2160,6 +2374,22 @@
         document.getElementById('startLocationTrackingBtn').addEventListener('click', startLocationTracking);
         document.getElementById('captureSubmitBtn').addEventListener('click', handlePunch);
         
+        document.getElementById('reportMtdBtn').addEventListener('click', () => applyReportPreset('MTD'));
+        document.getElementById('reportPrevMtdBtn').addEventListener('click', () => applyReportPreset('PREVIOUS'));
+        ['deleteEmpSelect', 'deleteDate'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+            document.getElementById('deleteAttendanceResult').textContent = '';
+            loadDeletePreview();
+        }));
+        document.getElementById('deletePunchType').addEventListener('change', updateDeleteButton);
+        document.getElementById('refreshDeletePreviewBtn').addEventListener('click', loadDeletePreview);
+        document.getElementById('deleteAttendanceBtn').addEventListener('click', deleteSelectedAttendance);
+        document.getElementById('admin-btn-delete').addEventListener('click', () => {
+            if (!isAdmin) return;
+            document.getElementById('deleteAttendanceResult').textContent = '';
+            document.getElementById('deleteDate').value ||= document.getElementById('daywiseDate').value;
+            showView('admin-delete-view', 'Delete Attendance');
+            loadDeletePreview();
+        });
         document.getElementById('fetchMyReportBtn').addEventListener('click', fetchMyReport);
         document.getElementById('syncOfflineBtn').addEventListener('click', syncOfflineData);
         document.querySelectorAll('.back-to-dash-btn').forEach(btn => btn.addEventListener('click', () => showView(isAdmin ? 'admin-dashboard' : 'employee-dashboard')));
@@ -2173,6 +2403,14 @@
         document.getElementById('admin-btn-fraud').addEventListener('click', () => showView('admin-fraud-view', 'Fraud Check'));
         document.getElementById('admin-btn-empdir').addEventListener('click', () => { renderEmpDirectory(); showView('admin-empdir-view', 'Employee Directory'); });
         document.getElementById('admin-btn-special').addEventListener('click', () => { window.renderSpecialDaysUI(); showView('admin-special-view', 'Special Days & Events'); });
+        employeePickerConfigs.forEach(config => {
+            ['DeptFilter', 'LocFilter'].forEach(suffix => {
+                document.getElementById(config.prefix + suffix).addEventListener('change', () => {
+                    populateEmployeePicker(config);
+                    if (config.prefix === 'delete') { document.getElementById('deleteAttendanceResult').textContent = ''; loadDeletePreview(); }
+                });
+            });
+        });
         document.getElementById('empDirStatusFilter').addEventListener('change', renderEmpDirectory);
         document.getElementById('addEmployeeBtn').addEventListener('click', () => window.openEmpModal(null));
         document.getElementById('admin-btn-settings').addEventListener('click', () => { renderSettingsUI(); showView('admin-settings-view', 'System Settings'); });
