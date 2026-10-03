@@ -1098,12 +1098,12 @@
                 showView('employee-dashboard', 'Employee Dashboard');
                 // Render the authenticated dashboard immediately. Sync and settings run together.
                 syncAppClock().catch(() => {});
-                setupEmployeeDashboard(fetchGlobalData(false)).catch(err => showMessage(err.message, 'error'));
+                setupEmployeeDashboard(fetchGlobalData(false), { showLoginMessage: true }).catch(err => showMessage(err.message, 'error'));
             } catch (err) { showMessage(err.message || 'Login failed. Please retry.', 'error'); }
             finally { loginInFlight = false; document.getElementById('verifyLoginBtn').disabled = false; hideLoader(); }
         }
 
-        async function setupEmployeeDashboard(settingsReady = Promise.resolve()) {
+        async function setupEmployeeDashboard(settingsReady = Promise.resolve(), { showLoginMessage = false } = {}) {
             if (!currentEmployee || isAdmin) return;
             const employeeId = currentEmployee.id, version = ++dashboardVersion;
             const sameSession = () => version === dashboardVersion && currentEmployee?.id === employeeId && !isAdmin;
@@ -1135,6 +1135,12 @@
                 msgBtn.classList.add('hidden'); 
             }
 
+            // Auto-open only for the successful-login call, never for punch/retry refreshes.
+            // Message readiness does not depend on the clock or attendance request finishing.
+            if (showLoginMessage && hasMsg && globalSettings.autoShowMsg && activeView === 'employee-dashboard') {
+                msgBtn.click();
+            }
+
             let today;
             try { today = getLocalDateStr(new Date(await ensureAppTime())); }
             catch (err) {
@@ -1157,9 +1163,6 @@
             if (activeView === 'attendance-section') showView('employee-dashboard', 'Employee Dashboard');
             renderAppClock();
 
-            if(hasMsg && globalSettings.autoShowMsg && activeView === 'employee-dashboard') {
-                setTimeout(() => { if (sameSession() && activeView === 'employee-dashboard') document.getElementById('view-msg-btn').click(); }, 600);
-            }
         }
 
         function renderDashButtons(status) {
@@ -1211,24 +1214,87 @@
             return refreshLocation().catch(() => {});
         }
 
+        let cancelGpsAcquisition = null;
+
+        function acquireFreshGps(generation) {
+            // Some phones return a coarse first fix while the GPS radio warms up.
+            // Retry fresh high-accuracy requests before displaying a weak-GPS warning.
+            return new Promise((resolve, reject) => {
+                let finished = false, attempts = 0, requestId = 0;
+                let attemptTimer = null, retryTimer = null, deadlineTimer = null;
+                let sawWeakFix = false;
+                const isCurrent = () => generation === locationGeneration && locationActive && !document.hidden;
+                const finish = (error, position) => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(attemptTimer); clearTimeout(retryTimer); clearTimeout(deadlineTimer);
+                    if (cancelGpsAcquisition === cancel) cancelGpsAcquisition = null;
+                    error ? reject(error) : resolve(position);
+                };
+                const cancel = () => finish(new Error('Location request cancelled.'));
+                cancelGpsAcquisition = cancel;
+                const exhausted = () => {
+                    const error = new Error(sawWeakFix
+                        ? 'GPS accuracy abhi weak hai. Open area mein aakar Refresh Location dabayein.'
+                        : 'Fresh GPS nahi mila. GPS ON karke Refresh Location dabayein.');
+                    error.weakGps = sawWeakFix;
+                    finish(error);
+                };
+                const retry = () => {
+                    if (finished) return;
+                    if (!isCurrent()) return cancel();
+                    if (attempts >= 4) return exhausted();
+                    document.getElementById('location-info').textContent = 'GPS signal improve ho raha hai… Automatically retry kar rahe hain.';
+                    retryTimer = setTimeout(attempt, 750);
+                };
+                const attempt = () => {
+                    if (finished) return;
+                    if (!isCurrent()) return cancel();
+                    attempts++;
+                    const thisRequest = ++requestId;
+                    const acceptCallback = () => {
+                        if (finished || thisRequest !== requestId) return false;
+                        ++requestId; clearTimeout(attemptTimer);
+                        if (!isCurrent()) { cancel(); return false; }
+                        return true;
+                    };
+                    attemptTimer = setTimeout(() => { if (acceptCallback()) retry(); }, 6500);
+                    try {
+                        navigator.geolocation.getCurrentPosition(position => {
+                            if (!acceptCallback()) return;
+                            const c = position.coords;
+                            if (Number.isFinite(c.latitude) && Math.abs(c.latitude) <= 90 &&
+                                Number.isFinite(c.longitude) && Math.abs(c.longitude) <= 180 &&
+                                Number.isFinite(c.accuracy) && c.accuracy >= 0 && c.accuracy <= 50) {
+                                finish(null, position);
+                            } else { sawWeakFix = true; retry(); }
+                        }, error => {
+                            if (!acceptCallback()) return;
+                            if (error.code === 1) {
+                                const denied = new Error('Location permission allow karein, phir Refresh Location dabayein.');
+                                denied.permissionDenied = true; finish(denied);
+                            } else retry();
+                        }, { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 });
+                    } catch (error) { if (acceptCallback()) finish(error); }
+                };
+                deadlineTimer = setTimeout(exhausted, 22000);
+                attempt();
+            });
+        }
+
         async function refreshLocation() {
             const generation = ++locationGeneration;
+            if (cancelGpsAcquisition) cancelGpsAcquisition();
             clearTimeout(locationTimer);
             invalidateLocation('Fresh GPS location le rahe hain...');
             const icon = document.getElementById('refresh-icon');
             const warn = document.getElementById('accuracy-warning');
             icon.classList.add('spin-anim');
             warn.classList.add('hidden');
+            let permissionDenied = false;
             try {
                 if (!navigator.geolocation || document.hidden) throw new Error('GPS available nahi hai. Refresh Location dabayein.');
-                const pos = await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => reject(new Error('GPS timeout. Refresh Location dabayein.')), 16000);
-                    navigator.geolocation.getCurrentPosition(
-                        value => { clearTimeout(timeout); resolve(value); },
-                        error => { clearTimeout(timeout); reject(error); },
-                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                    );
-                });
+                const pos = await acquireFreshGps(generation);
                 if (generation !== locationGeneration || !locationActive || document.hidden) throw new Error('Location request cancelled.');
                 const c = pos.coords;
                 if (!Number.isFinite(c.latitude) || !Number.isFinite(c.longitude) ||
@@ -1241,13 +1307,17 @@
                 document.getElementById('location-info').textContent = `Loc: ${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} | Accuracy: ${Math.round(c.accuracy)}m. Auto-refresh: 20 sec.`;
                 return { ...currentCoordinates, receivedAt: locationReceivedAt };
             } catch (err) {
-                if (generation === locationGeneration) invalidateLocation('Fresh GPS nahi mila. GPS/permission ON karke Refresh Location dabayein.');
+                if (generation === locationGeneration) {
+                    permissionDenied = !!err.permissionDenied;
+                    if (err.weakGps) warn.classList.remove('hidden');
+                    invalidateLocation(err.message || 'Fresh GPS nahi mila. Refresh Location dabayein.');
+                }
                 throw err;
             } finally {
                 if (generation === locationGeneration) {
                     icon.classList.remove('spin-anim');
                     updateCaptureButton();
-                    if (locationActive && !document.hidden) locationTimer = setTimeout(startLocationTracking, LOCATION_REFRESH_MS);
+                    if (locationActive && !document.hidden && !permissionDenied) locationTimer = setTimeout(startLocationTracking, LOCATION_REFRESH_MS);
                 }
             }
         }
@@ -1257,6 +1327,7 @@
             currentStream = null;
             locationActive = false;
             ++locationGeneration;
+            if (cancelGpsAcquisition) cancelGpsAcquisition();
             clearTimeout(locationTimer);
             invalidateLocation('Refresh Location');
             document.getElementById('refresh-icon').classList.remove('spin-anim');
@@ -1266,6 +1337,7 @@
             resumeAppClock();
             if (!locationActive) return;
             ++locationGeneration;
+            if (cancelGpsAcquisition) cancelGpsAcquisition();
             clearTimeout(locationTimer);
             invalidateLocation('Location expired. Refresh Location.');
             if (!document.hidden) startLocationTracking();
