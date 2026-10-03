@@ -772,13 +772,29 @@
             return appClock.serverMs + (performance.now() - appClock.at);
         }
 
+        let activeView = 'login-section', clockWelcomePending = false;
+        let clockWelcomeUntil = 0, clockWelcomeTimer = null;
+        let dashboardVersion = 0, reportVersion = 0, loginInFlight = false;
+
+        function hideWelcomeClock() {
+            clockWelcomePending = false; clockWelcomeUntil = 0;
+            clearTimeout(clockWelcomeTimer);
+            document.getElementById('app-clock').classList.add('hidden');
+        }
+
         function renderAppClock() {
             const el = document.getElementById('app-clock');
-            el.classList.toggle('hidden', !currentEmployee);
-            if (!currentEmployee) { el.textContent = ''; return; }
-            el.textContent = clockIsReady()
-                ? 'India time: ' + new Date(readAppTime()).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                : 'Time update ho raha hai… Internet connected rakhein.';
+            if (isAdmin || !currentEmployee || activeView !== 'employee-dashboard') {
+                el.classList.add('hidden'); return;
+            }
+            if (clockWelcomePending && clockIsReady()) {
+                clockWelcomePending = false;
+                clockWelcomeUntil = performance.now() + 2000;
+                clockWelcomeTimer = setTimeout(hideWelcomeClock, 2000);
+            }
+            const visible = clockIsReady() && performance.now() < clockWelcomeUntil;
+            el.classList.toggle('hidden', !visible);
+            if (visible) el.textContent = 'India time: ' + new Date(readAppTime()).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
         function invalidateAppClock() {
@@ -951,6 +967,10 @@
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         function showView(viewId, titleText = "Smart Attendance") {
+            if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
+            activeView = viewId;
+            if (viewId !== 'employee-dashboard') hideWelcomeClock();
+            renderAppClock();
             const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
@@ -1036,39 +1056,59 @@
         }
 
         async function verifyLogin() {
+            if (loginInFlight) return;
             const empId = document.getElementById('employeeId').value.trim();
             const pin = document.getElementById('employeePin').value.trim();
             if (!empId || !pin) return showMessage('Employee ID aur PIN dono zaruri hain.', 'error');
-            
-            showLoader('Verifying Identity...');
+            loginInFlight = true;
+            document.getElementById('verifyLoginBtn').disabled = true;
+            showLoader('Logging in…');
             try {
-                const adminSnap = await get(ref(database, `admins/${empId}`));
-                if (adminSnap.exists() && adminSnap.val().pin === pin) {
-                    isAdmin = true; 
-                    currentEmployee = { id: empId, ...adminSnap.val() };
-                    showLoader('Loading Admin Portal (Fetching Data)...');
-                    await fetchGlobalData(true); 
+                // Independent identity lookups run together instead of two sequential trips.
+                const [adminResult, employeeResult] = await Promise.allSettled([
+                    get(ref(database, `admins/${empId}`)), get(ref(database, `employees/${empId}`))
+                ]);
+                const adminSnap = adminResult.status === 'fulfilled' ? adminResult.value : null;
+                if (adminSnap?.exists() && String(adminSnap.val().pin) === pin) {
+                    isAdmin = true;
+                    currentEmployee = { ...adminSnap.val(), id: empId };
+                    hideWelcomeClock(); invalidateAppClock();
+                    await fetchGlobalData(true);
                     showView('admin-dashboard', 'Admin Portal');
-                    hideLoader(); 
                     return;
                 }
-
-                const empSnap = await get(ref(database, `employees/${empId}`));
-                if (!empSnap.exists()) throw new Error("ID not found.");
-                
+                if (employeeResult.status !== 'fulfilled') throw employeeResult.reason;
+                const empSnap = employeeResult.value;
+                if (!empSnap.exists()) throw new Error('ID not found.');
                 const empData = empSnap.val();
-                if (empData.pin.toString() !== pin) throw new Error("Incorrect PIN.");
-                if (!employeeIsActive(empData)) throw new Error("Account inactive. Contact Admin.");
-
-                isAdmin = false; 
-                currentEmployee = { id: empId, ...empData };
-                
-                await fetchGlobalData(false);
-                setupEmployeeDashboard();
-            } catch (err) { showMessage(err.message, 'error'); } finally { hideLoader(); }
+                if (String(empData.pin) !== pin) throw new Error('Incorrect PIN.');
+                if (!employeeIsActive(empData)) throw new Error('Account inactive. Contact Admin.');
+                isAdmin = false;
+                currentEmployee = { ...empData, id: empId };
+                hideWelcomeClock(); invalidateAppClock();
+                clockWelcomePending = true;
+                document.getElementById('emp-name-dash').textContent = currentEmployee.name;
+                document.getElementById('emp-details-dash').textContent = `ID: ${empId} | ${currentEmployee.department || ''} | ${currentEmployee.location || ''}`;
+                document.getElementById('view-msg-btn').classList.add('hidden');
+                document.getElementById('emp-status-badge').textContent = 'Loading…';
+                document.getElementById('emp-action-buttons').innerHTML = '<div class="text-center text-sm text-gray-500 py-3">Attendance load ho rahi hai…</div>';
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                document.getElementById('report-summary-box').classList.add('hidden');
+                showView('employee-dashboard', 'Employee Dashboard');
+                // Render the authenticated dashboard immediately. Sync and settings run together.
+                syncAppClock().catch(() => {});
+                setupEmployeeDashboard(fetchGlobalData(false)).catch(err => showMessage(err.message, 'error'));
+            } catch (err) { showMessage(err.message || 'Login failed. Please retry.', 'error'); }
+            finally { loginInFlight = false; document.getElementById('verifyLoginBtn').disabled = false; hideLoader(); }
         }
 
-        async function setupEmployeeDashboard() {
+        async function setupEmployeeDashboard(settingsReady = Promise.resolve()) {
+            if (!currentEmployee || isAdmin) return;
+            const employeeId = currentEmployee.id, version = ++dashboardVersion;
+            const sameSession = () => version === dashboardVersion && currentEmployee?.id === employeeId && !isAdmin;
+            await settingsReady;
+            if (!sameSession()) return;
             document.getElementById('emp-name-dash').textContent = currentEmployee.name;
             document.getElementById('emp-details-dash').textContent = `ID: ${currentEmployee.id} | ${currentEmployee.department || ''} | ${currentEmployee.location || ''}`;
             
@@ -1098,13 +1138,15 @@
             let today;
             try { today = getLocalDateStr(new Date(await ensureAppTime())); }
             catch (err) {
-                document.getElementById('emp-action-buttons').innerHTML = '<button id="retryServerTimeBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold">Refresh Time</button>';
-                document.getElementById('retryServerTimeBtn').addEventListener('click', setupEmployeeDashboard);
-                showView('employee-dashboard', 'Employee Dashboard');
-                showMessage(err.message, 'error');
+                if (!sameSession()) return;
+                document.getElementById('emp-action-buttons').innerHTML = '<button id="retryServerTimeBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold">Retry Attendance</button>';
+                document.getElementById('retryServerTimeBtn').addEventListener('click', () => setupEmployeeDashboard());
+                if (activeView === 'employee-dashboard') showMessage('Attendance load nahi hui. Internet check karke Retry Attendance dabayein.', 'error');
                 return;
             }
-            const punchSnap = await get(ref(database, `attendance/${currentEmployee.id}/${today}`));
+            if (!sameSession()) return;
+            const punchSnap = await get(ref(database, `attendance/${employeeId}/${today}`));
+            if (!sameSession()) return;
             let status = "None";
             if (punchSnap.exists()) {
                 const p = punchSnap.val();
@@ -1112,10 +1154,11 @@
                 if (p['In'] && p['Out']) status = "PunchedOut";
             }
             renderDashButtons(status);
-            showView('employee-dashboard', 'Employee Dashboard');
+            if (activeView === 'attendance-section') showView('employee-dashboard', 'Employee Dashboard');
+            renderAppClock();
 
-            if(hasMsg && globalSettings.autoShowMsg) {
-                setTimeout(() => { document.getElementById('view-msg-btn').click(); }, 600);
+            if(hasMsg && globalSettings.autoShowMsg && activeView === 'employee-dashboard') {
+                setTimeout(() => { if (sameSession() && activeView === 'employee-dashboard') document.getElementById('view-msg-btn').click(); }, 600);
             }
         }
 
@@ -1513,18 +1556,46 @@
             document.getElementById(contId).innerHTML = h;
         }
 
+        async function openTodayReport() {
+            if (!currentEmployee || isAdmin) return;
+            document.getElementById('btn-text').style.display = 'block';
+            document.getElementById('btn-loader').style.display = 'none';
+            document.getElementById('emp-report-controls').classList.remove('hidden');
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('report-summary-box').classList.add('hidden');
+            document.getElementById('duty-timings').classList.add('hidden');
+            document.getElementById('report-container').innerHTML = '<p class="text-center text-gray-500 py-6">Today’s report load ho rahi hai…</p>';
+            showView('report-section', 'My Attendance');
+            const version = ++reportVersion, employeeId = currentEmployee.id;
+            try {
+                const today = getLocalDateStr(new Date(await ensureAppTime()));
+                if (version !== reportVersion || currentEmployee?.id !== employeeId || activeView !== 'report-section') return;
+                document.getElementById('startDate').value = today;
+                document.getElementById('endDate').value = today;
+                await fetchMyReport();
+            } catch (err) {
+                if (version === reportVersion) document.getElementById('report-container').textContent = 'Report load nahi hui. Internet check karke View My Report dobara kholein.';
+            }
+        }
+
         async function fetchMyReport() {
             const sd = document.getElementById('startDate').value, ed = document.getElementById('endDate').value;
-            if(!sd || !ed) return;
+            if (!sd || !ed || !currentEmployee) return;
+            const version = ++reportVersion, sessionEmployee = currentEmployee.id;
+            const empId = isAdmin ? document.getElementById('repEmpSelect').value : sessionEmployee;
+            const empDat = isAdmin ? allEmployeesData[empId] : currentEmployee;
             document.getElementById('btn-text').style.display='none'; document.getElementById('btn-loader').style.display='block';
             try {
-                const empId = isAdmin ? document.getElementById('repEmpSelect').value : currentEmployee.id;
-                const empDat = isAdmin ? allEmployeesData[empId] : currentEmployee;
-                
                 const snap = await get(ref(database, `attendance/${empId}`));
+                if (version !== reportVersion || currentEmployee?.id !== sessionEmployee || activeView !== 'report-section') return;
                 const data = calculateReport(empDat, snap.exists() ? snap.val() : {}, sd, ed);
                 renderReportUI(data, 'duty-timings', 'report-container', isAdmin);
-            } catch(e) { console.error(e); } finally { document.getElementById('btn-text').style.display='block'; document.getElementById('btn-loader').style.display='none'; }
+            } catch (err) {
+                if (version === reportVersion) showMessage('Report load nahi hui. Dobara Fetch karein.', 'error');
+            } finally {
+                if (version === reportVersion) { document.getElementById('btn-text').style.display='block'; document.getElementById('btn-loader').style.display='none'; }
+            }
         }
 
         async function fetchAdminReport() {
@@ -1649,8 +1720,10 @@
         }
 
         async function applyReportPreset(preset) {
+            const version = ++reportVersion;
             try {
                 const range = reportDateRange(preset, await ensureAppTime());
+                if (version !== reportVersion || activeView !== 'report-section') return;
                 document.getElementById('startDate').value = range.start;
                 document.getElementById('endDate').value = range.end;
                 document.getElementById('report-summary-box').classList.add('hidden');
@@ -2332,15 +2405,11 @@
         }
 
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
-        document.getElementById('btn-logout').addEventListener('click', () => { currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
+        document.getElementById('btn-logout').addEventListener('click', () => { ++dashboardVersion; ++reportVersion; hideWelcomeClock(); currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
         document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); });
-        document.getElementById('openReportDirectBtn').addEventListener('click', () => { 
-            document.getElementById('emp-report-controls').classList.remove('hidden');
-            showView('report-section', 'My Attendance'); 
-            fetchMyReport(); 
-        });
-        
+        document.getElementById('openReportDirectBtn').addEventListener('click', openTodayReport);
+
         document.getElementById('showForgotBtn').addEventListener('click', () => showView('forgot-pin-section', 'Reset Password (PIN)'));
         document.getElementById('resetOtpFormsBtn').addEventListener('click', () => {
             document.getElementById('otp-request-box').classList.remove('hidden'); document.getElementById('otp-verify-box').classList.add('hidden');
