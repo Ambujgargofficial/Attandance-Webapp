@@ -1,5 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Attendance fix deployment notes:
+  - HTTPS and internet required. Phone clock is not used for employee punch time.
+  - Firebase attendanceClock/<employee-id>/<random-session> must permit the
+    server timestamp PUT under your existing authorization policy. Do NOT open
+    database rules publicly. Missing permission blocks punching safely.
+  - timestamp remains ISO UTC for existing consumers; receivedAt is Firebase
+    server milliseconds. The attendance date key uses Asia/Kolkata.
+  - GPS refreshes after 20 seconds, expires at 25 seconds, and is requested again
+    on every capture. Backgrounding, failures and accuracy >50m block capture.
+  - Old offlineP records are retained for admin review, never auto-synced.
+  - Frontend-only checks cannot prevent modified-client or mock-GPS attacks.
+    Production enforcement needs authenticated backend/rules for identity,
+    timestamp, location/geofence, freshness and write-once attendance.
+  - Live rules and Apps Script source were not supplied or changed. Validate
+    against a staging Firebase project before replacing the live deployment.
+-->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -58,11 +74,11 @@
             <div class="flex items-center gap-3">
                 <span class="text-2xl">⚠️</span>
                 <div>
-                    <p class="font-bold text-sm">Offline Punches Pending!</p>
+                    <p class="font-bold text-sm">Old Offline Punches: Review Required</p>
                     <p class="text-xs mt-0.5"><span id="offline-count" class="font-bold text-red-600">0</span> punch device me save hain.</p>
                 </div>
             </div>
-            <button id="syncOfflineBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md ml-2 shrink-0">Sync Now</button>
+            <button id="syncOfflineBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md ml-2 shrink-0">Admin Review</button>
         </div>
 
         <!-- Login Section -->
@@ -147,13 +163,14 @@
             <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100 flex flex-col justify-center min-h-[4rem] relative">
                 <div class="flex items-center justify-between w-full">
                     <p id="location-info" class="text-xs font-bold text-left text-indigo-800 leading-tight flex-1"></p>
-                    <button id="startLocationTrackingBtn" class="ml-2 p-2 bg-indigo-200 rounded-full hover:bg-indigo-300 transition-colors">
+                    <button id="startLocationTrackingBtn" title="Refresh Location" aria-label="Refresh Location" class="ml-2 p-2 bg-indigo-200 rounded-full hover:bg-indigo-300 transition-colors">
                         <svg id="refresh-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                     </button>
                 </div>
                 <p id="accuracy-warning" class="text-[10px] text-red-600 font-bold mt-1 hidden">GPS weak hai. Kripya open area me aayein.</p>
             </div>
 
+            <p class="text-xs text-gray-600">Location har 20 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein. Punch ke liye internet aur fresh GPS zaroori hain.</p>
             <button id="captureSubmitBtn" class="w-full bg-blue-600 text-white py-4 px-4 rounded-2xl hover:bg-blue-700 font-extrabold text-lg shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2">
                 📸 Capture & Submit
             </button>
@@ -653,7 +670,52 @@
 
         let currentEmployee = null;
         let isAdmin = false;
-        let currentStream, gpsWatchId, currentCoordinates, currentPunchTarget;
+        let currentStream, currentCoordinates, currentPunchTarget;
+        let locationTimer = null, locationGeneration = 0, locationActive = false;
+        let locationReceivedAt = null, punchInFlight = false;
+        const LOCATION_REFRESH_MS = 20000, LOCATION_MAX_AGE_MS = 25000;
+        const clockSession = crypto.randomUUID();
+
+        // REST responses come from Firebase, never from the SDK offline cache or device clock.
+        // Existing deployment must authorize attendanceClock/<employee>/<session> writes.
+        // Do not make database rules public to enable this. PIN login is not Firebase Auth.
+        async function databaseRequest(path, options = {}) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 15000);
+            try {
+                const response = await fetch(`${firebaseConfig.databaseURL.replace(/\/$/, '')}/${path}.json`, {
+                    ...options, cache: 'no-store', signal: controller.signal
+                });
+                if (!response.ok) {
+                    if (response.status === 412) throw new Error('Yeh punch pehle se saved hai. Dashboard refresh karein.');
+                    throw new Error('Server verification failed. Internet / Firebase permissions check karein.');
+                }
+                return await response.json();
+            } finally { clearTimeout(timer); }
+        }
+
+        async function getTrustedTime(empId) {
+            if (!navigator.onLine) throw new Error('Internet zaroori hai. Offline attendance allowed nahi hai.');
+            const started = performance.now();
+            const data = await databaseRequest(`attendanceClock/${encodeURIComponent(empId)}/${clockSession}`, {
+                method: 'PUT', body: JSON.stringify({ timestamp: { '.sv': 'timestamp' } })
+            });
+            if (!data || !Number.isFinite(data.timestamp) || data.timestamp <= 0 || performance.now() - started > 15000) {
+                throw new Error('Server time verify nahi hua. Dobara try karein.');
+            }
+            return data.timestamp;
+        }
+
+        function locationIsFresh() {
+            return !!currentCoordinates && locationReceivedAt !== null &&
+                performance.now() - locationReceivedAt < LOCATION_MAX_AGE_MS && !document.hidden;
+        }
+
+        function updateCaptureButton() {
+            const btn = document.getElementById('captureSubmitBtn');
+            btn.disabled = punchInFlight || !locationIsFresh();
+            btn.classList.toggle('opacity-50', btn.disabled);
+        }
         let allEmployeesData = {};
         let globalSettings = { 
             autoShowMsg: false, 
@@ -843,7 +905,15 @@
                 msgBtn.classList.add('hidden'); 
             }
 
-            const today = getLocalDateStr(new Date());
+            let today;
+            try { today = getLocalDateStr(new Date(await getTrustedTime(currentEmployee.id))); }
+            catch (err) {
+                document.getElementById('emp-action-buttons').innerHTML = '<button id="retryServerTimeBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold">Refresh server time</button>';
+                document.getElementById('retryServerTimeBtn').addEventListener('click', setupEmployeeDashboard);
+                showView('employee-dashboard', 'Employee Dashboard');
+                showMessage(err.message, 'error');
+                return;
+            }
             const punchSnap = await get(ref(database, `attendance/${currentEmployee.id}/${today}`));
             let status = "None";
             if (punchSnap.exists()) {
@@ -892,99 +962,165 @@
                 currentStream = stream;
                 showView('attendance-section', `Duty ${currentPunchTarget}`);
             } catch (err) {
-                showMessage('Camera access failed.', 'error'); showView('employee-dashboard', 'Employee Dashboard');
+                stopCamera(); showMessage('Camera access failed.', 'error'); showView('employee-dashboard', 'Employee Dashboard');
             } finally { hideLoader(); }
+        }
+
+        function invalidateLocation(message) {
+            currentCoordinates = null;
+            locationReceivedAt = null;
+            document.getElementById('location-info').textContent = message;
+            updateCaptureButton();
         }
 
         function startLocationTracking() {
-            const btn = document.getElementById('captureSubmitBtn');
-            btn.disabled = true; btn.classList.add('opacity-50');
-            const locInfo = document.getElementById('location-info');
-            const warn = document.getElementById('accuracy-warning');
-            const icon = document.getElementById('refresh-icon');
-            
-            locInfo.innerHTML = 'Fetching GPS...'; warn.classList.add('hidden'); icon.classList.add('spin-anim');
-            if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-            
-            gpsWatchId = navigator.geolocation.watchPosition(
-                (pos) => {
-                    icon.classList.remove('spin-anim'); currentCoordinates = pos.coords;
-                    const acc = Math.round(pos.coords.accuracy);
-                    locInfo.innerHTML = `Loc: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} <br><span class="text-${acc>50?'red':'green'}-600 font-bold">(Accuracy: ${acc}m)</span>`;
-                    if(acc>50) warn.classList.remove('hidden'); else warn.classList.add('hidden');
-                    btn.disabled = false; btn.classList.remove('opacity-50');
-                },
-                (err) => {
-                    icon.classList.remove('spin-anim'); locInfo.textContent = 'GPS OFF or Denied.';
-                    showMessage('Turn ON GPS.', 'error');
-                }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-            );
+            locationActive = true;
+            return refreshLocation().catch(() => {});
         }
 
-        function stopCamera() { if (currentStream) currentStream.getTracks().forEach(t => t.stop()); if (gpsWatchId) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; } }
+        async function refreshLocation() {
+            const generation = ++locationGeneration;
+            clearTimeout(locationTimer);
+            invalidateLocation('Fresh GPS location le rahe hain...');
+            const icon = document.getElementById('refresh-icon');
+            const warn = document.getElementById('accuracy-warning');
+            icon.classList.add('spin-anim');
+            warn.classList.add('hidden');
+            try {
+                if (!navigator.geolocation || document.hidden) throw new Error('GPS available nahi hai. Refresh Location dabayein.');
+                const pos = await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => reject(new Error('GPS timeout. Refresh Location dabayein.')), 16000);
+                    navigator.geolocation.getCurrentPosition(
+                        value => { clearTimeout(timeout); resolve(value); },
+                        error => { clearTimeout(timeout); reject(error); },
+                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                    );
+                });
+                if (generation !== locationGeneration || !locationActive || document.hidden) throw new Error('Location request cancelled.');
+                const c = pos.coords;
+                if (!Number.isFinite(c.latitude) || !Number.isFinite(c.longitude) ||
+                    !Number.isFinite(c.accuracy) || c.accuracy < 0 || c.accuracy > 50) {
+                    warn.classList.remove('hidden');
+                    throw new Error('GPS weak hai (50m se zyada). Open area mein aakar Refresh Location dabayein.');
+                }
+                currentCoordinates = { latitude: c.latitude, longitude: c.longitude, accuracy: c.accuracy };
+                locationReceivedAt = performance.now();
+                document.getElementById('location-info').textContent = `Loc: ${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} | Accuracy: ${Math.round(c.accuracy)}m. Auto-refresh: 20 sec.`;
+                return { ...currentCoordinates, receivedAt: locationReceivedAt };
+            } catch (err) {
+                if (generation === locationGeneration) invalidateLocation('Fresh GPS nahi mila. GPS/permission ON karke Refresh Location dabayein.');
+                throw err;
+            } finally {
+                if (generation === locationGeneration) {
+                    icon.classList.remove('spin-anim');
+                    updateCaptureButton();
+                    if (locationActive && !document.hidden) locationTimer = setTimeout(startLocationTracking, LOCATION_REFRESH_MS);
+                }
+            }
+        }
+
+        function stopCamera() {
+            if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+            currentStream = null;
+            locationActive = false;
+            ++locationGeneration;
+            clearTimeout(locationTimer);
+            invalidateLocation('Refresh Location');
+            document.getElementById('refresh-icon').classList.remove('spin-anim');
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!locationActive) return;
+            ++locationGeneration;
+            clearTimeout(locationTimer);
+            invalidateLocation('Location expired. Refresh Location.');
+            if (!document.hidden) startLocationTracking();
+        });
 
         async function handlePunch() {
-            showLoader(`Punching ${currentPunchTarget}...`);
-            document.getElementById('captureSubmitBtn').disabled = true;
-            
-            const indTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-            let timeIso = indTime.toISOString(); 
-            let today = getLocalDateStr(indTime);
-            
-            let lat = currentCoordinates ? currentCoordinates.latitude : 'N/A';
-            let lng = currentCoordinates ? currentCoordinates.longitude : 'N/A';
-
+            if (punchInFlight || !currentEmployee || !locationActive) return;
+            punchInFlight = true;
+            updateCaptureButton();
+            const employee = { ...currentEmployee }, punchType = currentPunchTarget;
+            const refreshBtn = document.getElementById('startLocationTrackingBtn');
+            refreshBtn.disabled = true;
+            document.getElementById('cancelPunchBtn').disabled = true;
+            document.getElementById('btn-logout').disabled = true;
+            showLoader('Fresh GPS aur server time verify kar rahe hain...');
             try {
-                const vid = document.getElementById('camera-feed'), cvs = document.getElementById('photo-canvas'), ctx = cvs.getContext('2d');
-                cvs.width = vid.videoWidth; cvs.height = vid.videoHeight; ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
-                let photoData = cvs.toDataURL('image/jpeg', 0.5); 
-                
-                const punchData = { empId: currentEmployee.id, punchType: currentPunchTarget, timestamp: timeIso, lat: lat, lng: lng, photoBase64: photoData.split(',')[1], location: currentEmployee.location || 'N/A', department: currentEmployee.department || 'N/A' };
-
-                if (!navigator.onLine) { savePunchOffline(punchData); showMessage(`No Internet. Saved Offline!`, 'info'); stopCamera(); setupEmployeeDashboard(); return; }
-
-                showLoader('Uploading...');
-                const fd = new FormData(); fd.append('action', 'uploadPhoto'); fd.append('employeeId', currentEmployee.id); fd.append('timestamp', timeIso); fd.append('photo', punchData.photoBase64); fd.append('lat', lat); fd.append('lng', lng);
-                
-                let pUrl = "Error", tAdd = "Not Found";
-                try { const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: fd }).then(r=>r.json()); if(res.status==='success'){pUrl=res.photoUrl; tAdd=res.address;} } catch(e){}
-
-                showLoader('Saving Record...');
-                await set(ref(database, `attendance/${currentEmployee.id}/${today}/${currentPunchTarget}`), { timestamp: timeIso, latitude: lat, longitude: lng, address: tAdd, photoUrl: pUrl, location: currentEmployee.location || 'N/A', department: currentEmployee.department || 'N/A' });
-
-                showMessage(`${currentPunchTarget} Marked!`, 'success'); stopCamera(); setupEmployeeDashboard();
-            } catch (err) {
-                showMessage('Network Error! Saved offline.', 'error');
-                savePunchOffline({ empId: currentEmployee.id, punchType: currentPunchTarget, timestamp: timeIso, lat, lng, photoBase64: photoData?photoData.split(',')[1]:"", location: currentEmployee.location||'N/A', department: currentEmployee.department||'N/A' });
-                stopCamera(); setupEmployeeDashboard();
-            } finally { hideLoader(); }
-        }
-
-        function savePunchOffline(data) { let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); arr.push(data); localStorage.setItem("offlineP", JSON.stringify(arr)); checkOffline(); }
-        function checkOffline() { 
-            let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); const ban = document.getElementById('offline-banner'); 
-            if(arr.length>0){ ban.classList.remove('hidden'); ban.classList.add('flex'); document.getElementById('offline-count').textContent=arr.length; } 
-            else { ban.classList.remove('flex'); ban.classList.add('hidden'); } 
-        }
-        
-        async function syncOfflineData() {
-            if(!navigator.onLine) return showMessage("No Internet!", "error");
-            let arr = JSON.parse(localStorage.getItem("offlineP") || "[]"); if(arr.length===0) return;
-            showLoader('Syncing...'); let failed=[];
-            for(let p of arr) {
-                try {
-                    let pUrl="OfflineSync", tAdd="Not Found";
-                    if(p.photoBase64){
-                        const fd = new FormData(); fd.append('action', 'uploadPhoto'); fd.append('employeeId', p.empId); fd.append('timestamp', p.timestamp); fd.append('photo', p.photoBase64); fd.append('lat', p.lat); fd.append('lng', p.lng);
-                        try { const res = await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body:fd}).then(r=>r.json()); if(res.status==='success'){pUrl=res.photoUrl;tAdd=res.address;} } catch(e){}
+                if (!navigator.onLine) throw new Error('Internet zaroori hai. Offline punch save nahi hoga.');
+                // Always request a new GPS fix at the actual punch, even if the preview is fresh.
+                const fix = await refreshLocation();
+                const generation = locationGeneration;
+                const serverMs = await getTrustedTime(employee.id);
+                const assertFresh = () => {
+                    if (document.hidden || generation !== locationGeneration ||
+                        performance.now() - fix.receivedAt >= LOCATION_MAX_AGE_MS) {
+                        throw new Error('Location expired. Refresh Location karke dobara punch karein.');
                     }
-                    const pDateObj = new Date(p.timestamp);
-                    const localDateStr = getLocalDateStr(pDateObj);
-                    await set(ref(database, `attendance/${p.empId}/${localDateStr}/${p.punchType}`), { timestamp: p.timestamp, latitude: p.lat, longitude: p.lng, address: tAdd, photoUrl: pUrl, location: p.location, department: p.department });
-                } catch(e) { failed.push(p); }
+                };
+                assertFresh();
+                // Freeze this capture snapshot; the automatic refresh resumes after the request.
+                clearTimeout(locationTimer);
+                const timeIso = new Date(serverMs).toISOString();
+                const today = getLocalDateStr(new Date(serverMs));
+                const vid = document.getElementById('camera-feed'), cvs = document.getElementById('photo-canvas');
+                if (!vid.videoWidth || !vid.videoHeight) throw new Error('Camera ready nahi hai. Dobara try karein.');
+                cvs.width = vid.videoWidth; cvs.height = vid.videoHeight;
+                const ctx = cvs.getContext('2d');
+                ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
+                const photoData = cvs.toDataURL('image/jpeg', 0.5);
+                const fd = new FormData();
+                fd.append('action', 'uploadPhoto'); fd.append('employeeId', employee.id);
+                fd.append('timestamp', timeIso); fd.append('photo', photoData.split(',')[1]);
+                fd.append('lat', fix.latitude); fd.append('lng', fix.longitude);
+                showLoader('Uploading...');
+                let pUrl = 'Error', tAdd = 'Not Found';
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 12000);
+                try {
+                    const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, signal: controller.signal }).then(r => r.json());
+                    if (res.status === 'success') { pUrl = res.photoUrl; tAdd = res.address; }
+                } catch (err) { /* Keep original photo-upload fallback; timestamp/GPS remain mandatory. */ }
+                finally { clearTimeout(timer); }
+                assertFresh();
+                showLoader('Saving Record...');
+                // Conditional online-only write: no queued offline writes or overwrite on retries.
+                await databaseRequest(`attendance/${encodeURIComponent(employee.id)}/${today}/${punchType}`, {
+                    method: 'PUT', headers: { 'if-match': 'null_etag' },
+                    body: JSON.stringify({ timestamp: timeIso, timeSource: 'firebase-server',
+                        receivedAt: { '.sv': 'timestamp' }, latitude: fix.latitude, longitude: fix.longitude,
+                        accuracy: fix.accuracy, locationAgeMs: Math.round(performance.now() - fix.receivedAt),
+                        address: tAdd, photoUrl: pUrl, location: employee.location || 'N/A', department: employee.department || 'N/A' })
+                });
+                stopCamera();
+                showMessage(`${punchType} Marked!`, 'success');
+                await setupEmployeeDashboard();
+            } catch (err) {
+                showMessage(`${err.message || 'Network error.'} Success confirm nahi hua; retry se pehle dashboard check karein.`, 'error');
+            } finally {
+                punchInFlight = false;
+                refreshBtn.disabled = false;
+                document.getElementById('cancelPunchBtn').disabled = false;
+                document.getElementById('btn-logout').disabled = false;
+                if (locationActive) startLocationTracking();
+                updateCaptureButton();
+                hideLoader();
             }
-            localStorage.setItem("offlineP", JSON.stringify(failed)); checkOffline(); hideLoader();
-            if(failed.length===0) showMessage("Synced Successfully!", "success"); else showMessage("Some failed. Try again.", "error");
+        }
+
+        function checkOffline() {
+            let arr = [];
+            try { arr = JSON.parse(localStorage.getItem('offlineP') || '[]'); } catch (err) {}
+            const ban = document.getElementById('offline-banner');
+            const pending = Array.isArray(arr) ? arr.length : 0;
+            ban.classList.toggle('hidden', pending === 0);
+            ban.classList.toggle('flex', pending > 0);
+            document.getElementById('offline-count').textContent = pending;
+        }
+
+        async function syncOfflineData() {
+            showMessage('Purane offline punches ka time/location verified nahi hai. Data safe rakha hai; admin se review aur manual entry karwayein.', 'info');
         }
         checkOffline();
 
