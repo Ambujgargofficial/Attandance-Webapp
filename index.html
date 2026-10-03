@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <!-- Attendance fix deployment notes:
-  - HTTPS and internet required. Phone clock is not used for employee punch time.
+  - HTTPS and internet required. Login syncs Firebase time into a monotonic app
+    clock. Normal punches read that clock without an extra time request.
+    Background sync runs every 60 seconds; clock expires after 120 seconds.
+    Hidden/resumed pages and stalled timers invalidate the clock until re-sync.
   - Firebase attendanceClock/<employee-id>/<random-session> must permit the
     server timestamp PUT under your existing authorization policy. Do NOT open
     database rules publicly. Missing permission blocks punching safely.
@@ -68,6 +71,8 @@
             <h1 id="main-title" class="text-xl md:text-2xl font-extrabold text-gray-800 tracking-tight">🏢 Smart Attendance</h1>
             <button id="btn-logout" class="hidden text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors">Logout</button>
         </div>
+
+        <p id="app-clock" class="hidden text-center text-sm font-semibold text-indigo-700" aria-live="off"></p>
 
         <!-- Offline Banner -->
         <div id="offline-banner" class="hidden bg-yellow-50 border border-yellow-300 text-yellow-800 p-3 mb-4 rounded-xl shadow-sm justify-between items-center transition-all mx-auto max-w-md">
@@ -706,6 +711,89 @@
             return data.timestamp;
         }
 
+        // In-memory only: never restore a clock anchor from localStorage.
+        const CLOCK_SYNC_MS = 60000, CLOCK_MAX_AGE_MS = 120000;
+        let appClock = null, clockEpoch = 0, clockSync = null;
+        let lastClockAttempt = -Infinity, lastClockTick = performance.now();
+
+        function clockIsReady() {
+            return !!appClock && !!currentEmployee && appClock.empId === currentEmployee.id &&
+                !document.hidden && performance.now() >= appClock.at &&
+                performance.now() - appClock.at < CLOCK_MAX_AGE_MS;
+        }
+
+        function readAppTime() {
+            if (!clockIsReady()) throw new Error('App ka time update ho raha hai. Ek pal baad dobara try karein.');
+            return appClock.serverMs + (performance.now() - appClock.at);
+        }
+
+        function renderAppClock() {
+            const el = document.getElementById('app-clock');
+            el.classList.toggle('hidden', !currentEmployee);
+            if (!currentEmployee) { el.textContent = ''; return; }
+            el.textContent = clockIsReady()
+                ? 'India time: ' + new Date(readAppTime()).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                : 'Time update ho raha hai… Internet connected rakhein.';
+        }
+
+        function invalidateAppClock() {
+            ++clockEpoch;
+            appClock = null;
+            clockSync = null;
+            lastClockAttempt = -Infinity;
+            lastClockTick = performance.now();
+            renderAppClock();
+            updateCaptureButton();
+        }
+
+        async function syncAppClock() {
+            if (!currentEmployee || document.hidden) throw new Error('App kholkar dobara try karein.');
+            if (clockSync) return clockSync;
+            const employeeId = currentEmployee.id, epoch = clockEpoch;
+            lastClockAttempt = performance.now();
+            const request = (async () => {
+                const serverMs = await getTrustedTime(employeeId);
+                if (epoch !== clockEpoch || currentEmployee?.id !== employeeId || document.hidden) {
+                    throw new Error('Time update dobara karna hoga.');
+                }
+                // Anchor at receipt. No Date.now() or device timezone is used.
+                // This conservative estimate can lag by the response travel time.
+                appClock = { empId: employeeId, serverMs, at: performance.now() };
+                renderAppClock();
+                updateCaptureButton();
+                return readAppTime();
+            })();
+            clockSync = request;
+            try { return await request; }
+            finally { if (clockSync === request) clockSync = null; }
+        }
+
+        async function ensureAppTime() {
+            if (!clockIsReady()) await syncAppClock();
+            return readAppTime();
+        }
+
+        function resumeAppClock() {
+            invalidateAppClock();
+            if (currentEmployee && !document.hidden) syncAppClock().catch(() => {});
+        }
+
+        // A stalled foreground timer also requires re-sync (sleep/frozen tab).
+        setInterval(() => {
+            const tick = performance.now();
+            if (tick - lastClockTick > 5000) invalidateAppClock();
+            lastClockTick = tick;
+            if (currentEmployee && !document.hidden && navigator.onLine &&
+                (!appClock || tick - appClock.at >= CLOCK_SYNC_MS) &&
+                tick - lastClockAttempt >= 10000) syncAppClock().catch(() => {});
+            renderAppClock();
+            updateCaptureButton();
+        }, 1000);
+        window.addEventListener('pageshow', event => { if (event.persisted) resumeAppClock(); });
+        window.addEventListener('online', () => {
+            if (currentEmployee && !document.hidden) syncAppClock().catch(() => {});
+        });
+
         function locationIsFresh() {
             return !!currentCoordinates && locationReceivedAt !== null &&
                 performance.now() - locationReceivedAt < LOCATION_MAX_AGE_MS && !document.hidden;
@@ -713,7 +801,7 @@
 
         function updateCaptureButton() {
             const btn = document.getElementById('captureSubmitBtn');
-            btn.disabled = punchInFlight || !locationIsFresh();
+            btn.disabled = punchInFlight || !locationIsFresh() || !clockIsReady();
             btn.classList.toggle('opacity-50', btn.disabled);
         }
         let allEmployeesData = {};
@@ -906,9 +994,9 @@
             }
 
             let today;
-            try { today = getLocalDateStr(new Date(await getTrustedTime(currentEmployee.id))); }
+            try { today = getLocalDateStr(new Date(await ensureAppTime())); }
             catch (err) {
-                document.getElementById('emp-action-buttons').innerHTML = '<button id="retryServerTimeBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold">Refresh server time</button>';
+                document.getElementById('emp-action-buttons').innerHTML = '<button id="retryServerTimeBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold">Refresh Time</button>';
                 document.getElementById('retryServerTimeBtn').addEventListener('click', setupEmployeeDashboard);
                 showView('employee-dashboard', 'Employee Dashboard');
                 showMessage(err.message, 'error');
@@ -1030,6 +1118,7 @@
         }
 
         document.addEventListener('visibilitychange', () => {
+            resumeAppClock();
             if (!locationActive) return;
             ++locationGeneration;
             clearTimeout(locationTimer);
@@ -1046,15 +1135,15 @@
             refreshBtn.disabled = true;
             document.getElementById('cancelPunchBtn').disabled = true;
             document.getElementById('btn-logout').disabled = true;
-            showLoader('Fresh GPS aur server time verify kar rahe hain...');
+            showLoader('Attendance mark ho rahi hai…');
             try {
                 if (!navigator.onLine) throw new Error('Internet zaroori hai. Offline punch save nahi hoga.');
                 // Always request a new GPS fix at the actual punch, even if the preview is fresh.
                 const fix = await refreshLocation();
                 const generation = locationGeneration;
-                const serverMs = await getTrustedTime(employee.id);
+                const serverMs = readAppTime();
                 const assertFresh = () => {
-                    if (document.hidden || generation !== locationGeneration ||
+                    if (!clockIsReady() || document.hidden || generation !== locationGeneration ||
                         performance.now() - fix.receivedAt >= LOCATION_MAX_AGE_MS) {
                         throw new Error('Location expired. Refresh Location karke dobara punch karein.');
                     }
@@ -1074,7 +1163,7 @@
                 fd.append('action', 'uploadPhoto'); fd.append('employeeId', employee.id);
                 fd.append('timestamp', timeIso); fd.append('photo', photoData.split(',')[1]);
                 fd.append('lat', fix.latitude); fd.append('lng', fix.longitude);
-                showLoader('Uploading...');
+                showLoader('Attendance mark ho rahi hai…');
                 let pUrl = 'Error', tAdd = 'Not Found';
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 12000);
@@ -1084,11 +1173,11 @@
                 } catch (err) { /* Keep original photo-upload fallback; timestamp/GPS remain mandatory. */ }
                 finally { clearTimeout(timer); }
                 assertFresh();
-                showLoader('Saving Record...');
+                showLoader('Attendance mark ho rahi hai…');
                 // Conditional online-only write: no queued offline writes or overwrite on retries.
                 await databaseRequest(`attendance/${encodeURIComponent(employee.id)}/${today}/${punchType}`, {
                     method: 'PUT', headers: { 'if-match': 'null_etag' },
-                    body: JSON.stringify({ timestamp: timeIso, timeSource: 'firebase-server',
+                    body: JSON.stringify({ timestamp: timeIso, timeSource: 'firebase-synced-app-clock',
                         receivedAt: { '.sv': 'timestamp' }, latitude: fix.latitude, longitude: fix.longitude,
                         accuracy: fix.accuracy, locationAgeMs: Math.round(performance.now() - fix.receivedAt),
                         address: tAdd, photoUrl: pUrl, location: employee.location || 'N/A', department: employee.department || 'N/A' })
@@ -2029,7 +2118,7 @@
         }
 
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
-        document.getElementById('btn-logout').addEventListener('click', () => { currentEmployee = null; isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
+        document.getElementById('btn-logout').addEventListener('click', () => { currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
         document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); });
         document.getElementById('openReportDirectBtn').addEventListener('click', () => { 
