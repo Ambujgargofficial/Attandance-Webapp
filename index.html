@@ -62,6 +62,18 @@
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
         #emp-report-controls input[type="date"] { min-width: 0; }
         #report-summary-box span { line-height: 1.25; }
+        .message-button { width: 100%; min-height: 44px; padding: 10px 14px; border-radius: 12px; border: 1px solid #cbd5e1; background: #eff6ff; color: #334155; text-align: left; gap: 10px; align-items: center; cursor: pointer; transition: background .15s, border-color .15s; }
+        .message-button:not(.hidden) { display: flex; }
+        .message-button:hover { background: #dbeafe; border-color: #bfdbfe; }
+        .message-button:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; }
+        .message-icon { display: inline-flex; align-items: center; flex-shrink: 0; color: #64748b; }
+        .message-copy { flex: 1; min-width: 0; }
+        .message-title { display: block; font-size: 13px; line-height: 20px; font-weight: 600; }
+        .message-new { background: #dbeafe; color: #1d4ed8; padding: 2px 7px; border-radius: 6px; font-size: 10px; line-height: 16px; font-weight: 700; flex-shrink: 0; animation: message-new-float 2.5s ease-in-out infinite; }
+        .message-updated { margin: 4px 2px 0; color: #64748b; font-size: 10px; line-height: 14px; text-align: right; overflow-wrap: anywhere; }
+        .message-arrow { font-size: 17px; line-height: 20px; color: #94a3b8; }
+        @keyframes message-new-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+        @media (prefers-reduced-motion: reduce) { .message-new { animation: none; } }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -139,9 +151,7 @@
                 </div>
                 <div class="flex flex-col items-end gap-2">
                     <span id="emp-status-badge" class="bg-gray-200 text-gray-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">No Punch</span>
-                    <button id="view-msg-btn" class="hidden bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold py-1.5 px-3 rounded-lg shadow-sm flex items-center gap-1 transition-colors">
-                        ✉️ Msg
-                    </button>
+
                 </div>
             </div>
 
@@ -150,6 +160,15 @@
             <button id="openReportDirectBtn" class="w-full bg-[#1e293b] text-white py-4 px-4 rounded-2xl hover:bg-black font-extrabold text-[15px] shadow-lg transition-all flex justify-center items-center gap-2 mt-4">
                 📊 View My Report
             </button>
+            <div id="message-panel" class="hidden">
+            <button id="view-msg-btn" type="button" class="hidden message-button" aria-haspopup="dialog">
+                <span class="message-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>
+                <span class="message-copy"><span id="view-msg-label" class="message-title">MSG (Global)</span></span>
+                <span class="message-new">New</span>
+                <span class="message-arrow" aria-hidden="true">→</span>
+            </button>
+            <p id="message-updated" class="message-updated"></p>
+            </div>
         </div>
 
         <!-- Camera / Attendance Section -->
@@ -939,7 +958,8 @@
             deptFraudKeywords: {}, 
             deptFraudStrictKeywords: {}, 
             msgSource: 'sheet', 
-            globalMsgText: '', 
+            globalMsgText: '',
+            globalMsgUpdatedAt: null, 
             lateThreshold: 3, 
             earlyThreshold: 3, 
             veryEarlyThreshold: 2, 
@@ -1026,6 +1046,7 @@
                     globalSettings.deptFraudStrictKeywords = st.deptFraudStrictKeywords || {}; 
                     globalSettings.msgSource = st.msgSource || 'sheet';
                     globalSettings.globalMsgText = st.globalMsgText || '';
+                    globalSettings.globalMsgUpdatedAt = st.globalMsgUpdatedAt || null;
                     globalSettings.lateThreshold = st.lateThreshold || 3;
                     globalSettings.earlyThreshold = st.earlyThreshold || 3;
                     globalSettings.veryEarlyThreshold = st.veryEarlyThreshold !== undefined ? parseFloat(st.veryEarlyThreshold) : 2;
@@ -1090,6 +1111,7 @@
                 document.getElementById('emp-name-dash').textContent = currentEmployee.name;
                 document.getElementById('emp-details-dash').textContent = `ID: ${empId} | ${currentEmployee.department || ''} | ${currentEmployee.location || ''}`;
                 document.getElementById('view-msg-btn').classList.add('hidden');
+                document.getElementById('message-panel').classList.add('hidden');
                 document.getElementById('emp-status-badge').textContent = 'Loading…';
                 document.getElementById('emp-action-buttons').innerHTML = '<div class="text-center text-sm text-gray-500 py-3">Attendance load ho rahi hai…</div>';
                 document.getElementById('startDate').value = '';
@@ -1101,6 +1123,18 @@
                 setupEmployeeDashboard(fetchGlobalData(false), { showLoginMessage: true }).catch(err => showMessage(err.message, 'error'));
             } catch (err) { showMessage(err.message || 'Login failed. Please retry.', 'error'); }
             finally { loginInFlight = false; document.getElementById('verifyLoginBtn').disabled = false; hideLoader(); }
+        }
+
+        function formatMessageUpdatedAt(value) {
+            if (value === null || value === undefined || value === '') return 'Updated on: Not available';
+            // Sheet messages may already contain a human-formatted timestamp. Preserve it.
+            if (typeof value === 'string' && !/^\d{4}-\d{2}-\d{2}T/.test(value) && !/^\d{13}$/.test(value)) {
+                return 'Updated on: ' + value.trim();
+            }
+            if (typeof value !== 'number' && typeof value !== 'string') return 'Updated on: Not available';
+            const date = new Date(typeof value === 'string' && /^\d{13}$/.test(value) ? Number(value) : value);
+            if (!Number.isFinite(date.getTime())) return 'Updated on: Not available';
+            return 'Updated on: ' + date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST';
         }
 
         async function setupEmployeeDashboard(settingsReady = Promise.resolve(), { showLoginMessage = false } = {}) {
@@ -1119,20 +1153,25 @@
 
             if (globalSettings.msgSource === 'global' && globalSettings.globalMsgText) {
                 textToDisplay = globalSettings.globalMsgText;
-                timeToDisplay = "Global Update by Admin"; 
+                timeToDisplay = formatMessageUpdatedAt(globalSettings.globalMsgUpdatedAt); 
                 hasMsg = true;
             } else if (globalSettings.msgSource === 'sheet' && currentEmployee.msg && currentEmployee.msg.text) {
                 textToDisplay = currentEmployee.msg.text;
-                timeToDisplay = currentEmployee.msg.lastUpdated || "";
+                timeToDisplay = formatMessageUpdatedAt(currentEmployee.msg.lastUpdated);
                 hasMsg = true;
             }
 
             if (hasMsg) {
+                document.getElementById('view-msg-label').textContent = globalSettings.msgSource === 'global' ? 'MSG (Global)' : 'MSG (Individual)';
                 document.getElementById('msg-modal-text').innerText = textToDisplay;
                 document.getElementById('msg-modal-time').innerText = timeToDisplay;
+                document.getElementById('message-updated').textContent = timeToDisplay;
+                document.getElementById('message-panel').classList.remove('hidden');
                 msgBtn.classList.remove('hidden');
             } else { 
-                msgBtn.classList.add('hidden'); 
+                msgBtn.classList.add('hidden');
+                document.getElementById('message-panel').classList.add('hidden');
+                document.getElementById('message-updated').textContent = ''; 
             }
 
             // Auto-open only for the successful-login call, never for punch/retry refreshes.
@@ -2299,6 +2338,7 @@
                     autoShowMsg: document.getElementById('autoShowMsgToggle').checked,
                     msgSource: document.getElementById('msgSourceSelect').value,
                     globalMsgText: document.getElementById('globalMsgText').value.trim(),
+                    globalMsgUpdatedAt: globalSettings.globalMsgUpdatedAt || null,
                     lateThreshold: parseInt(document.getElementById('lateThreshold').value) || 3,
                     earlyThreshold: parseInt(document.getElementById('earlyThreshold').value) || 3,
                     veryEarlyThreshold: parseFloat(document.getElementById('veryEarlyThreshold').value) || 2,
@@ -2323,8 +2363,11 @@
                     newSettings.deptFraudStrictKeywords[inp.getAttribute('data-dept')] = inp.value.trim();
                 });
                 
-                await set(ref(database, 'settings'), newSettings);
-                globalSettings = newSettings;
+                // Only message-text edits update its timestamp, not unrelated settings saves.
+                if (newSettings.globalMsgText !== globalSettings.globalMsgText) {
+                    newSettings.globalMsgUpdatedAt = { '.sv': 'timestamp' };
+                }
+                globalSettings = await databaseRequest('settings', { method: 'PUT', body: JSON.stringify(newSettings) });
                 showMessage("Settings Saved Successfully!", "success");
             } catch(e) { showMessage("Error saving settings.", "error"); } finally { hideLoader(); }
         });
