@@ -69,11 +69,47 @@
         .message-icon { display: inline-flex; align-items: center; flex-shrink: 0; color: #64748b; }
         .message-copy { flex: 1; min-width: 0; }
         .message-title { display: block; font-size: 13px; line-height: 20px; font-weight: 600; }
-        .message-new { background: #dbeafe; color: #1d4ed8; padding: 2px 7px; border-radius: 6px; font-size: 10px; line-height: 16px; font-weight: 700; flex-shrink: 0; animation: message-new-float 2.5s ease-in-out infinite; }
-        .message-updated { margin: 4px 2px 0; color: #64748b; font-size: 10px; line-height: 14px; text-align: right; overflow-wrap: anywhere; }
-        .message-arrow { font-size: 17px; line-height: 20px; color: #94a3b8; }
-        @keyframes message-new-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-        @media (prefers-reduced-motion: reduce) { .message-new { animation: none; } }
+        .message-updated { margin:4px 0 0; color:#64748b; font-size:9px; line-height:12px; text-align:left; overflow-wrap:anywhere; }
+        .support-launch { width:100%; display:flex; align-items:center; gap:12px; padding:13px 15px; background:#f0fdfa; border:1px solid #b9e5dd; border-radius:13px; color:#115e59; text-align:left; cursor:pointer; }
+        .support-launch-copy {flex:1;} .support-launch-copy strong {display:block;font-size:14px;} .support-launch-copy small {display:block;color:#52756f;font-size:11px;margin-top:2px;}
+        .support-unread-badge[hidden] {display:none!important;}
+        .support-unread-badge,.support-count {display:inline-flex;align-items:center;justify-content:center;min-width:21px;padding:2px 6px;border-radius:20px;background:#0f766e;color:#fff;font-size:11px;font-weight:700;}
+        .support-topbar {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:13px;font-weight:700;flex-wrap:wrap;}
+        .support-connection {font-size:11px;color:#64748b;font-weight:500;}
+        .support-shell {height:min(750px,calc(100dvh - 165px));min-height:480px;display:flex;border:1px solid #dce5e3;border-radius:18px;overflow:hidden;background:#fff;}
+        .support-sidebar {width:285px;flex-shrink:0;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;min-height:0;background:#fff;}
+        .support-list-heading {display:flex;align-items:center;justify-content:space-between;padding:17px 14px 10px;}.support-list-heading h2 {font-size:16px;font-weight:800;}
+        .support-search-label {font-size:11px;color:#64748b;display:block;margin:0 14px 5px;}
+        .support-search {margin:0 12px 10px;border:1px solid #dce5e3;border-radius:10px;padding:10px;background:#f8fafc;font-size:13px;min-width:0;}
+        .support-inbox {overflow:auto;flex:1;min-height:0;}.support-inbox-row {width:100%;display:flex;gap:10px;padding:13px 12px;border-bottom:1px solid #f1f5f9;text-align:left;background:#fff;align-items:center;}
+        .support-inbox-row:hover,.support-inbox-row.selected {background:#effaf7;}.support-row-copy {flex:1;min-width:0;}.support-row-title {display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:13px;}.support-row-title strong {font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.support-inbox-row.unread strong,.support-inbox-row.unread .support-row-preview {font-weight:800;color:#0f172a;}.support-row-preview {font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;}.support-row-meta {display:flex;justify-content:space-between;gap:6px;align-items:center;margin-top:5px;font-size:10px;color:#64748b;}
+        .support-avatar {background:#dcefe9;color:#0f766e;width:37px;height:37px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-weight:800;font-size:14px;}
+        .support-conversation {flex:1;min-width:0;min-height:0;position:relative;}.support-empty {height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:25px;text-align:center;color:#64748b;background:#f5f8f7;}.support-empty h3 {font-weight:700;color:#334155;margin:12px 0 4px;}.support-empty p {font-size:13px;}.support-empty-icon {font-size:34px;color:#0f766e;}
+        .support-thread {height:100%;display:flex;flex-direction:column;min-height:0;}.support-chat-header {display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border-bottom:1px solid #dce5e3;flex-shrink:0;}.support-contact {flex:1;min-width:0;}.support-contact h2 {font-weight:800;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.support-contact p {font-size:11px;color:#64748b;margin-top:2px;}.support-contact p.online {color:#078358;}.support-header-label {color:#82958e;font-size:9px;letter-spacing:1px;}
+        .support-messages {flex:1;min-height:100px;overflow:auto;padding:14px;background:#eef3ef;overscroll-behavior:contain;}.support-date {width:max-content;max-width:100%;margin:6px auto 15px;padding:4px 10px;background:#fff;border-radius:7px;font-size:10px;color:#64748b;box-shadow:0 1px 2px #00000008;}
+        .support-msg-row {display:flex;margin:7px 0;justify-content:flex-start;}.support-msg-row.outgoing {justify-content:flex-end;}.support-bubble {max-width:85%;min-width:85px;background:#fff;padding:9px 11px 6px;border-radius:3px 13px 13px 13px;box-shadow:0 1px 2px #0000000a;overflow-wrap:anywhere;}.outgoing .support-bubble {background:#d9f4e7;border-radius:13px 3px 13px 13px;}.support-msg-row.unread .support-message-text {font-weight:700;} .support-message-text {font-size:13px;line-height:1.5;white-space:pre-wrap;}.support-message-tag {font-size:10px;font-weight:700;color:#386154;border-bottom:1px solid #a6c5b64d;padding-bottom:5px;margin-bottom:6px;}.support-message-meta {display:flex;justify-content:flex-end;gap:6px;margin-top:4px;font-size:10px;color:#64748b;}.support-read {color:#0284c7;font-weight:800;}.support-photo-btn {display:block;border:0;padding:0;background:none;max-width:100%;}.support-photo-btn img {max-width:240px;width:100%;max-height:240px;object-fit:contain;border-radius:7px;}.support-load {display:block;margin:0 auto 12px;color:#0f766e;font-size:11px;background:#fff;padding:6px 12px;border-radius:20px;}.support-latest {position:absolute;right:15px;bottom:235px;padding:7px 12px;border:1px solid #dce5e3;border-radius:20px;background:white;font-size:11px;color:#0f766e;box-shadow:0 2px 10px #0001;}
+        .support-composer {padding:10px 12px 7px;border-top:1px solid #dce5e3;background:#fff;flex-shrink:0;}.support-category-row,.support-issue-fields {display:flex;gap:7px;margin-bottom:7px;}.support-issue-fields {flex:1;margin-bottom:0;}.support-category-row label {font-size:10px;font-weight:700;color:#64748b;display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}.support-category-row select,.support-category-row input {width:100%;min-width:0;padding:7px 6px;font-size:12px;border:1px solid #dce5e3;border-radius:8px;background:#f8fafc;color:#334155;height:34px;}.support-composer textarea {display:block;resize:vertical;max-height:100px;width:100%;min-height:44px;padding:8px 10px;font-size:13px;border:1px solid #dce5e3;border-radius:10px;background:#f8fafc;}.support-composer .support-search-label {margin:0 0 4px;}
+        .support-compose-actions {display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:7px;}.support-attach-actions {display:flex;gap:4px;flex-wrap:wrap;}.support-attach-btn,.support-text-btn {padding:7px 8px;border-radius:8px;font-size:12px;font-weight:600;color:#386154;background:transparent;}.support-attach-btn:hover,.support-text-btn:hover {background:#edf7f3;}.support-send {background:#0f766e;color:white;padding:9px 17px;border-radius:10px;font-weight:700;font-size:13px;}.support-send:disabled {opacity:.5;}.support-icon-btn {padding:6px;color:#0f766e;font-size:18px;}.support-receipt-help {font-size:9px;color:#64748b;margin-top:5px;text-align:right;}.support-receipt-help span {color:#0284c7;}.support-error {color:#9a3412;background:#fff7ed;padding:8px 12px;font-size:12px;white-space:pre-wrap;}.support-attachment-preview {display:flex;align-items:center;gap:9px;background:#f1f5f9;padding:6px;border-radius:9px;margin-bottom:7px;font-size:11px;}.support-attachment-preview img {width:42px;height:42px;object-fit:cover;border-radius:6px;}.support-attachment-preview button {margin-left:auto;}
+        @media(max-width:400px) { .support-category-row {flex-wrap:wrap;} .support-category-row > label {flex-basis:100%;} .support-issue-fields {flex-basis:100%;} }
+        .support-dialog {border:1px solid #dce5e3;border-radius:16px;padding:16px;max-width:min(94vw,520px);width:100%;max-height:90dvh;overflow:auto;margin:auto;}.support-dialog::backdrop {background:#0f172acc;}.support-dialog-title {display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700;}.support-dialog video,.support-dialog img {width:100%;max-height:65dvh;object-fit:contain;background:#0f172a;border-radius:10px;}
+        #support-chat-view [hidden],.support-launch [hidden],.support-dialog [hidden] {display:none!important;}
+        #support-chat-view button:focus-visible,.support-launch:focus-visible {outline:2px solid #0f766e;outline-offset:2px;}
+        @media(max-width:640px) {.support-shell {height:calc(100dvh - 145px);min-height:520px;}.support-shell.admin-mode .support-sidebar {width:100%;border:0;}.support-shell.admin-mode:not(.thread-open) .support-conversation {display:none;}.support-shell.admin-mode.thread-open .support-sidebar {display:none;}.support-shell.admin-mode.thread-open .support-conversation {display:block;}.support-bubble {max-width:90%;}.support-chat-header {padding:10px;}.support-category-row {gap:5px;}.support-category-row select,.support-category-row input {font-size:12px;}.support-header-label {display:none;}.support-composer {padding:8px;}.support-attach-btn {padding:8px 5px;}.support-shell.admin-mode .support-latest {bottom:165px;}}
+        .employee-message-row {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start;margin-top:12px;}
+        .employee-message-row .message-button,.employee-message-row .support-launch {min-height:40px;height:40px;border-radius:10px;padding:0 9px;gap:6px;justify-content:center;font-size:12px;font-weight:600;white-space:nowrap;}
+        .employee-message-row .message-title {font-size:12px;line-height:16px;}
+        .employee-message-row .message-button {background:linear-gradient(135deg,#5367a6,#40538c);border-color:#40538c;color:#fff;box-shadow:0 2px 5px rgba(64,83,140,.16);}
+        .employee-message-row .message-button:hover {background:linear-gradient(135deg,#485b98,#354777);border-color:#354777;}
+        .employee-message-row .support-launch {background:linear-gradient(135deg,#0f827a,#0f6b65);border-color:#0f6b65;color:#fff;box-shadow:0 2px 5px rgba(15,107,101,.16);}
+        .employee-message-row .support-launch:hover {background:linear-gradient(135deg,#0d746d,#0b5b56);}
+        .employee-message-row .dashboard-action-icon {flex-shrink:0;}
+        .employee-message-row .support-unread-badge {background:#fff;color:#0f6b65;}
+        @media(max-width:360px) {.employee-message-row .message-title,.employee-message-row .support-launch {font-size:11px;}.employee-message-row .message-button,.employee-message-row .support-launch {padding:0 6px;gap:4px;}}
+        .employee-message-row #message-panel.hidden + .support-launch {grid-column:1 / -1;}
+        .employee-message-row .support-unread-badge {font-size:9px;min-width:17px;padding:1px 4px;}
+        .support-list-heading {gap:8px;}.support-list-heading h2 {flex:1;}
+        .support-new-chat {height:30px;min-width:30px;border-radius:9px;background:#0f766e;color:white;font-size:23px;line-height:1;cursor:pointer;}
+        .support-new-chat[aria-pressed="true"] {background:#e2e8f0;color:#334155;}
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -160,16 +196,84 @@
             <button id="openReportDirectBtn" class="w-full bg-[#1e293b] text-white py-4 px-4 rounded-2xl hover:bg-black font-extrabold text-[15px] shadow-lg transition-all flex justify-center items-center gap-2 mt-4">
                 📊 View My Report
             </button>
-            <div id="message-panel" class="hidden">
-            <button id="view-msg-btn" type="button" class="hidden message-button" aria-haspopup="dialog">
-                <span class="message-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>
-                <span class="message-copy"><span id="view-msg-label" class="message-title">MSG (Global)</span></span>
-                <span class="message-new">New</span>
-                <span class="message-arrow" aria-hidden="true">→</span>
-            </button>
-            <p id="message-updated" class="message-updated"></p>
+            <div class="employee-message-row">
+                <div id="message-panel" class="hidden">
+                    <button id="view-msg-btn" type="button" class="hidden message-button" aria-haspopup="dialog">
+                        <svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>
+                        <span id="view-msg-label" class="message-title">MSG · Global</span>
+                    </button>
+                    <p id="message-updated" class="message-updated"></p>
+                </div>
+                <button id="supportEmployeeBtn" type="button" class="support-launch" aria-label="Chat with Admin — register an issue or suggestion">
+                    <svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-8 8H4l1.4-4A8 8 0 1 1 20 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
+                    <span>Chat · Admin</span><span id="supportEmployeeUnread" class="support-unread-badge" hidden>0</span>
+                </button>
             </div>
         </div>
+
+        <div id="support-chat-view" class="hidden w-full">
+            <div class="support-topbar">
+                <button id="supportExitBtn" type="button" class="support-text-btn">← Dashboard</button>
+                <span id="supportScreenTitle">Support & Suggestions</span>
+                <span id="supportConnection" class="support-connection">Connecting…</span>
+            </div>
+            <div id="supportShell" class="support-shell">
+                <aside id="supportSidebar" class="support-sidebar" hidden>
+                    <div class="support-list-heading"><h2 id="supportListTitle">Chats</h2><span id="supportInboxCount" class="support-count">0</span><button id="supportNewChatBtn" type="button" class="support-new-chat" title="Start a new conversation" aria-label="Start a new conversation" aria-pressed="false">+</button></div>
+                    <label id="supportSearchLabel" class="support-search-label" for="supportSearch">Search conversations</label>
+                    <input id="supportSearch" type="search" placeholder="Name or phone / employee ID" autocomplete="off" class="support-search">
+                    <div id="supportInbox" class="support-inbox" aria-label="Employee conversations"></div>
+                </aside>
+                <section class="support-conversation" aria-label="Chat conversation">
+                    <div id="supportEmpty" class="support-empty"><span class="support-empty-icon">✉</span><h3>Select a conversation</h3><p>Use + to start a new chat with an active employee.</p></div>
+                    <div id="supportThread" class="support-thread" hidden>
+                        <div class="support-chat-header">
+                            <button id="supportListBack" type="button" class="support-icon-btn" aria-label="Back to employee chats">←</button>
+                            <div id="supportAvatar" class="support-avatar">A</div>
+                            <div class="support-contact"><h2 id="supportContactName">Admin</h2><p id="supportContactStatus">Checking availability…</p></div>
+                            <span class="support-header-label">SUPPORT</span>
+                        </div>
+                        <p id="supportChatError" class="support-error" role="status" hidden></p>
+                        <div id="supportMessages" class="support-messages" tabindex="0" aria-label="Chat history, newest messages at the bottom">
+                            <button id="supportLoadEarlier" type="button" class="support-load" hidden>Load earlier messages</button>
+                            <div id="supportMessageItems"></div>
+                        </div>
+                        <button id="supportLatestBtn" type="button" class="support-latest" hidden>↓ New messages</button>
+                        <form id="supportComposer" class="support-composer">
+                            <div id="supportCategoryRow" class="support-category-row">
+                                <label>Type<select id="supportCategory"><option value="issue">Issue</option><option value="suggestion">Suggestion</option><option value="other">Other</option></select></label>
+                                <div id="supportIssueFields" class="support-issue-fields">
+                                    <label>Attendance date<input id="supportIssueDate" type="date" required></label>
+                                    <label>Punch<select id="supportPunchType" required><option value="">Select</option><option value="In">IN</option><option value="Out">OUT</option><option value="Both">IN + OUT</option></select></label>
+                                </div>
+                            </div>
+                            <div id="supportAttachmentPreview" class="support-attachment-preview" hidden><img id="supportAttachmentThumb" alt="Photo ready to attach"><span>Photo attached</span><button id="supportRemoveAttachment" type="button" class="support-text-btn">Remove ×</button></div>
+                            <label class="support-search-label" for="supportMessageText">Message</label>
+                            <textarea id="supportMessageText" rows="2" maxlength="3000" placeholder="Describe your issue or share a suggestion…"></textarea>
+                            <div class="support-compose-actions">
+                                <div class="support-attach-actions">
+                                    <button id="supportGalleryBtn" type="button" class="support-attach-btn">＋ Photo</button>
+                                    <button id="supportCameraBtn" type="button" class="support-attach-btn">📷 Camera</button>
+                                </div>
+                                <button id="supportSendBtn" type="submit" class="support-send">Send ➤</button>
+                            </div>
+                            <p class="support-receipt-help">✓ Sent · <span>✓✓ Read</span> · Times in IST</p>
+                            <input id="supportImageInput" type="file" accept="image/*" hidden>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <dialog id="supportCameraDialog" class="support-dialog">
+            <div class="support-dialog-title"><h3>Take a photo</h3><button id="supportCameraClose" type="button" class="support-text-btn">Close ×</button></div>
+            <video id="supportCameraVideo" autoplay playsinline muted></video>
+            <p id="supportCameraError" class="support-error" hidden></p>
+            <div class="support-compose-actions"><button id="supportCameraFlip" type="button" class="support-attach-btn">↻ Front / Back</button><button id="supportCameraCapture" type="button" class="support-send">Capture</button></div>
+        </dialog>
+        <dialog id="supportPhotoDialog" class="support-dialog">
+            <div class="support-dialog-title"><h3>Attached photo</h3><button id="supportPhotoClose" type="button" class="support-text-btn">Close ×</button></div>
+            <img id="supportFullPhoto" alt="Chat attachment">
+        </dialog>
 
         <!-- Camera / Attendance Section -->
         <div id="attendance-section" class="hidden space-y-4 max-w-sm mx-auto">
@@ -273,6 +377,7 @@
                 <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
+                <button id="supportAdminBtn" type="button" class="bg-teal-50 p-5 rounded-3xl shadow-sm border border-teal-200 hover:shadow-md flex flex-col items-center text-center"><span class="text-3xl mb-3">💬</span><span class="font-bold text-[15px] text-teal-800">Employee Chats</span><span id="supportAdminUnread" class="support-unread-badge mt-2" hidden>0</span></button>
                 <button id="admin-btn-delete" type="button" class="bg-red-50 p-5 rounded-3xl shadow-sm border border-red-200 hover:shadow-md flex flex-col items-center text-center">
                     <span class="text-3xl mb-3">🗑️</span><span class="font-bold text-[15px] text-red-700">Delete Attendance</span>
                 </button>
@@ -720,7 +825,7 @@
     <!-- MAIN JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, get, set, update, child } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, get, set, update, child, onValue, onDisconnect, serverTimestamp, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyBTxsmXcmNECtLkht-OVtqXqFNrJvO-ja8", 
@@ -987,11 +1092,12 @@
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         function showView(viewId, titleText = "Smart Attendance") {
+            if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportLeaveView();
             if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
             activeView = viewId;
             if (viewId !== 'employee-dashboard') hideWelcomeClock();
             renderAppClock();
-            const viewsList = ['login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
+            const viewsList = ['support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -1096,6 +1202,7 @@
                     hideWelcomeClock(); invalidateAppClock();
                     await fetchGlobalData(true);
                     showView('admin-dashboard', 'Admin Portal');
+                    supportStart();
                     return;
                 }
                 if (employeeResult.status !== 'fulfilled') throw employeeResult.reason;
@@ -1121,6 +1228,7 @@
                 // Render the authenticated dashboard immediately. Sync and settings run together.
                 syncAppClock().catch(() => {});
                 setupEmployeeDashboard(fetchGlobalData(false), { showLoginMessage: true }).catch(err => showMessage(err.message, 'error'));
+                supportStart();
             } catch (err) { showMessage(err.message || 'Login failed. Please retry.', 'error'); }
             finally { loginInFlight = false; document.getElementById('verifyLoginBtn').disabled = false; hideLoader(); }
         }
@@ -1162,9 +1270,9 @@
             }
 
             if (hasMsg) {
-                document.getElementById('view-msg-label').textContent = globalSettings.msgSource === 'global' ? 'MSG (Global)' : 'MSG (Individual)';
+                document.getElementById('view-msg-label').textContent = globalSettings.msgSource === 'global' ? 'MSG · Global' : 'MSG · Personal';
                 document.getElementById('msg-modal-text').innerText = textToDisplay;
-                document.getElementById('msg-modal-time').innerText = timeToDisplay;
+                document.getElementById('msg-modal-time').innerText = globalSettings.msgSource === 'global' ? 'Global update by Admin' : 'Individual message from Admin';
                 document.getElementById('message-updated').textContent = timeToDisplay;
                 document.getElementById('message-panel').classList.remove('hidden');
                 msgBtn.classList.remove('hidden');
@@ -1382,6 +1490,29 @@
             if (!document.hidden) startLocationTracking();
         });
 
+        function validPunchPhoto(value) {
+            if (typeof value !== 'string') return '';
+            try {
+                const url = new URL(value.trim());
+                if (url.protocol !== 'https:' || url.username || url.password) return '';
+                if (url.hostname !== 'drive.google.com' && url.hostname !== 'docs.google.com') return '';
+                const id = url.pathname.match(/\/file\/d\/([A-Za-z0-9_-]+)/)?.[1] || url.searchParams.get('id');
+                return id && /^[A-Za-z0-9_-]{10,}$/.test(id) ? url.href : '';
+            } catch (_) { return ''; }
+        }
+        function validPunchAddress(value) {
+            return typeof value === 'string' && value.trim().length >= 3 &&
+                !/^(?:n\/?a|null|undefined|error|not found|address not found|unknown|none)$/i.test(value.trim());
+        }
+        function validPunchGps(fix) {
+            return !!fix && Number.isFinite(fix.latitude) && Math.abs(fix.latitude) <= 90 &&
+                Number.isFinite(fix.longitude) && Math.abs(fix.longitude) <= 180 &&
+                Number.isFinite(fix.accuracy) && fix.accuracy >= 0 && fix.accuracy <= 50;
+        }
+        function punchHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
         async function handlePunch() {
             if (punchInFlight || !currentEmployee || !locationActive) return;
             punchInFlight = true;
@@ -1392,6 +1523,7 @@
             document.getElementById('cancelPunchBtn').disabled = true;
             document.getElementById('btn-logout').disabled = true;
             showLoader('Attendance mark ho rahi hai…');
+            let attendanceWriteStarted = false;
             try {
                 if (!navigator.onLine) throw new Error('Internet zaroori hai. Offline punch save nahi hoga.');
                 // Always request a new GPS fix at the actual punch, even if the preview is fresh.
@@ -1399,7 +1531,8 @@
                 const generation = locationGeneration;
                 const serverMs = readAppTime();
                 const assertFresh = () => {
-                    if (!clockIsReady() || document.hidden || generation !== locationGeneration ||
+                    if (!validPunchGps(fix) || !Number.isFinite(fix.receivedAt) ||
+                        performance.now() < fix.receivedAt || !clockIsReady() || document.hidden || generation !== locationGeneration ||
                         performance.now() - fix.receivedAt >= LOCATION_MAX_AGE_MS) {
                         throw new Error('Location expired. Refresh Location karke dobara punch karein.');
                     }
@@ -1415,22 +1548,31 @@
                 const ctx = cvs.getContext('2d');
                 ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
                 const photoData = cvs.toDataURL('image/jpeg', 0.5);
+                if (!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photoData) || photoData.length < 100) throw new Error('Photo capture fail hua. Dobara photo lein.');
                 const fd = new FormData();
                 fd.append('action', 'uploadPhoto'); fd.append('employeeId', employee.id);
                 fd.append('timestamp', timeIso); fd.append('photo', photoData.split(',')[1]);
                 fd.append('lat', fix.latitude); fd.append('lng', fix.longitude);
                 showLoader('Attendance mark ho rahi hai…');
-                let pUrl = 'Error', tAdd = 'Not Found';
+                let pUrl, tAdd;
                 const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 12000);
+                const timer = setTimeout(() => controller.abort(), 18000);
                 try {
-                    const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, signal: controller.signal }).then(r => r.json());
-                    if (res.status === 'success') { pUrl = res.photoUrl; tAdd = res.address; }
-                } catch (err) { /* Keep original photo-upload fallback; timestamp/GPS remain mandatory. */ }
-                finally { clearTimeout(timer); }
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, signal: controller.signal });
+                    if (!response.ok) throw new Error('Upload server unavailable.');
+                    const res = await response.json();
+                    pUrl = validPunchPhoto(res.photoUrl);
+                    if (res.status !== 'success' || !pUrl) throw new Error('Photo upload confirm nahi hua. Internet check karke dobara try karein.');
+                    if (!validPunchAddress(res.address)) throw new Error('Location ka address nahi mila. Refresh Location karke dobara try karein.');
+                    tAdd = res.address.trim();
+                } catch (err) {
+                    if (err.name === 'AbortError') throw new Error('Photo/location upload timeout. Internet check karke dobara try karein.');
+                    throw new Error(err.message || 'Photo/location upload fail hua. Dobara try karein.');
+                } finally { clearTimeout(timer); }
                 assertFresh();
                 showLoader('Attendance mark ho rahi hai…');
                 // Conditional online-only write: no queued offline writes or overwrite on retries.
+                attendanceWriteStarted = true;
                 await databaseRequest(`attendance/${encodeURIComponent(employee.id)}/${today}/${punchType}`, {
                     method: 'PUT', headers: { 'if-match': 'null_etag' },
                     body: JSON.stringify({ timestamp: timeIso, timeSource: 'firebase-synced-app-clock',
@@ -1442,7 +1584,7 @@
                 showMessage(`${punchType} Marked!`, 'success');
                 await setupEmployeeDashboard();
             } catch (err) {
-                showMessage(`${err.message || 'Network error.'} Success confirm nahi hua; retry se pehle dashboard check karein.`, 'error');
+                showMessage(`${err.message || 'Network error.'} ${attendanceWriteStarted ? 'Success confirm nahi hua; retry se pehle dashboard check karein.' : 'Attendance save nahi hui.'}`, 'error');
             } finally {
                 punchInFlight = false;
                 refreshBtn.disabled = false;
@@ -2026,6 +2168,15 @@
                                     }
                                 }
 
+                                const manualOrImported = addr === 'manual entry by admin' || remark === 'manual entry by admin' || remark === 'old data imported';
+                                const photoLink = validPunchPhoto(p.photoUrl);
+                                const missing = [];
+                                const numericCoordinate = (v, bound) => (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) && Number.isFinite(Number(v)) && Math.abs(Number(v)) <= bound;
+                                if (!numericCoordinate(p.latitude, 90) || !numericCoordinate(p.longitude, 180)) missing.push('GPS coordinates missing/invalid');
+                                if (!validPunchAddress(p.address)) missing.push('Address unavailable');
+                                if (!photoLink) missing.push('Photo unavailable');
+                                if (!manualOrImported && missing.length) { isSafe = false; fraudReason = missing.join(' · '); }
+
                                 if (!isSafe || isStrictlyBanned) {
                                     susCount++;
                                     let timeStr = new Date(p.timestamp).toLocaleTimeString();
@@ -2036,10 +2187,11 @@
                                         <td class="font-bold">${empId}</td>
                                         <td>${type}</td>
                                         <td>${timeStr}</td>
-                                        <td class="text-xs text-left max-w-xs truncate" title="${p.address}">
-                                            ${p.address} <br>
-                                            <span class="${reasonClass} font-bold text-[10px] uppercase">Reason: ${fraudReason}</span> | 
-                                            <a href="${p.photoUrl}" target="_blank" class="text-blue-600 underline">View Photo</a>
+                                        <td class="text-xs text-left max-w-xs truncate" title="${punchHtml(p.address)}">
+                                            ${punchHtml(validPunchAddress(p.address) ? p.address : 'Address unavailable')} <br>
+                                            ${numericCoordinate(p.latitude, 90) && numericCoordinate(p.longitude, 180) ? `<a href="https://www.google.com/maps?q=${Number(p.latitude)},${Number(p.longitude)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">View GPS location</a><br>` : ''}
+                                            <span class="${reasonClass} font-bold text-[10px] uppercase">Reason: ${punchHtml(fraudReason)}</span> | 
+                                            ${photoLink ? `<a href="${punchHtml(photoLink)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">View Photo</a>` : '<span class="text-red-600 font-semibold">Photo unavailable</span>'}
                                         </td>
                                     </tr>`;
                                 }
@@ -2520,7 +2672,7 @@
         }
 
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
-        document.getElementById('btn-logout').addEventListener('click', () => { ++dashboardVersion; ++reportVersion; hideWelcomeClock(); currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
+        document.getElementById('btn-logout').addEventListener('click', () => { supportStop(); ++dashboardVersion; ++reportVersion; hideWelcomeClock(); currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
         document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); });
         document.getElementById('openReportDirectBtn').addEventListener('click', openTodayReport);
@@ -2607,6 +2759,410 @@
         document.getElementById('copyGridBtn').addEventListener('click', copyGridToExcel);
         document.getElementById('submitManualPunchBtn').addEventListener('click', submitManualPunch);
         document.getElementById('fetchFraudBtn').addEventListener('click', runFraudCheck);
+
+        // Support chat integration. Production rules MUST bind the authenticated
+        // employee to supportThreads/<employee-id>, and restrict inbox/presence
+        // administration to verified admins. The legacy PIN UI is not Firebase Auth.
+        // No public database rules are installed by this file.
+        // Paths: supportThreads/$employeeId/messages (indexOn: createdAt),
+        // supportInbox/$employeeId (lastAt/lastText/pendingAdmin/pendingEmployee),
+        // supportPresence/admins/$adminId/$connection. Only verified admins may
+        // read all inboxes; employees may read/write only their own conversation.
+        // Rules/backend must enforce sender identity, immutable content/timestamps,
+        // recipient-only read receipts, active status and payload limits. This HTML
+        // cannot securely enforce those policies with client-side PIN checks alone.
+        // Attachments are resized JPEGs under ~410 KB stored alongside messages.
+        // Do not enable these paths by making the whole database publicly readable.
+        const support = {
+            epoch: 0, userId: null, admin: false, newChatMode: false, connected: false, unsubscribers: [], threadOff: null,
+            selected: null, messages: {}, inbox: {}, presence: {}, presenceRef: null, presenceGeneration: 0,
+            limit: 80, threadGeneration: 0, prepend: false, initial: true, drafts: new Map(), sending: false, photoBusy: false,
+            reading: new Set(), camera: null, cameraGeneration: 0, facing: 'environment'
+        };
+        const supportEl = id => document.getElementById(id);
+        const supportServerValue = () => ({ '.sv': 'timestamp' });
+        const supportRole = () => support.admin ? 'admin' : 'employee';
+        const supportHasSession = epoch => epoch === support.epoch && currentEmployee?.id === support.userId;
+        function supportError(text = '') {
+            supportEl('supportChatError').textContent = text;
+            supportEl('supportChatError').hidden = !text;
+        }
+        function supportSafeImage(data) {
+            return typeof data === 'string' && data.length < 560000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(data);
+        }
+        function supportDate(ms, timeOnly = false) {
+            if (!Number.isFinite(ms)) return 'Sending…';
+            return new Date(ms).toLocaleString('en-IN', timeOnly
+                ? { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }
+                : { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+        function supportDraft() {
+            if (!support.drafts.has(support.selected)) support.drafts.set(support.selected, { text: '', category: 'issue', date: '', punch: '', image: '', attempt: null });
+            return support.drafts.get(support.selected);
+        }
+        function supportSaveDraft() {
+            if (!support.selected) return;
+            const draft = supportDraft();
+            if (draft.attempt) return;
+            draft.text = supportEl('supportMessageText').value;
+            draft.category = supportEl('supportCategory').value;
+            draft.date = supportEl('supportIssueDate').value;
+            draft.punch = supportEl('supportPunchType').value;
+        }
+        function supportComposerState() {
+            const draft = support.selected ? supportDraft() : null;
+            const locked = support.sending || support.photoBusy || !!draft?.attempt;
+            ['supportMessageText', 'supportCategory', 'supportIssueDate', 'supportPunchType', 'supportGalleryBtn', 'supportCameraBtn', 'supportRemoveAttachment'].forEach(id => supportEl(id).disabled = locked);
+            supportEl('supportSendBtn').disabled = support.sending || support.photoBusy || !support.connected || !support.selected;
+            supportEl('supportSendBtn').textContent = support.sending ? 'Sending…' : draft?.attempt ? 'Retry send ➤' : 'Send ➤';
+            const issue = !support.admin && supportEl('supportCategory').value === 'issue';
+            supportEl('supportCategoryRow').hidden = support.admin;
+            supportEl('supportIssueFields').hidden = !issue;
+            supportEl('supportIssueDate').required = issue;
+            supportEl('supportPunchType').required = issue;
+            supportEl('supportAttachmentPreview').hidden = !draft?.image;
+            if (draft?.image) supportEl('supportAttachmentThumb').src = draft.image;
+            else supportEl('supportAttachmentThumb').removeAttribute('src');
+        }
+        function supportRestoreDraft() {
+            const draft = supportDraft();
+            supportEl('supportMessageText').value = draft.text;
+            supportEl('supportCategory').value = draft.category;
+            supportEl('supportIssueDate').value = draft.date;
+            supportEl('supportPunchType').value = draft.punch;
+            supportEl('supportMessageText').placeholder = support.admin ? 'Reply to this employee…' : 'Describe your issue or share a suggestion…';
+            supportComposerState();
+        }
+        function supportCloseThread() {
+            ++support.threadGeneration;
+            supportSaveDraft();
+            if (support.threadOff) support.threadOff();
+            support.threadOff = null; support.selected = null; support.messages = {};
+            supportEl('supportShell').classList.remove('thread-open');
+            supportEl('supportLatestBtn').hidden = true;
+            supportEl('supportThread').hidden = true; supportEl('supportEmpty').hidden = false;
+            supportEl('supportMessageItems').replaceChildren();
+        }
+        function supportLeaveView() {
+            supportCloseCamera(); supportCloseThread();
+            if (supportEl('supportPhotoDialog').open) supportEl('supportPhotoDialog').close();
+            supportEl('supportFullPhoto').removeAttribute('src');
+        }
+        function supportStop() {
+            const oldPresence = support.presenceRef;
+            ++support.epoch; ++support.presenceGeneration;
+            supportLeaveView();
+            support.unsubscribers.forEach(off => off()); support.unsubscribers = [];
+            support.presenceRef = null; support.userId = null; support.connected = false;
+            support.sending = false; support.photoBusy = false;
+            support.newChatMode = false; supportEl('supportSearch').value = '';
+            support.inbox = {}; support.presence = {}; support.drafts.clear(); support.reading.clear();
+            if (oldPresence) set(oldPresence, null).catch(() => {});
+            ['supportEmployeeUnread', 'supportAdminUnread'].forEach(id => supportEl(id).hidden = true);
+        }
+        async function supportPublishPresence() {
+            if (!support.admin || !support.presenceRef) return;
+            const epoch = support.epoch, generation = ++support.presenceGeneration, target = support.presenceRef;
+            try {
+                if (!support.connected || document.hidden) { if (support.connected) await set(target, null); return; }
+                await onDisconnect(target).remove();
+                if (!supportHasSession(epoch) || generation !== support.presenceGeneration || document.hidden || !support.connected) return;
+                await set(target, { online: true, since: serverTimestamp() });
+            } catch (err) { if (supportHasSession(epoch)) supportError('Online status unavailable. Firebase permissions check karein.'); }
+        }
+        function supportRenderPresence() {
+            if (support.admin) {
+                supportEl('supportContactStatus').textContent = support.selected ? `${support.selected} · Employee support` : 'Employee support';
+                supportEl('supportContactStatus').classList.remove('online');
+                return;
+            }
+            const online = support.connected && Object.values(support.presence || {}).some(sessions => Object.values(sessions || {}).some(session => session?.online === true));
+            supportEl('supportContactStatus').textContent = !support.connected ? 'Connecting…' : online ? '● Online' : 'Offline · Leave a message';
+            supportEl('supportContactStatus').classList.toggle('online', online);
+        }
+        function supportStart() {
+            supportStop();
+            if (!currentEmployee) return;
+            support.userId = currentEmployee.id; support.admin = isAdmin;
+            const epoch = support.epoch;
+            support.presenceRef = support.admin ? ref(database, `supportPresence/admins/${support.userId}/${crypto.randomUUID()}`) : null;
+            const onError = () => { if (supportHasSession(epoch)) { supportEl('supportConnection').textContent = 'Chat access unavailable'; supportError('Chat load nahi hui. Internet / Firebase chat permissions check karein.'); } };
+            support.unsubscribers.push(onValue(ref(database, '.info/connected'), snap => {
+                if (!supportHasSession(epoch)) return;
+                support.connected = snap.val() === true;
+                supportEl('supportConnection').textContent = support.connected ? 'Connected' : 'Offline / reconnecting…';
+                supportPublishPresence(); supportRenderPresence(); supportComposerState(); if (support.connected) supportMarkVisibleRead();
+            }, onError));
+            const inboxPath = support.admin ? 'supportInbox' : `supportInbox/${support.userId}`;
+            support.unsubscribers.push(onValue(ref(database, inboxPath), snap => {
+                if (!supportHasSession(epoch)) return;
+                support.inbox = support.admin ? (snap.val() || {}) : { [support.userId]: snap.val() || {} };
+                supportRenderInbox();
+            }, onError));
+            if (support.admin) {
+                support.unsubscribers.push(onValue(ref(database, 'employees'), snap => {
+                    if (!supportHasSession(epoch)) return;
+                    allEmployeesData = snap.val() || {};
+                    if (support.selected && !employeeIsActive(allEmployeesData[support.selected])) supportCloseThread();
+                    supportRenderInbox();
+                }, onError));
+            } else {
+                support.unsubscribers.push(onValue(ref(database, 'supportPresence/admins'), snap => {
+                    if (!supportHasSession(epoch)) return;
+                    support.presence = snap.val() || {}; supportRenderPresence();
+                }, onError));
+            }
+        }
+        function supportUnread(meta, role) { return Object.keys(meta?.[role === 'admin' ? 'pendingAdmin' : 'pendingEmployee'] || {}).length; }
+        function supportRenderInbox() {
+            const total = support.admin ? activeEmployeeEntries().reduce((sum, [id]) => sum + supportUnread(support.inbox[id], 'admin'), 0) : supportUnread(support.inbox[support.userId], 'employee');
+            const badge = supportEl(support.admin ? 'supportAdminUnread' : 'supportEmployeeUnread');
+            badge.textContent = total > 99 ? '99+' : String(total); badge.hidden = total === 0;
+            if (!support.admin) return;
+            supportEl('supportListTitle').textContent = support.newChatMode ? 'New chat' : 'Chats';
+            supportEl('supportSearchLabel').textContent = support.newChatMode ? 'Select an active employee' : 'Search conversations';
+            const newButton = supportEl('supportNewChatBtn');
+            newButton.textContent = support.newChatMode ? '×' : '+';
+            newButton.setAttribute('aria-pressed', String(support.newChatMode));
+            newButton.setAttribute('aria-label', support.newChatMode ? 'Back to conversations' : 'Start a new conversation');
+            newButton.title = support.newChatMode ? 'Back to conversations' : 'Start a new conversation';
+            const search = supportEl('supportSearch').value.trim().toLocaleLowerCase();
+            const entries = activeEmployeeEntries().filter(([id, emp]) =>
+                (support.newChatMode || Number.isFinite(support.inbox[id]?.lastAt)) &&
+                `${emp.name || ''} ${id} ${emp.phone || ''} ${emp.mobile || ''}`.toLocaleLowerCase().includes(search))
+                .sort(([idA, a], [idB, b]) => (!support.newChatMode && ((Number(support.inbox[idB]?.lastAt) || 0) - (Number(support.inbox[idA]?.lastAt) || 0))) || String(a.name || '').localeCompare(String(b.name || ''), 'en', { sensitivity: 'base' }));
+            supportEl('supportInboxCount').textContent = entries.length;
+            const list = supportEl('supportInbox'); list.replaceChildren();
+            if (!entries.length) { const p = document.createElement('p'); p.className = 'support-error'; p.textContent = search ? 'No matches found.' : support.newChatMode ? 'No active employees found.' : 'No conversations yet. Tap + to start a chat.'; list.append(p); }
+            entries.forEach(([id, emp]) => {
+                const meta = support.inbox[id] || {}, unread = supportUnread(meta, 'admin');
+                const button = document.createElement('button'); button.type = 'button'; button.className = `support-inbox-row${unread ? ' unread' : ''}${support.selected === id ? ' selected' : ''}`;
+                const avatar = document.createElement('span'); avatar.className = 'support-avatar'; avatar.textContent = (emp.name || '?').slice(0, 1).toUpperCase();
+                const copy = document.createElement('span'); copy.className = 'support-row-copy';
+                const title = document.createElement('span'); title.className = 'support-row-title';
+                const name = document.createElement('strong'); name.textContent = emp.name || id; title.append(name);
+                if (unread) { const count = document.createElement('span'); count.className = 'support-unread-badge'; count.textContent = unread > 99 ? '99+' : String(unread); title.append(count); }
+                const preview = document.createElement('span'); preview.className = 'support-row-preview'; preview.style.display = 'block'; preview.textContent = meta.lastText || 'Start a conversation';
+                const detail = document.createElement('span'); detail.className = 'support-row-meta';
+                const number = document.createElement('span'); number.textContent = id;
+                const time = document.createElement('span'); time.textContent = Number.isFinite(meta.lastAt) ? supportDate(meta.lastAt) : '';
+                detail.append(number, time); copy.append(title, preview, detail); button.append(avatar, copy);
+                button.addEventListener('click', () => { if (!support.sending && !support.photoBusy) supportOpenThread(id); }); list.append(button);
+            });
+        }
+        function supportOpen() {
+            if (!currentEmployee) return;
+            if (support.userId !== currentEmployee.id || support.admin !== isAdmin) supportStart();
+            showView('support-chat-view', isAdmin ? 'Employee Support' : 'Chat with Admin');
+            supportEl('supportShell').classList.toggle('admin-mode', isAdmin);
+            supportEl('supportSidebar').hidden = !isAdmin;
+            supportEl('supportListBack').hidden = !isAdmin;
+            supportEl('supportScreenTitle').textContent = isAdmin ? 'Employee conversations' : 'Issues & Suggestions';
+            supportError();
+            if (isAdmin) { support.newChatMode = false; supportEl('supportSearch').value = ''; supportCloseThread(); supportRenderInbox(); }
+            else supportOpenThread(currentEmployee.id);
+        }
+        function supportOpenThread(employeeId) {
+            if (!currentEmployee || (!support.admin && employeeId !== support.userId) || (support.admin && !employeeIsActive(allEmployeesData[employeeId]))) return;
+            supportCloseThread();
+            support.newChatMode = false; supportEl('supportSearch').value = '';
+            support.selected = employeeId; support.messages = {}; support.limit = 80; support.prepend = false; support.initial = true;
+            supportEl('supportShell').classList.add('thread-open'); supportEl('supportEmpty').hidden = true; supportEl('supportThread').hidden = false;
+            const name = support.admin ? allEmployeesData[employeeId].name || employeeId : 'Admin';
+            supportEl('supportContactName').textContent = name; supportEl('supportAvatar').textContent = name.slice(0, 1).toUpperCase();
+            supportRenderPresence(); supportRestoreDraft(); supportError(); supportRenderInbox(); supportListenMessages();
+        }
+        function supportListenMessages() {
+            if (support.threadOff) support.threadOff();
+            const id = support.selected, epoch = support.epoch, generation = ++support.threadGeneration;
+            support.threadOff = onValue(query(ref(database, `supportThreads/${id}/messages`), orderByChild('createdAt'), limitToLast(support.limit)), snap => {
+                if (!supportHasSession(epoch) || support.selected !== id || generation !== support.threadGeneration) return;
+                support.messages = snap.val() || {};
+                const draft = supportDraft();
+                if (draft.attempt && support.messages[draft.attempt.id]) { support.drafts.set(id, { text: '', category: draft.category, date: draft.date, punch: draft.punch, image: '', attempt: null }); supportRestoreDraft(); }
+                supportRenderMessages();
+            }, () => { if (supportHasSession(epoch) && support.selected === id && generation === support.threadGeneration) supportError('Messages load nahi hui. Chat ko dobara kholein; Firebase permissions/index check karein.'); });
+        }
+        function supportRenderMessages() {
+            const scroll = supportEl('supportMessages'), oldHeight = scroll.scrollHeight, oldTop = scroll.scrollTop;
+            const atBottom = oldHeight - oldTop - scroll.clientHeight < 80;
+            const entries = Object.entries(support.messages).sort(([a, x], [b, y]) => (Number(x.createdAt) || 0) - (Number(y.createdAt) || 0) || a.localeCompare(b));
+            const items = supportEl('supportMessageItems'); items.replaceChildren();
+            supportEl('supportLoadEarlier').hidden = entries.length < support.limit;
+            let lastDay = '';
+            if (!entries.length) { const empty = document.createElement('p'); empty.className = 'support-date'; empty.textContent = 'No messages yet. Start the conversation below.'; items.append(empty); }
+            entries.forEach(([id, message]) => {
+                const day = Number.isFinite(message.createdAt) ? getLocalDateStr(new Date(message.createdAt)) : 'Pending';
+                if (day !== lastDay) { const divider = document.createElement('div'); divider.className = 'support-date'; divider.textContent = day === 'Pending' ? 'Sending…' : new Date(message.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'long', year: 'numeric' }); items.append(divider); lastDay = day; }
+                const own = message.senderRole === supportRole();
+                const row = document.createElement('div'); row.className = `support-msg-row${own ? ' outgoing' : !message[support.admin ? 'readByAdminAt' : 'readByEmployeeAt'] ? ' unread' : ''}`; row.dataset.messageId = id;
+                const bubble = document.createElement('div'); bubble.className = 'support-bubble';
+                if (message.category && message.category !== 'reply') { const tag = document.createElement('div'); tag.className = 'support-message-tag'; tag.textContent = message.category === 'issue' ? `Issue · ${message.issueDate || '—'} · ${message.punchType === 'Both' ? 'IN + OUT' : message.punchType || '—'}` : message.category === 'suggestion' ? 'Suggestion' : 'Other'; bubble.append(tag); }
+                if (supportSafeImage(message.image)) {
+                    const photoButton = document.createElement('button'); photoButton.type = 'button'; photoButton.className = 'support-photo-btn'; photoButton.setAttribute('aria-label', 'Open attached photo');
+                    const image = document.createElement('img'); image.src = message.image; image.alt = 'Attached photo'; image.loading = 'lazy';
+                    image.addEventListener('load', () => { if (atBottom && !support.prepend) scroll.scrollTop = scroll.scrollHeight; supportMarkVisibleRead(); });
+                    photoButton.append(image); photoButton.addEventListener('click', () => { supportEl('supportFullPhoto').src = message.image; supportEl('supportPhotoDialog').showModal(); }); bubble.append(photoButton);
+                }
+                if (message.text) { const text = document.createElement('div'); text.className = 'support-message-text'; text.textContent = message.text; bubble.append(text); }
+                const meta = document.createElement('div'); meta.className = 'support-message-meta';
+                const time = document.createElement('span'); time.textContent = supportDate(message.createdAt, true); meta.append(time);
+                if (own) { const read = !!message[support.admin ? 'readByEmployeeAt' : 'readByAdminAt']; const receipt = document.createElement('span'); receipt.className = read ? 'support-read' : ''; receipt.textContent = read ? '✓✓' : '✓'; receipt.setAttribute('aria-label', read ? 'Read' : 'Sent'); meta.append(receipt); }
+                bubble.append(meta); row.append(bubble); items.append(row);
+            });
+            if (support.prepend) { scroll.scrollTop = oldTop + scroll.scrollHeight - oldHeight; support.prepend = false; }
+            else if (support.initial || atBottom) { scroll.scrollTop = scroll.scrollHeight; supportEl('supportLatestBtn').hidden = true; }
+            else { scroll.scrollTop = oldTop; supportEl('supportLatestBtn').hidden = false; }
+            support.initial = false;
+            requestAnimationFrame(supportMarkVisibleRead);
+        }
+        async function supportMarkVisibleRead() {
+            if (!support.selected || !support.connected || document.hidden || activeView !== 'support-chat-view') return;
+            const id = support.selected, epoch = support.epoch, role = supportRole();
+            const bounds = supportEl('supportMessages').getBoundingClientRect(), updates = {}, keys = [];
+            const readField = support.admin ? 'readByAdminAt' : 'readByEmployeeAt';
+            supportEl('supportMessageItems').querySelectorAll('[data-message-id]').forEach(row => {
+                const key = row.dataset.messageId, message = support.messages[key], rect = row.getBoundingClientRect();
+                if (!message || message.senderRole === role || message[readField] || support.reading.has(`${id}/${key}`) || rect.bottom <= bounds.top || rect.top >= bounds.bottom) return;
+                updates[`supportThreads/${id}/messages/${key}/${readField}`] = supportServerValue();
+                updates[`supportInbox/${id}/${support.admin ? 'pendingAdmin' : 'pendingEmployee'}/${key}`] = null;
+                keys.push(`${id}/${key}`); support.reading.add(`${id}/${key}`);
+            });
+            if (!keys.length) return;
+            try { await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates) }); }
+            catch (err) { if (supportHasSession(epoch)) supportError('Read status sync nahi hua. Connection aane par chat dobara kholein.'); }
+            finally { keys.forEach(key => support.reading.delete(key)); }
+        }
+        function supportValidateMessage(draft, admin) {
+            if (!draft.text.trim() && !draft.image) throw new Error('Message likhein ya photo attach karein.');
+            if (draft.text.length > 3000) throw new Error('Message 3000 characters tak rakhein.');
+            if (draft.image && !supportSafeImage(draft.image)) throw new Error('Photo valid nahi hai. Dobara attach karein.');
+            if (!admin && !['issue', 'suggestion', 'other'].includes(draft.category)) throw new Error('Issue, Suggestion ya Other select karein.');
+            if (!admin && draft.category === 'issue') {
+                const date = new Date(`${draft.date}T00:00:00Z`);
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== draft.date || !['In', 'Out', 'Both'].includes(draft.punch)) throw new Error('Issue ke liye valid attendance date aur IN / OUT / Both select karna zaroori hai.');
+            }
+        }
+        async function supportSend(event) {
+            event.preventDefault();
+            if (!support.selected || !currentEmployee || support.sending || support.photoBusy) return;
+            supportSaveDraft(); const draft = supportDraft();
+            try {
+                if (!navigator.onLine || !support.connected) throw new Error('Internet connect karein. Message abhi send nahi hua.');
+                supportValidateMessage(draft, support.admin);
+                if (support.admin && !employeeIsActive(allEmployeesData[support.selected])) throw new Error('Employee inactive hai.');
+            } catch (err) { supportError(err.message); return; }
+            const id = support.selected, epoch = support.epoch, role = supportRole();
+            const isRetry = !!draft.attempt;
+            if (!draft.attempt) draft.attempt = { id: crypto.randomUUID(), text: draft.text.trim(), image: draft.image, category: support.admin ? 'reply' : draft.category, date: draft.date, punch: draft.punch };
+            const attempt = draft.attempt, messagePath = `supportThreads/${id}/messages/${attempt.id}`;
+            support.sending = true; supportComposerState(); supportError();
+            try {
+                // A retry keeps the same ID and checks whether an uncertain previous send arrived.
+                const existing = isRetry ? await databaseRequest(messagePath) : null;
+                if (!supportHasSession(epoch)) return;
+                if (!existing) {
+                    const message = { text: attempt.text, senderRole: role, senderId: support.userId, createdAt: supportServerValue(), category: attempt.category };
+                    if (attempt.image) message.image = attempt.image;
+                    if (attempt.category === 'issue') { message.issueDate = attempt.date; message.punchType = attempt.punch; }
+                    const updates = {};
+                    // Leaf writes preserve read receipts if a retry races with the original response.
+                    Object.entries(message).forEach(([key, value]) => updates[`${messagePath}/${key}`] = value);
+                    updates[`supportInbox/${id}/lastAt`] = supportServerValue();
+                    updates[`supportInbox/${id}/lastText`] = (role === 'admin' ? 'Admin: ' : '') + (attempt.text || '📷 Photo').slice(0, 100);
+                    updates[`supportInbox/${id}/lastSender`] = role;
+                    updates[`supportInbox/${id}/${role === 'admin' ? 'pendingEmployee' : 'pendingAdmin'}/${attempt.id}`] = true;
+                    await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates) });
+                }
+                if (!supportHasSession(epoch)) return;
+                support.drafts.set(id, { text: '', category: draft.category, date: draft.date, punch: draft.punch, image: '', attempt: null });
+                if (support.selected === id) { supportRestoreDraft(); supportEl('supportMessages').scrollTop = supportEl('supportMessages').scrollHeight; }
+            } catch (err) {
+                if (supportHasSession(epoch) && support.selected === id && !support.messages[attempt.id]) supportError('Send confirm nahi hua. Retry send dabayein; same message dobara duplicate nahi banega.');
+            } finally { if (supportHasSession(epoch)) { support.sending = false; supportComposerState(); } }
+        }
+        async function supportEncodeImage(source) {
+            const width = source.videoWidth || source.naturalWidth || source.width;
+            const height = source.videoHeight || source.naturalHeight || source.height;
+            if (!width || !height) throw new Error('Photo ready nahi hai.');
+            const canvas = document.createElement('canvas');
+            let scale = Math.min(1, 1440 / Math.max(width, height)), data = '';
+            for (let i = 0; i < 5; i++) {
+                canvas.width = Math.max(1, Math.round(width * scale)); canvas.height = Math.max(1, Math.round(height * scale));
+                const context = canvas.getContext('2d'); context.fillStyle = '#fff'; context.fillRect(0, 0, canvas.width, canvas.height); context.drawImage(source, 0, 0, canvas.width, canvas.height);
+                data = canvas.toDataURL('image/jpeg', Math.max(.5, .82 - i * .08));
+                if (supportSafeImage(data)) return data;
+                scale *= .8;
+            }
+            throw new Error('Photo badi hai. Chhoti photo try karein.');
+        }
+        async function supportAttachFile(file) {
+            if (!file || !support.selected || support.sending || support.photoBusy || supportDraft().attempt) return;
+            const id = support.selected, epoch = support.epoch;
+            support.photoBusy = true; supportComposerState(); supportError();
+            let url = '';
+            try {
+                if (!file.type.startsWith('image/') || file.size > 12 * 1024 * 1024) throw new Error('12 MB tak ki image select karein.');
+                url = URL.createObjectURL(file);
+                const image = new Image(); image.src = url; await image.decode();
+                const data = await supportEncodeImage(image);
+                if (supportHasSession(epoch) && support.selected === id) supportDraft().image = data;
+            } catch (err) { if (supportHasSession(epoch)) supportError(err.message || 'Photo open nahi hui. JPG/PNG screenshot try karein.'); }
+            finally { if (url) URL.revokeObjectURL(url); if (supportHasSession(epoch)) { support.photoBusy = false; supportComposerState(); } supportEl('supportImageInput').value = ''; }
+        }
+        function supportCloseCamera() {
+            ++support.cameraGeneration;
+            if (support.camera) support.camera.getTracks().forEach(track => track.stop());
+            support.camera = null; supportEl('supportCameraVideo').srcObject = null;
+            if (supportEl('supportCameraDialog').open) supportEl('supportCameraDialog').close();
+        }
+        async function supportOpenCamera() {
+            if (!support.selected || support.sending || supportDraft().attempt) return;
+            const generation = ++support.cameraGeneration, epoch = support.epoch;
+            if (support.camera) support.camera.getTracks().forEach(track => track.stop());
+            support.camera = null;
+            if (!supportEl('supportCameraDialog').open) supportEl('supportCameraDialog').showModal();
+            supportEl('supportCameraError').hidden = true; supportEl('supportCameraCapture').disabled = true;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: support.facing } }, audio: false });
+                if (generation !== support.cameraGeneration || !supportHasSession(epoch)) { stream.getTracks().forEach(track => track.stop()); return; }
+                support.camera = stream; supportEl('supportCameraVideo').srcObject = stream;
+                supportEl('supportCameraVideo').style.transform = support.facing === 'user' ? 'scaleX(-1)' : '';
+                supportEl('supportCameraCapture').disabled = false;
+            } catch (err) { if (generation === support.cameraGeneration) { supportEl('supportCameraError').hidden = false; supportEl('supportCameraError').textContent = 'Camera permission allow karein, ya Photo button se image choose karein.'; } }
+        }
+        supportEl('supportEmployeeBtn').addEventListener('click', supportOpen);
+        supportEl('supportAdminBtn').addEventListener('click', supportOpen);
+        supportEl('supportExitBtn').addEventListener('click', () => showView(isAdmin ? 'admin-dashboard' : 'employee-dashboard', isAdmin ? 'Admin Portal' : 'Employee Dashboard'));
+        supportEl('supportListBack').addEventListener('click', () => { if (!support.sending) supportCloseThread(); });
+        supportEl('supportSearch').addEventListener('input', supportRenderInbox);
+        supportEl('supportNewChatBtn').addEventListener('click', () => {
+            if (!isAdmin || !support.admin || support.sending || support.photoBusy) return;
+            support.newChatMode = !support.newChatMode;
+            supportEl('supportSearch').value = '';
+            supportCloseThread(); supportRenderInbox(); supportEl('supportSearch').focus();
+        });
+        supportEl('supportComposer').addEventListener('submit', supportSend);
+        ['supportCategory', 'supportIssueDate', 'supportPunchType', 'supportMessageText'].forEach(id => supportEl(id).addEventListener('input', () => { supportSaveDraft(); supportComposerState(); }));
+        supportEl('supportGalleryBtn').addEventListener('click', () => supportEl('supportImageInput').click());
+        supportEl('supportImageInput').addEventListener('change', event => supportAttachFile(event.target.files[0]));
+        supportEl('supportRemoveAttachment').addEventListener('click', () => { supportDraft().image = ''; supportComposerState(); });
+        supportEl('supportCameraBtn').addEventListener('click', supportOpenCamera);
+        supportEl('supportCameraFlip').addEventListener('click', () => { support.facing = support.facing === 'user' ? 'environment' : 'user'; supportOpenCamera(); });
+        supportEl('supportCameraClose').addEventListener('click', supportCloseCamera);
+        supportEl('supportCameraDialog').addEventListener('cancel', event => { event.preventDefault(); supportCloseCamera(); });
+        supportEl('supportCameraCapture').addEventListener('click', async () => {
+            const id = support.selected, epoch = support.epoch;
+            try { const data = await supportEncodeImage(supportEl('supportCameraVideo')); if (supportHasSession(epoch) && support.selected === id) { supportDraft().image = data; supportComposerState(); } supportCloseCamera(); }
+            catch (err) { supportEl('supportCameraError').hidden = false; supportEl('supportCameraError').textContent = err.message; }
+        });
+        supportEl('supportPhotoClose').addEventListener('click', () => supportEl('supportPhotoDialog').close());
+        supportEl('supportLoadEarlier').addEventListener('click', () => { support.limit += 80; support.prepend = true; supportListenMessages(); });
+        supportEl('supportLatestBtn').addEventListener('click', () => { supportEl('supportMessages').scrollTop = supportEl('supportMessages').scrollHeight; supportEl('supportLatestBtn').hidden = true; supportMarkVisibleRead(); });
+        supportEl('supportMessages').addEventListener('scroll', () => { const el = supportEl('supportMessages'); if (el.scrollHeight - el.scrollTop - el.clientHeight < 50) supportEl('supportLatestBtn').hidden = true; supportMarkVisibleRead(); }, { passive: true });
+        document.addEventListener('visibilitychange', () => { supportPublishPresence(); if (!document.hidden) supportMarkVisibleRead(); else supportCloseCamera(); });
+        window.addEventListener('pageshow', () => { if (support.userId) supportPublishPresence(); });
+        window.addEventListener('pagehide', () => { if (support.presenceRef) set(support.presenceRef, null).catch(() => {}); supportCloseCamera(); });
 
     </script>
 </body>
