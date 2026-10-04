@@ -110,6 +110,25 @@
         .support-list-heading {gap:8px;}.support-list-heading h2 {flex:1;}
         .support-new-chat {height:30px;min-width:30px;border-radius:9px;background:#0f766e;color:white;font-size:23px;line-height:1;cursor:pointer;}
         .support-new-chat[aria-pressed="true"] {background:#e2e8f0;color:#334155;}
+        .support-reply-preview,.support-quote {background:#e8f1ed;border-left:3px solid #0f766e;border-radius:7px;padding:7px 9px;gap:8px;text-align:left;}
+        .support-reply-preview {display:flex;align-items:center;margin-bottom:8px;}
+        .support-reply-copy {min-width:0;flex:1;}.support-reply-copy strong,.support-quote strong {display:block;font-size:11px;color:#0f766e;}
+        .support-reply-copy span,.support-quote span {display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;line-height:1.4;color:#475569;white-space:pre-wrap;overflow-wrap:anywhere;}
+        .support-quote {display:block;width:100%;margin-bottom:7px;cursor:pointer;}.outgoing .support-quote {background:#c6e9d9;}
+        .support-bubble {position:relative;padding-right:31px;}
+        .support-message-menu {position:absolute;right:3px;top:3px;z-index:2;}
+        .support-message-menu[open] {z-index:5;}
+        .support-message-menu summary {list-style:none;cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#648077;font-size:16px;}
+        .support-message-menu summary::-webkit-details-marker {display:none;}
+        .support-message-menu summary:hover,.support-message-menu[open] summary {background:#0f766e12;color:#0f766e;}
+        .support-menu-options {position:absolute;right:0;top:26px;min-width:125px;background:white;border:1px solid #e2e8f0;border-radius:9px;box-shadow:0 5px 18px #0f172a20;padding:4px;}
+        .support-msg-row:not(.outgoing) .support-menu-options {left:0;right:auto;}
+        .support-message-menu.menu-up .support-menu-options {top:auto;bottom:26px;}
+        .support-menu-options button {display:block;width:100%;text-align:left;padding:9px 12px;font-size:12px;color:#334155;border-radius:6px;white-space:nowrap;}
+        .support-menu-options button:hover {background:#f1f5f9;}.support-menu-options button.support-delete-action {color:#dc2626;}
+        .support-deleted-text {font-style:italic;font-size:12px;color:#64748b;padding:3px 0;}
+
+        .support-message-meta {align-items:center;}.support-msg-row.reply-highlight .support-bubble {outline:2px solid #0f766e;outline-offset:2px;}
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -240,6 +259,10 @@
                         </div>
                         <button id="supportLatestBtn" type="button" class="support-latest" hidden>↓ New messages</button>
                         <form id="supportComposer" class="support-composer">
+                            <div id="supportReplyPreview" class="support-reply-preview" hidden>
+                                <div class="support-reply-copy"><strong id="supportReplyName"></strong><span id="supportReplyText"></span></div>
+                                <button id="supportCancelReply" type="button" class="support-icon-btn" aria-label="Cancel reply" title="Cancel reply">×</button>
+                            </div>
                             <div id="supportCategoryRow" class="support-category-row">
                                 <label>Type<select id="supportCategory"><option value="issue">Issue</option><option value="suggestion">Suggestion</option><option value="other">Other</option></select></label>
                                 <div id="supportIssueFields" class="support-issue-fields">
@@ -2777,7 +2800,7 @@
             epoch: 0, userId: null, admin: false, newChatMode: false, connected: false, unsubscribers: [], threadOff: null,
             selected: null, messages: {}, inbox: {}, presence: {}, presenceRef: null, presenceGeneration: 0,
             limit: 80, threadGeneration: 0, prepend: false, initial: true, drafts: new Map(), sending: false, photoBusy: false,
-            reading: new Set(), camera: null, cameraGeneration: 0, facing: 'environment'
+            deleting: new Set(), reading: new Set(), camera: null, cameraGeneration: 0, facing: 'environment'
         };
         const supportEl = id => document.getElementById(id);
         const supportServerValue = () => ({ '.sv': 'timestamp' });
@@ -2800,6 +2823,33 @@
             if (!support.drafts.has(support.selected)) support.drafts.set(support.selected, { text: '', category: 'issue', date: '', punch: '', image: '', attempt: null });
             return support.drafts.get(support.selected);
         }
+        function supportValidReply(reply) {
+            return !!reply && typeof reply.id === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(reply.id) &&
+                typeof reply.threadId === 'string' && reply.threadId === support.selected &&
+                ['admin', 'employee'].includes(reply.senderRole) && typeof reply.text === 'string' && reply.text.length <= 240;
+        }
+        function supportReplyName(reply) {
+            if (reply.senderRole === supportRole()) return 'You';
+            return reply.senderRole === 'admin' ? 'Admin' : (allEmployeesData[support.selected]?.name || support.selected || 'Employee');
+        }
+        function supportBeginReply(messageId) {
+            if (!support.selected || support.sending || support.photoBusy || supportDraft().attempt) return;
+            const message = support.messages[messageId];
+            if (!message || message.deleted || !['admin', 'employee'].includes(message.senderRole)) return;
+            supportSaveDraft();
+            const caption = typeof message.text === 'string' ? message.text : '';
+            supportDraft().replyTo = { id: messageId, threadId: support.selected, senderRole: message.senderRole,
+                text: ((supportSafeImage(message.image) ? '📷 Photo' + (caption ? ' · ' : '') : '') + caption).slice(0, 240) || 'Message' };
+            supportComposerState(); supportEl('supportMessageText').focus();
+        }
+        function supportJumpToReply(reply) {
+            if (!supportValidReply(reply)) return;
+            const row = Array.from(supportEl('supportMessageItems').querySelectorAll('[data-message-id]')).find(el => el.dataset.messageId === reply.id);
+            if (!row) { supportError('Original message purani history mein hai. Load earlier messages dabakar dekhein.'); return; }
+            supportError();
+            row.scrollIntoView({ behavior: 'auto', block: 'center' });
+            row.classList.add('reply-highlight'); setTimeout(() => row.classList.remove('reply-highlight'), 1600);
+        }
         function supportSaveDraft() {
             if (!support.selected) return;
             const draft = supportDraft();
@@ -2812,11 +2862,15 @@
         function supportComposerState() {
             const draft = support.selected ? supportDraft() : null;
             const locked = support.sending || support.photoBusy || !!draft?.attempt;
-            ['supportMessageText', 'supportCategory', 'supportIssueDate', 'supportPunchType', 'supportGalleryBtn', 'supportCameraBtn', 'supportRemoveAttachment'].forEach(id => supportEl(id).disabled = locked);
+            ['supportMessageText', 'supportCategory', 'supportIssueDate', 'supportPunchType', 'supportGalleryBtn', 'supportCameraBtn', 'supportRemoveAttachment', 'supportCancelReply'].forEach(id => supportEl(id).disabled = locked);
             supportEl('supportSendBtn').disabled = support.sending || support.photoBusy || !support.connected || !support.selected;
             supportEl('supportSendBtn').textContent = support.sending ? 'Sending…' : draft?.attempt ? 'Retry send ➤' : 'Send ➤';
-            const issue = !support.admin && supportEl('supportCategory').value === 'issue';
-            supportEl('supportCategoryRow').hidden = support.admin;
+            const replying = supportValidReply(draft?.replyTo);
+            supportEl('supportReplyPreview').hidden = !replying;
+            supportEl('supportReplyName').textContent = replying ? 'Replying to ' + supportReplyName(draft.replyTo) : '';
+            supportEl('supportReplyText').textContent = replying ? draft.replyTo.text : '';
+            const issue = !support.admin && !replying && supportEl('supportCategory').value === 'issue';
+            supportEl('supportCategoryRow').hidden = support.admin || replying;
             supportEl('supportIssueFields').hidden = !issue;
             supportEl('supportIssueDate').required = issue;
             supportEl('supportPunchType').required = issue;
@@ -2983,6 +3037,74 @@
                 supportRenderMessages();
             }, () => { if (supportHasSession(epoch) && support.selected === id && generation === support.threadGeneration) supportError('Messages load nahi hui. Chat ko dobara kholein; Firebase permissions/index check karein.'); });
         }
+        function supportCanDelete(message) {
+            return !!currentEmployee && !!message && !message.deleted && message.senderRole === supportRole() &&
+                message.senderId === support.userId && currentEmployee.id === support.userId &&
+                (support.admin || support.selected === support.userId);
+        }
+        async function supportDeleteMessage(messageId) {
+            const thread = support.selected, epoch = support.epoch, key = `${epoch}/${thread}/${messageId}`;
+            if (!thread || !supportCanDelete(support.messages[messageId]) || support.deleting.has(key) || support.sending || support.photoBusy) return;
+            if (!confirm('Delete this message for everyone? This cannot be undone.')) return;
+            support.deleting.add(key); supportError();
+            let deleted = false;
+            try {
+                if (!navigator.onLine) throw new Error('Internet connect karke dobara try karein.');
+                const path = `supportThreads/${thread}/messages/${messageId}`;
+                const snapshot = await databaseRequest(path, { headers: { 'X-Firebase-ETag': 'true' } }, true);
+                if (!supportHasSession(epoch) || support.selected !== thread) return;
+                const original = snapshot.data;
+                if (!original || original.senderRole !== supportRole() || original.senderId !== support.userId) throw new Error('Sirf apna bheja message delete kar sakte hain.');
+                if (!original.deleted) {
+                    if (!snapshot.etag) throw new Error('Message verify nahi hua. Dobara try karein.');
+                    const tombstone = { senderRole: original.senderRole, senderId: original.senderId, createdAt: original.createdAt,
+                        category: 'reply', text: '', deleted: true, deletedAt: supportServerValue() };
+                    ['readByAdminAt', 'readByEmployeeAt'].forEach(field => { if (original[field]) tombstone[field] = original[field]; });
+                    await databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify(tombstone) });
+                }
+                deleted = true;
+                // Only replace the preview if this is still the latest message. ETags protect a concurrent send.
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    if (!supportHasSession(epoch)) return;
+                    const inboxPath = `supportInbox/${thread}`;
+                    const snapshot = await databaseRequest(inboxPath, { headers: { 'X-Firebase-ETag': 'true' } }, true);
+                    if (!snapshot.data || !snapshot.etag) break;
+                    const inbox = snapshot.data;
+                    if (inbox.lastAt === original.createdAt && inbox.lastSender === original.senderRole) inbox.lastText = 'This message was deleted';
+                    ['pendingAdmin', 'pendingEmployee'].forEach(field => { if (inbox[field]) { delete inbox[field][messageId]; if (!Object.keys(inbox[field]).length) delete inbox[field]; } });
+                    if (!supportHasSession(epoch)) return;
+                    try { await databaseRequest(inboxPath, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify(inbox) }); break; }
+                    catch (err) { if (attempt === 2) throw err; }
+                }
+                if (supportHasSession(epoch) && support.selected === thread) {
+                    if (supportDraft().replyTo?.id === messageId && !supportDraft().attempt) { supportDraft().replyTo = null; supportComposerState(); }
+                    supportError();
+                }
+            } catch (err) {
+                if (supportHasSession(epoch) && support.selected === thread) supportError(deleted ? 'Message deleted. Chat-list preview sync nahi hua; chat dobara kholein.' : 'Delete confirm nahi hua. Chat check karke dobara try karein. ' + (err.message || ''));
+            } finally { support.deleting.delete(key); }
+        }
+        function supportMessageMenu(messageId, message) {
+            const thread = support.selected;
+            const menu = document.createElement('details'); menu.className = 'support-message-menu';
+            const arrow = document.createElement('summary'); arrow.textContent = '⌄'; arrow.setAttribute('aria-label', 'Message options'); arrow.title = 'Message options';
+            const options = document.createElement('div'); options.className = 'support-menu-options';
+            const reply = document.createElement('button'); reply.type = 'button'; reply.textContent = '↩ Reply';
+            reply.addEventListener('click', () => { menu.open = false; if (support.selected === thread) supportBeginReply(messageId); }); options.append(reply);
+            if (supportCanDelete(message)) {
+                const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'support-delete-action'; remove.textContent = 'Delete';
+                remove.addEventListener('click', () => { menu.open = false; if (support.selected === thread) supportDeleteMessage(messageId); }); options.append(remove);
+            }
+            menu.append(arrow, options);
+            menu.addEventListener('toggle', () => {
+                if (!menu.open) return;
+                document.querySelectorAll('.support-message-menu[open]').forEach(other => { if (other !== menu) other.open = false; });
+                menu.classList.remove('menu-up');
+                const bounds = supportEl('supportMessages').getBoundingClientRect(), panel = options.getBoundingClientRect();
+                if (panel.bottom > bounds.bottom && arrow.getBoundingClientRect().top - panel.height > bounds.top) menu.classList.add('menu-up');
+            });
+            return menu;
+        }
         function supportRenderMessages() {
             const scroll = supportEl('supportMessages'), oldHeight = scroll.scrollHeight, oldTop = scroll.scrollTop;
             const atBottom = oldHeight - oldTop - scroll.clientHeight < 80;
@@ -2997,14 +3119,22 @@
                 const own = message.senderRole === supportRole();
                 const row = document.createElement('div'); row.className = `support-msg-row${own ? ' outgoing' : !message[support.admin ? 'readByAdminAt' : 'readByEmployeeAt'] ? ' unread' : ''}`; row.dataset.messageId = id;
                 const bubble = document.createElement('div'); bubble.className = 'support-bubble';
-                if (message.category && message.category !== 'reply') { const tag = document.createElement('div'); tag.className = 'support-message-tag'; tag.textContent = message.category === 'issue' ? `Issue · ${message.issueDate || '—'} · ${message.punchType === 'Both' ? 'IN + OUT' : message.punchType || '—'}` : message.category === 'suggestion' ? 'Suggestion' : 'Other'; bubble.append(tag); }
-                if (supportSafeImage(message.image)) {
+                if (!message.deleted) bubble.append(supportMessageMenu(id, message));
+                if (message.deleted) { const deleted = document.createElement('div'); deleted.className = 'support-deleted-text'; deleted.textContent = 'This message was deleted'; bubble.append(deleted); }
+                if (!message.deleted && supportValidReply(message.replyTo)) {
+                    const quote = document.createElement('button'); quote.type = 'button'; quote.className = 'support-quote'; quote.setAttribute('aria-label', 'View original message');
+                    const author = document.createElement('strong'); author.textContent = supportReplyName(message.replyTo);
+                    const excerpt = document.createElement('span'); excerpt.textContent = support.messages[message.replyTo.id]?.deleted ? 'This message was deleted' : message.replyTo.text;
+                    quote.append(author, excerpt); quote.addEventListener('click', () => supportJumpToReply(message.replyTo)); bubble.append(quote);
+                }
+                if (!message.deleted && message.category && message.category !== 'reply') { const tag = document.createElement('div'); tag.className = 'support-message-tag'; tag.textContent = message.category === 'issue' ? `Issue · ${message.issueDate || '—'} · ${message.punchType === 'Both' ? 'IN + OUT' : message.punchType || '—'}` : message.category === 'suggestion' ? 'Suggestion' : 'Other'; bubble.append(tag); }
+                if (!message.deleted && supportSafeImage(message.image)) {
                     const photoButton = document.createElement('button'); photoButton.type = 'button'; photoButton.className = 'support-photo-btn'; photoButton.setAttribute('aria-label', 'Open attached photo');
                     const image = document.createElement('img'); image.src = message.image; image.alt = 'Attached photo'; image.loading = 'lazy';
                     image.addEventListener('load', () => { if (atBottom && !support.prepend) scroll.scrollTop = scroll.scrollHeight; supportMarkVisibleRead(); });
                     photoButton.append(image); photoButton.addEventListener('click', () => { supportEl('supportFullPhoto').src = message.image; supportEl('supportPhotoDialog').showModal(); }); bubble.append(photoButton);
                 }
-                if (message.text) { const text = document.createElement('div'); text.className = 'support-message-text'; text.textContent = message.text; bubble.append(text); }
+                if (!message.deleted && message.text) { const text = document.createElement('div'); text.className = 'support-message-text'; text.textContent = message.text; bubble.append(text); }
                 const meta = document.createElement('div'); meta.className = 'support-message-meta';
                 const time = document.createElement('span'); time.textContent = supportDate(message.createdAt, true); meta.append(time);
                 if (own) { const read = !!message[support.admin ? 'readByEmployeeAt' : 'readByAdminAt']; const receipt = document.createElement('span'); receipt.className = read ? 'support-read' : ''; receipt.textContent = read ? '✓✓' : '✓'; receipt.setAttribute('aria-label', read ? 'Read' : 'Sent'); meta.append(receipt); }
@@ -3023,7 +3153,7 @@
             const readField = support.admin ? 'readByAdminAt' : 'readByEmployeeAt';
             supportEl('supportMessageItems').querySelectorAll('[data-message-id]').forEach(row => {
                 const key = row.dataset.messageId, message = support.messages[key], rect = row.getBoundingClientRect();
-                if (!message || message.senderRole === role || message[readField] || support.reading.has(`${id}/${key}`) || rect.bottom <= bounds.top || rect.top >= bounds.bottom) return;
+                if (!message || message.deleted || message.senderRole === role || message[readField] || support.reading.has(`${id}/${key}`) || rect.bottom <= bounds.top || rect.top >= bounds.bottom) return;
                 updates[`supportThreads/${id}/messages/${key}/${readField}`] = supportServerValue();
                 updates[`supportInbox/${id}/${support.admin ? 'pendingAdmin' : 'pendingEmployee'}/${key}`] = null;
                 keys.push(`${id}/${key}`); support.reading.add(`${id}/${key}`);
@@ -3037,8 +3167,10 @@
             if (!draft.text.trim() && !draft.image) throw new Error('Message likhein ya photo attach karein.');
             if (draft.text.length > 3000) throw new Error('Message 3000 characters tak rakhein.');
             if (draft.image && !supportSafeImage(draft.image)) throw new Error('Photo valid nahi hai. Dobara attach karein.');
-            if (!admin && !['issue', 'suggestion', 'other'].includes(draft.category)) throw new Error('Issue, Suggestion ya Other select karein.');
-            if (!admin && draft.category === 'issue') {
+            if (draft.replyTo && support.messages[draft.replyTo.id]?.deleted) throw new Error('Original message delete ho chuka hai. Reply cancel karke message bhejein.');
+            if (draft.replyTo && !supportValidReply(draft.replyTo)) throw new Error('Reply select dobara karein.');
+            if (!admin && !draft.replyTo && !['issue', 'suggestion', 'other'].includes(draft.category)) throw new Error('Issue, Suggestion ya Other select karein.');
+            if (!admin && !draft.replyTo && draft.category === 'issue') {
                 const date = new Date(`${draft.date}T00:00:00Z`);
                 if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== draft.date || !['In', 'Out', 'Both'].includes(draft.punch)) throw new Error('Issue ke liye valid attendance date aur IN / OUT / Both select karna zaroori hai.');
             }
@@ -3054,7 +3186,7 @@
             } catch (err) { supportError(err.message); return; }
             const id = support.selected, epoch = support.epoch, role = supportRole();
             const isRetry = !!draft.attempt;
-            if (!draft.attempt) draft.attempt = { id: crypto.randomUUID(), text: draft.text.trim(), image: draft.image, category: support.admin ? 'reply' : draft.category, date: draft.date, punch: draft.punch };
+            if (!draft.attempt) draft.attempt = { id: crypto.randomUUID(), text: draft.text.trim(), image: draft.image, category: support.admin || draft.replyTo ? 'reply' : draft.category, date: draft.date, punch: draft.punch, replyTo: draft.replyTo ? { ...draft.replyTo } : null };
             const attempt = draft.attempt, messagePath = `supportThreads/${id}/messages/${attempt.id}`;
             support.sending = true; supportComposerState(); supportError();
             try {
@@ -3064,6 +3196,7 @@
                 if (!existing) {
                     const message = { text: attempt.text, senderRole: role, senderId: support.userId, createdAt: supportServerValue(), category: attempt.category };
                     if (attempt.image) message.image = attempt.image;
+                    if (attempt.replyTo) message.replyTo = { ...attempt.replyTo };
                     if (attempt.category === 'issue') { message.issueDate = attempt.date; message.punchType = attempt.punch; }
                     const updates = {};
                     // Leaf writes preserve read receipts if a retry races with the original response.
@@ -3142,7 +3275,15 @@
             supportEl('supportSearch').value = '';
             supportCloseThread(); supportRenderInbox(); supportEl('supportSearch').focus();
         });
+        document.addEventListener('click', event => {
+            if (!event.target.closest?.('.support-message-menu')) document.querySelectorAll('.support-message-menu[open]').forEach(menu => menu.open = false);
+        });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') document.querySelectorAll('.support-message-menu[open]').forEach(menu => menu.open = false); });
         supportEl('supportComposer').addEventListener('submit', supportSend);
+        supportEl('supportCancelReply').addEventListener('click', () => {
+            if (!support.selected || support.sending || support.photoBusy || supportDraft().attempt) return;
+            supportDraft().replyTo = null; supportComposerState(); supportEl('supportMessageText').focus();
+        });
         ['supportCategory', 'supportIssueDate', 'supportPunchType', 'supportMessageText'].forEach(id => supportEl(id).addEventListener('input', () => { supportSaveDraft(); supportComposerState(); }));
         supportEl('supportGalleryBtn').addEventListener('click', () => supportEl('supportImageInput').click());
         supportEl('supportImageInput').addEventListener('change', event => supportAttachFile(event.target.files[0]));
