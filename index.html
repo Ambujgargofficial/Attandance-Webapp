@@ -200,6 +200,59 @@
             #supportEmployeeBtn {gap:4px;padding:7px 6px;}.premium-help-label {font-size:9.5px;}
             .premium-help-chevron {font-size:22px;}#btn-logout:not(.hidden) {gap:6px;}#btn-logout svg {width:18px;height:18px;}
         }
+
+        /* Mobile composition: one proportionate card, no vertical centering gap. */
+        body[data-view="employee-dashboard"] {justify-content:flex-start;min-height:100dvh;padding:16px 12px 24px;background:#f7f9ff;background-image:radial-gradient(ellipse at 20% 0,#f2eeff88,transparent 65%),radial-gradient(ellipse at 90% 95%,#def2ff70,transparent 55%);}
+        body[data-view="employee-dashboard"] #app-shell {width:100%;max-width:510px;min-height:0;padding:20px 18px 23px;border-radius:26px;background:rgba(255,255,255,.96);box-shadow:0 12px 32px #84ade614;}
+        body[data-view="employee-dashboard"] .premium-header {margin:0 0 16px;padding-bottom:15px;gap:8px;}
+        body[data-view="employee-dashboard"] #main-title {font-size:clamp(19px,5.5vw,25px);font-weight:800;letter-spacing:-.045em;white-space:nowrap;}
+        body[data-view="employee-dashboard"] #btn-logout {padding:10px 11px;font-size:12px;border-radius:14px;gap:7px;}
+        body[data-view="employee-dashboard"] #btn-logout svg {width:21px;height:21px;}
+        #employee-dashboard.show-block {margin:0;width:100%;max-width:none;}
+        #employee-dashboard > * + * {margin-top:13px;}
+        #employee-dashboard .premium-welcome {padding:18px 16px;min-height:125px;border:0;border-radius:22px;box-shadow:none;background:linear-gradient(120deg,#f0ecff,#edf5ff);gap:9px;}
+        #employee-dashboard .premium-welcome > div:first-child {flex:1;}
+        #employee-dashboard .premium-welcome > div:first-child > p:first-child {font-size:11px;letter-spacing:.015em;margin-bottom:8px;color:#875be1;}
+        #employee-dashboard #emp-name-dash {font-size:clamp(27px,7.8vw,37px);line-height:1.08;color:#1800a6;letter-spacing:-.045em;}
+        #employee-dashboard #emp-details-dash {font-size:12px;line-height:1.5;color:#29209b;margin-top:9px;}
+        #employee-dashboard #emp-status-badge {display:flex;align-items:center;gap:7px;max-width:113px;min-width:90px;font-size:10px;line-height:1.2;padding:11px 9px;text-align:left;border:0;border-radius:28px;box-shadow:none;}
+        #employee-dashboard #emp-status-badge:before {content:"";flex-shrink:0;width:23px;height:23px;border:2px solid currentColor;border-radius:50%;background:linear-gradient(currentColor,currentColor) 10px 4px/2px 7px no-repeat;}
+        #employee-dashboard #emp-status-badge:before {background:linear-gradient(currentColor,currentColor) 9px 3px/2px 8px no-repeat,linear-gradient(35deg,transparent 40%,currentColor 41% 58%,transparent 59%) 10px 9px/7px 6px no-repeat;}
+        #employee-dashboard #emp-action-buttons > button {min-height:111px;padding:14px;border-radius:21px;font-size:23px;line-height:1.2;gap:8px;}
+        #employee-dashboard #emp-action-buttons > button > span:first-child {font-size:33px;line-height:1.15;}
+        #employee-dashboard #openReportDirectBtn {min-height:73px;height:auto;padding:12px 13px;gap:12px;border-radius:20px;background:linear-gradient(120deg,#fbf5ff,#ecf6ff 66%,#f0d7ff);}
+        #employee-dashboard .premium-report-icon {padding-right:12px;}
+        #employee-dashboard .premium-report-icon svg {width:32px;height:32px;}
+        #employee-dashboard .premium-report-title {font-size:clamp(17px,4.8vw,22px);letter-spacing:-.035em;}
+        #employee-dashboard .premium-report-arrow {width:40px;height:40px;font-size:34px;}
+        #employee-dashboard .employee-message-row {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 9px;align-items:stretch;}
+        #employee-dashboard .employee-message-row #message-panel {min-width:0;}
+        #employee-dashboard .message-button,#employee-dashboard #supportEmployeeBtn {height:55px;min-height:55px;gap:6px;padding:8px;border-radius:15px;white-space:nowrap;}
+        #employee-dashboard .premium-action-tile {width:31px;height:34px;border-radius:10px;}
+        #employee-dashboard .dashboard-action-icon {width:22px;height:22px;}
+        #employee-dashboard .message-title {font-size:12px;font-weight:650;letter-spacing:-.035em;}
+        #employee-dashboard .premium-help-label {font-size:11px;letter-spacing:-.04em;}
+        #employee-dashboard .premium-msg-chevron,#employee-dashboard .premium-help-chevron {font-size:26px;font-weight:700;line-height:1;margin-left:auto;}
+        #employee-dashboard .premium-msg-chevron {color:#e90059;}
+        #employee-dashboard #message-updated {grid-column:1/-1;font-size:10px;line-height:1.5;margin:0 2px;color:#818899;overflow-wrap:normal;}
+        #employee-dashboard #message-updated:empty {display:none;}
+        @media(max-width:380px) {
+            body[data-view="employee-dashboard"] {padding:12px 9px 20px;}
+            body[data-view="employee-dashboard"] #app-shell {padding:17px 13px 20px;border-radius:24px;}
+            body[data-view="employee-dashboard"] #main-title {font-size:19px;}
+            body[data-view="employee-dashboard"] #btn-logout {padding:9px;font-size:11px;gap:5px;}
+            #employee-dashboard .premium-welcome {padding:16px 13px;min-height:120px;}
+            #employee-dashboard #emp-details-dash {font-size:11px;}
+            #employee-dashboard #emp-status-badge {min-width:82px;max-width:94px;font-size:9px;gap:6px;padding:10px 8px;}
+            #employee-dashboard #emp-status-badge:before {width:22px;height:22px;}
+            #employee-dashboard .employee-message-row {gap:8px 7px;grid-template-columns:minmax(0,.96fr) minmax(0,1.04fr);}
+            #employee-dashboard .message-button,#employee-dashboard #supportEmployeeBtn {padding:7px 6px;gap:4px;}
+            #employee-dashboard .premium-action-tile {width:25px;height:30px;border-radius:9px;}
+            #employee-dashboard .dashboard-action-icon {width:19px;height:19px;}
+            #employee-dashboard .message-title {font-size:11px;}
+            #employee-dashboard .premium-help-label {font-size:10px;}
+            #employee-dashboard .premium-msg-chevron,#employee-dashboard .premium-help-chevron {font-size:22px;}
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -290,15 +343,15 @@
             <div class="employee-message-row">
                 <div id="message-panel" class="hidden">
                     <button id="view-msg-btn" type="button" class="hidden message-button" aria-haspopup="dialog">
-                        <span class="premium-action-tile" aria-hidden="true"><svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>
-                        <span id="view-msg-label" class="message-title">MSG · Global</span>
+                        <span class="premium-action-tile" aria-hidden="true"><svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.2 12 14l9-6.8V19H3Z" fill="currentColor" stroke="none"/><path d="M3 5h18l-9 7Z" fill="currentColor" stroke="none"/></svg></span>
+                        <span id="view-msg-label" class="message-title">MSG · Global</span><span class="premium-msg-chevron" aria-hidden="true">›</span>
                     </button>
-                    <p id="message-updated" class="message-updated"></p>
                 </div>
                 <button id="supportEmployeeBtn" type="button" class="support-launch" aria-label="Help Chat with Admin — register an issue or suggestion">
                     <span class="premium-action-tile" aria-hidden="true"><svg class="dashboard-action-icon" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-2a8 8 0 0 1 16 0v5a5 5 0 0 1-5 5h-2"/><rect x="2" y="11" width="4" height="7" rx="2" fill="currentColor" stroke="none"/><rect x="18" y="11" width="4" height="7" rx="2" fill="currentColor" stroke="none"/><path d="M11 21h3" stroke-width="3"/></svg></span>
                     <span class="premium-help-label"><strong>Help Chat</strong> · Admin</span><span class="premium-help-chevron" aria-hidden="true">›</span><span id="supportEmployeeUnread" class="support-unread-badge" hidden>0</span>
                 </button>
+                <p id="message-updated" class="message-updated"></p>
             </div>
         </div>
 
@@ -1190,6 +1243,7 @@
             if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportLeaveView();
             if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
             activeView = viewId;
+            document.body.dataset.view = viewId;
             if (viewId !== 'employee-dashboard') hideWelcomeClock();
             renderAppClock();
             const viewsList = ['support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
