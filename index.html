@@ -129,16 +129,87 @@
         .support-deleted-text {font-style:italic;font-size:12px;color:#64748b;padding:3px 0;}
 
         .support-message-meta {align-items:center;}.support-msg-row.reply-highlight .support-bubble {outline:2px solid #0f766e;outline-offset:2px;}
+
+        /* Glass Card Premium — reference-inspired responsive presentation. */
+        :root {--premium-ink:#15123d;--premium-purple:#6d4ae7;--premium-edge:rgba(255,255,255,.92);}
+        body {background:#f5f7ff;background-image:radial-gradient(ellipse at 12% 8%,#eae8ff 0,transparent 46%),radial-gradient(ellipse at 92% 78%,#e1f7ff 0,transparent 48%);color:var(--premium-ink);}
+        #app-shell {background:rgba(255,255,255,.9);border:1px solid var(--premium-edge);border-radius:28px;box-shadow:0 14px 50px #6378bb14,0 2px 8px #6378bb08,inset 0 1px 0 #fff;}
+        .premium-header {border-color:#e8e9f3;gap:12px;}
+        #main-title {color:#12102f;letter-spacing:-.045em;line-height:1.2;}
+        #btn-logout {background:#fff1f4;color:#d71e44;border:1px solid #ffe6ed;border-radius:12px;padding:10px 13px;flex-shrink:0;}
+        #btn-logout:hover {background:#ffe4eb;}
+        #employee-dashboard {width:100%;max-width:470px;}
+        #employee-dashboard > * + * {margin-top:14px;}
+        .premium-welcome {position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(125deg,#f0ecff,#edf5ff 78%);border:1px solid #f1edff;border-radius:23px;padding:20px;box-shadow:inset 0 1px 0 #fff;gap:12px;}
+        .premium-welcome:after {content:"";position:absolute;z-index:-1;right:-45px;bottom:-52px;width:210px;height:115px;border-radius:55% 45% 0 0;background:linear-gradient(135deg,#deecff70,#badeff90);transform:rotate(-18deg);pointer-events:none;}
+        .premium-welcome > div:first-child {min-width:0;}
+        .premium-welcome > div:first-child > p:first-child {color:#7955d9;letter-spacing:.06em;font-size:10px;}
+        #emp-name-dash {color:#2415a0;font-size:clamp(24px,5.7vw,33px);line-height:1.15;letter-spacing:-.04em;overflow-wrap:anywhere;}
+        #emp-details-dash {color:#43418a;line-height:1.6;font-size:11px;overflow-wrap:anywhere;}
+        #emp-status-badge {border:1px solid #ffffffa8;padding:8px 10px;border-radius:18px;max-width:110px;text-align:center;font-size:9px;line-height:1.3;box-shadow:inset 0 1px 0 #ffffff80;}
+        #emp-action-buttons > button {border-radius:21px;min-height:102px;padding:17px;box-shadow:0 5px 16px #10b9810c,inset 0 1px 0 #ffffffc0;font-size:20px;gap:6px;}
+        #markInBtn {background:linear-gradient(135deg,#ecfff5,#c7fbe5);border-color:#a7eccc;color:#075b35;}
+        #markInBtn:hover {background:linear-gradient(135deg,#e0ffed,#b5f6d9);}
+        #markOutBtn {background:linear-gradient(135deg,#fff4f3,#ffe1e8);border-color:#f6bdcf;color:#a32946;}
+        #markOutBtn:hover {background:linear-gradient(135deg,#ffebe9,#ffd5e1);}
+        #openReportDirectBtn {position:relative;isolation:isolate;overflow:hidden;display:flex;justify-content:flex-start;gap:14px;min-height:70px;padding:12px 15px;border:1px solid #c7b5f4;border-radius:20px;background:linear-gradient(120deg,#faf5ff,#edf7ff 70%,#f2dcff);color:#24118c;box-shadow:0 5px 16px #9270df18,inset 0 1px 0 #fff;}
+        #openReportDirectBtn:hover {border-color:#a78bdf;box-shadow:0 7px 20px #9270df25;}
+        #openReportDirectBtn:after {content:"";position:absolute;right:-20px;bottom:-46px;width:160px;height:95px;z-index:-1;border-radius:50%;background:linear-gradient(120deg,#cceaff70,#dbb5ff70);transform:rotate(-20deg);pointer-events:none;}
+        .premium-report-icon {display:flex;align-items:center;justify-content:center;padding-right:13px;border-right:1px solid #cdbdf1;}
+        .premium-report-title {flex:1;text-align:left;font-size:17px;font-weight:800;letter-spacing:-.035em;}
+        .premium-report-arrow {display:flex;align-items:center;justify-content:center;width:37px;height:37px;flex-shrink:0;border-radius:50%;background:#ffffff85;border:1px solid #ffffffb0;box-shadow:0 4px 12px #9764d721;color:#351a99;font-size:31px;font-weight:500;line-height:1;}
+        .employee-message-row {gap:10px;}
+        .employee-message-row .message-button,.employee-message-row .support-launch {height:54px;min-height:54px;justify-content:flex-start;gap:8px;padding:8px 9px;border-radius:15px;font-size:11px;box-shadow:0 4px 12px #64748b08;}
+        .employee-message-row .message-title {font-size:11px;letter-spacing:-.015em;}
+        .employee-message-row .message-button {background:linear-gradient(125deg,#fff7fa,#fff0f5);border-color:#f6cddd;color:#471c39;}
+        .employee-message-row .message-button:hover {background:#ffeaf2;border-color:#eeaac5;}
+        .employee-message-row .support-launch {background:linear-gradient(125deg,#f1fff9,#e8fcf5);border-color:#b8edda;color:#134c42;}
+        .employee-message-row .support-launch:hover {background:#dbfaee;border-color:#8edcc1;}
+        .premium-action-tile {width:30px;height:32px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;color:#fff;background:linear-gradient(145deg,#fb729d,#e60055);box-shadow:inset 0 1px 0 #ffffff60,0 3px 6px #ef32601a;}
+        .support-launch .premium-action-tile {background:linear-gradient(145deg,#20d8af,#009c79);box-shadow:inset 0 1px 0 #ffffff60,0 3px 6px #009c7915;}
+        .employee-message-row .dashboard-action-icon {width:18px;height:18px;}
+        .employee-message-row .support-unread-badge {background:#0f8e70;color:white;min-width:16px;font-size:9px;padding:1px 4px;margin-left:auto;}
+        .message-updated {color:#7a8097;font-size:9px;line-height:13px;margin:5px 2px 0;}
+        #verifyLoginBtn,#requestOtpBtn {background:linear-gradient(115deg,#6951f5,#9959ec);box-shadow:0 6px 17px #7556ed24;border:1px solid #ffffff66;}
+        #login-section input,#forgot-pin-section input {background:#f8f7ff;border-color:#e3def4;}
+        #admin-dashboard [id^="admin-btn-"]:not(#admin-btn-settings) {border-radius:20px;box-shadow:0 4px 15px #6c68a70b;border-color:#e8e3f6;}
+        .support-shell {border-color:#dfe6ef;border-radius:20px;box-shadow:0 5px 20px #6c68a708;}
+        .support-chat-header {background:linear-gradient(110deg,#f6f2ff,#effbf8);}
+        .report-table-wrapper {border-radius:13px;border-color:#e4e2ef;}
+        .report-table th {background:#f4f2fb;color:#51476e;}
+        @supports(backdrop-filter:blur(10px)) {.premium-welcome {backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}}
+        @media(max-width:380px) {
+            #app-shell {padding:15px;border-radius:23px;}
+            #main-title {font-size:19px;}#btn-logout {font-size:11px;padding:8px 10px;}
+            .premium-welcome {padding:16px;gap:8px;}#emp-status-badge {max-width:87px;padding:7px;font-size:8px;}
+            .employee-message-row {gap:7px;}.employee-message-row .message-button,.employee-message-row .support-launch {padding:7px;gap:5px;font-size:10px;}
+            .employee-message-row .message-title {font-size:10px;}.premium-action-tile {width:24px;height:28px;border-radius:8px;}
+            .premium-report-title {font-size:16px;}
+        }
+        /* Match reference headset action and exit control. */
+        #btn-logout:not(.hidden) {display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+        #btn-logout {background:#fff2f5;color:#e00024;border-color:#fff0f3;border-radius:14px;font-weight:800;}
+        #btn-logout svg {flex-shrink:0;}
+        .employee-message-row {grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);}
+        #supportEmployeeBtn {position:relative;gap:6px;}
+        .premium-help-label {font-weight:400;white-space:nowrap;letter-spacing:-.03em;}
+        .premium-help-label strong {font-weight:800;}
+        .premium-help-chevron {margin-left:auto;color:#00a47d;font-size:26px;line-height:1;font-weight:600;}
+        #supportEmployeeUnread {position:absolute;right:-4px;top:-5px;border:2px solid white;}
+        @media(max-width:380px) {
+            #supportEmployeeBtn {gap:4px;padding:7px 6px;}.premium-help-label {font-size:9.5px;}
+            .premium-help-chevron {font-size:22px;}#btn-logout:not(.hidden) {gap:6px;}#btn-logout svg {width:18px;height:18px;}
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
 
-    <div class="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 p-5 md:p-8 space-y-6 relative min-h-[500px]">
+    <div id="app-shell" class="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 p-5 md:p-8 space-y-6 relative min-h-[500px]">
         
         <!-- Header -->
-        <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <div class="premium-header flex justify-between items-center border-b pb-4 mb-4">
             <h1 id="main-title" class="text-xl md:text-2xl font-extrabold text-gray-800 tracking-tight">🏢 Smart Attendance</h1>
-            <button id="btn-logout" class="hidden text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors">Logout</button>
+            <button id="btn-logout" class="hidden text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors"><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M9 12h12m-4-4 4 4-4 4"/></svg><span>Logout</span></button>
         </div>
 
         <p id="app-clock" class="hidden text-center text-sm font-semibold text-indigo-700" aria-live="off"></p>
@@ -198,7 +269,7 @@
 
         <!-- Employee Dashboard -->
         <div id="employee-dashboard" class="hidden space-y-6 max-w-md mx-auto">
-            <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 flex justify-between items-center shadow-sm">
+            <div class="premium-welcome bg-indigo-50 p-5 rounded-2xl border border-indigo-100 flex justify-between items-center shadow-sm">
                 <div>
                     <p class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mb-1">Welcome</p>
                     <h2 class="text-2xl font-extrabold text-indigo-900" id="emp-name-dash"></h2>
@@ -213,19 +284,20 @@
             <div id="emp-action-buttons" class="space-y-4"></div>
 
             <button id="openReportDirectBtn" class="w-full bg-[#1e293b] text-white py-4 px-4 rounded-2xl hover:bg-black font-extrabold text-[15px] shadow-lg transition-all flex justify-center items-center gap-2 mt-4">
-                📊 View My Report
+                <span class="premium-report-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 28 28"><defs><linearGradient id="premiumChart" x2="1" y2="1"><stop stop-color="#f472b6"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs><rect x="2" y="16" width="6" height="10" rx="2" fill="#34d399"/><rect x="11" y="9" width="6" height="17" rx="2" fill="#38bdf8"/><rect x="20" y="2" width="6" height="24" rx="2" fill="url(#premiumChart)"/></svg></span>
+                <span class="premium-report-title">View My Report</span><span class="premium-report-arrow" aria-hidden="true">›</span>
             </button>
             <div class="employee-message-row">
                 <div id="message-panel" class="hidden">
                     <button id="view-msg-btn" type="button" class="hidden message-button" aria-haspopup="dialog">
-                        <svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>
+                        <span class="premium-action-tile" aria-hidden="true"><svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>
                         <span id="view-msg-label" class="message-title">MSG · Global</span>
                     </button>
                     <p id="message-updated" class="message-updated"></p>
                 </div>
-                <button id="supportEmployeeBtn" type="button" class="support-launch" aria-label="Chat with Admin — register an issue or suggestion">
-                    <svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-8 8H4l1.4-4A8 8 0 1 1 20 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                    <span>Chat · Admin</span><span id="supportEmployeeUnread" class="support-unread-badge" hidden>0</span>
+                <button id="supportEmployeeBtn" type="button" class="support-launch" aria-label="Help Chat with Admin — register an issue or suggestion">
+                    <span class="premium-action-tile" aria-hidden="true"><svg class="dashboard-action-icon" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-2a8 8 0 0 1 16 0v5a5 5 0 0 1-5 5h-2"/><rect x="2" y="11" width="4" height="7" rx="2" fill="currentColor" stroke="none"/><rect x="18" y="11" width="4" height="7" rx="2" fill="currentColor" stroke="none"/><path d="M11 21h3" stroke-width="3"/></svg></span>
+                    <span class="premium-help-label"><strong>Help Chat</strong> · Admin</span><span class="premium-help-chevron" aria-hidden="true">›</span><span id="supportEmployeeUnread" class="support-unread-badge" hidden>0</span>
                 </button>
             </div>
         </div>
@@ -1137,7 +1209,7 @@
                 }
             }
             
-            document.getElementById('main-title').textContent = titleText;
+            document.getElementById('main-title').textContent = viewId === 'employee-dashboard' ? 'Emp. Dashboard' : titleText;
             const logoutBtn = document.getElementById('btn-logout');
             if (viewId === 'login-section' || viewId === 'forgot-pin-section') logoutBtn.classList.add('hidden'); 
             else logoutBtn.classList.remove('hidden');
@@ -1247,7 +1319,7 @@
                 document.getElementById('startDate').value = '';
                 document.getElementById('endDate').value = '';
                 document.getElementById('report-summary-box').classList.add('hidden');
-                showView('employee-dashboard', 'Employee Dashboard');
+                showView('employee-dashboard', 'Emp. Dashboard');
                 // Render the authenticated dashboard immediately. Sync and settings run together.
                 syncAppClock().catch(() => {});
                 setupEmployeeDashboard(fetchGlobalData(false), { showLoginMessage: true }).catch(err => showMessage(err.message, 'error'));
@@ -1330,7 +1402,7 @@
                 if (p['In'] && p['Out']) status = "PunchedOut";
             }
             renderDashButtons(status);
-            if (activeView === 'attendance-section') showView('employee-dashboard', 'Employee Dashboard');
+            if (activeView === 'attendance-section') showView('employee-dashboard', 'Emp. Dashboard');
             renderAppClock();
 
         }
@@ -1368,7 +1440,7 @@
                 currentStream = stream;
                 showView('attendance-section', `Duty ${currentPunchTarget}`);
             } catch (err) {
-                stopCamera(); showMessage('Camera access failed.', 'error'); showView('employee-dashboard', 'Employee Dashboard');
+                stopCamera(); showMessage('Camera access failed.', 'error'); showView('employee-dashboard', 'Emp. Dashboard');
             } finally { hideLoader(); }
         }
 
@@ -2729,7 +2801,7 @@
             } catch(e) { showMessage('Network error.', 'error'); } finally { hideLoader(); }
         });
 
-        document.getElementById('cancelPunchBtn').addEventListener('click', () => { stopCamera(); showView('employee-dashboard', 'Employee Dashboard'); });
+        document.getElementById('cancelPunchBtn').addEventListener('click', () => { stopCamera(); showView('employee-dashboard', 'Emp. Dashboard'); });
         document.getElementById('startLocationTrackingBtn').addEventListener('click', startLocationTracking);
         document.getElementById('captureSubmitBtn').addEventListener('click', handlePunch);
         
@@ -3266,7 +3338,7 @@
         }
         supportEl('supportEmployeeBtn').addEventListener('click', supportOpen);
         supportEl('supportAdminBtn').addEventListener('click', supportOpen);
-        supportEl('supportExitBtn').addEventListener('click', () => showView(isAdmin ? 'admin-dashboard' : 'employee-dashboard', isAdmin ? 'Admin Portal' : 'Employee Dashboard'));
+        supportEl('supportExitBtn').addEventListener('click', () => showView(isAdmin ? 'admin-dashboard' : 'employee-dashboard', isAdmin ? 'Admin Portal' : 'Emp. Dashboard'));
         supportEl('supportListBack').addEventListener('click', () => { if (!support.sending) supportCloseThread(); });
         supportEl('supportSearch').addEventListener('input', supportRenderInbox);
         supportEl('supportNewChatBtn').addEventListener('click', () => {
