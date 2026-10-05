@@ -323,6 +323,7 @@
         <div class="premium-header flex justify-between items-center border-b pb-4 mb-4">
             <h1 id="main-title" class="text-xl md:text-2xl font-extrabold text-gray-800 tracking-tight">🏢 Smart Attendance</h1>
             <button id="btn-logout" class="hidden text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors"><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M9 12h12m-4-4 4 4-4 4"/></svg><span>Logout</span></button>
+            <button id="cancelPunchBtn" type="button" class="hidden text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-colors" aria-label="Back to dashboard">← Back</button>
         </div>
 
         <p id="app-clock" class="hidden text-center text-sm font-semibold text-indigo-700" aria-live="off"></p>
@@ -485,10 +486,6 @@
 
         <!-- Camera / Attendance Section -->
         <div id="attendance-section" class="hidden space-y-4 max-w-sm mx-auto">
-            <div class="flex justify-between items-center mb-1">
-                <h2 id="camera-title" class="text-lg font-bold text-gray-800">Mark Duty</h2>
-                <button id="cancelPunchBtn" class="text-sm font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
-            </div>
 
             <div class="relative bg-black rounded-3xl overflow-hidden w-full aspect-[3/4] shadow-2xl ring-4 ring-gray-800">
                 <video id="camera-feed" playsinline autoplay class="w-full h-full object-cover"></video>
@@ -508,7 +505,7 @@
                 <p id="accuracy-warning" class="text-[10px] text-red-600 font-bold mt-1 hidden">GPS weak hai. Kripya open area me aayein.</p>
             </div>
 
-            <p class="text-xs text-gray-600">Location har 20 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein. Punch ke liye internet aur fresh GPS zaroori hain.</p>
+            <p class="text-xs text-gray-600">Location har 20 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein</p>
             <button id="captureSubmitBtn" class="w-full bg-blue-600 text-white py-4 px-4 rounded-2xl hover:bg-blue-700 font-extrabold text-lg shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2">
                 📸 Capture & Submit
             </button>
@@ -1325,7 +1322,8 @@
             
             document.getElementById('main-title').textContent = viewId === 'employee-dashboard' ? 'Emp. Dashboard' : titleText;
             const logoutBtn = document.getElementById('btn-logout');
-            if (viewId === 'login-section' || viewId === 'forgot-pin-section') logoutBtn.classList.add('hidden'); 
+            document.getElementById('cancelPunchBtn').classList.toggle('hidden', viewId !== 'attendance-section');
+            if (viewId === 'login-section' || viewId === 'forgot-pin-section' || viewId === 'attendance-section') logoutBtn.classList.add('hidden'); 
             else logoutBtn.classList.remove('hidden');
         }
 
@@ -1541,7 +1539,6 @@
 
         function startPunchSequence(type) {
             currentPunchTarget = type;
-            document.getElementById('camera-title').innerText = `Mark Duty ${type}`;
             initCameraAndLocation();
         }
 
@@ -1552,7 +1549,7 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
                 document.getElementById('camera-feed').srcObject = stream;
                 currentStream = stream;
-                showView('attendance-section', `Duty ${currentPunchTarget}`);
+                showView('attendance-section', `Mark Duty ${currentPunchTarget.toUpperCase()}`);
             } catch (err) {
                 stopCamera(); showMessage('Camera access failed.', 'error'); showView('employee-dashboard', 'Emp. Dashboard');
             } finally { hideLoader(); }
