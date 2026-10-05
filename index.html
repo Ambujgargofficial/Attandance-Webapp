@@ -370,6 +370,45 @@
         body[data-view="login-section"] #loader-overlay .text-white {color:#25335c;}
         @media(max-width:360px) {body[data-view="login-section"] {padding:22px 20px;}.login-glass-form {padding:21px 17px;}.login-brand-title {font-size:30px;}.login-tagline {font-size:11px;letter-spacing:.06em;}}
         @media(prefers-reduced-motion:reduce) {#login-section button,#login-section input {transition:none!important;}}
+
+        /* Compact login proportions for the usable mobile viewport. */
+        body[data-view="login-section"] {padding:18px 20px;background-image:radial-gradient(ellipse at -15% 38%,#d4eaff 0,transparent 52%),radial-gradient(ellipse at 110% -5%,#e3d9fc 0,transparent 48%),radial-gradient(ellipse at 20% 115%,#d8dcff 0,transparent 50%),linear-gradient(145deg,#F7FAFF,#EEF6FF 58%,#F4F0FF);}
+        body[data-view="login-section"] #app-shell {max-width:440px;}
+        #login-section .login-brand {margin-bottom:17px;}
+        #login-section .login-clock-logo {width:78px;height:78px;margin-bottom:13px;}
+        #login-section .login-brand-title {font-size:clamp(27px,7.8vw,36px);line-height:1.12;letter-spacing:-.05em;}
+        #login-section .login-tagline {font-size:12px;letter-spacing:.08em;margin-top:8px;}
+        #login-section .login-glass-form {padding:21px 20px 18px;border-radius:27px;box-shadow:0 12px 28px #758ad219;}
+        #login-section .login-field + .login-field {margin-top:17px;}
+        #login-section .login-field label {font-size:14px;gap:8px;margin-bottom:8px;}
+        #login-section .login-field label svg {width:19px;height:19px;}
+        #login-section #employeeId,#login-section #employeePin {height:53px;padding-left:43px;border-radius:16px;font-size:16px;}
+        #login-section .login-input-icon {left:14px;width:19px;height:19px;}
+        #login-section input::placeholder {font-size:13px;}
+        #login-section #verifyLoginBtn {min-height:56px;margin-top:20px;padding:10px 49px 10px 13px;border-radius:17px;font-size:19px;}
+        #login-section .login-button-arrow {width:33px;height:33px;right:10px;font-size:25px;}
+        #login-section .login-forgot {margin-top:9px;}
+        #login-section #showForgotBtn {min-height:42px;font-size:14px;padding:8px 12px;}
+        #login-section .login-footer {margin-top:10px;font-size:11px;}
+        #login-section .login-footer-rule {margin-bottom:7px;gap:12px;}
+        #login-section .login-footer-rule svg {width:20px;height:20px;}
+        @media(max-height:700px) {
+            body[data-view="login-section"] {padding-top:12px;padding-bottom:12px;}
+            #login-section .login-clock-logo {width:68px;height:68px;margin-bottom:11px;}
+            #login-section .login-brand {margin-bottom:14px;}
+            #login-section .login-tagline {margin-top:6px;font-size:11px;}
+            #login-section .login-glass-form {padding-top:18px;padding-bottom:16px;}
+            #login-section .login-field + .login-field {margin-top:14px;}
+            #login-section #employeeId,#login-section #employeePin {height:50px;}
+            #login-section #verifyLoginBtn {min-height:53px;margin-top:17px;}
+            #login-section .login-footer {margin-top:7px;}
+        }
+        @media(max-width:340px) {
+            body[data-view="login-section"] {padding-left:16px;padding-right:16px;}
+            #login-section .login-glass-form {padding-left:16px;padding-right:16px;}
+            #login-section .login-brand-title {font-size:26px;}
+            #login-section .login-tagline {font-size:10px;}
+        }
     </style>
 </head>
 <body data-view="login-section" class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
