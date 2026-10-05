@@ -590,8 +590,8 @@
             <div class="support-compose-actions"><button id="supportCameraFlip" type="button" class="support-attach-btn">↻ Front / Back</button><button id="supportCameraCapture" type="button" class="support-send">Capture</button></div>
         </dialog>
         <dialog id="supportPhotoDialog" class="support-dialog">
-            <div class="support-dialog-title"><h3>Attached photo</h3><button id="supportPhotoClose" type="button" class="support-text-btn">Close ×</button></div>
-            <img id="supportFullPhoto" alt="Chat attachment">
+            <div class="support-dialog-title" style="justify-content:flex-end;gap:8px;"><button id="supportPhotoDownload" type="button" class="inline-flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100" style="width:36px;height:36px;padding:8px;" aria-label="Download photo" title="Download photo"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg></button><button id="supportPhotoClose" type="button" class="support-text-btn">Close ×</button></div>
+            <img id="supportFullPhoto" alt="Attached photo">
         </dialog>
 
         <!-- Camera / Attendance Section -->
@@ -3828,6 +3828,17 @@
             const id = support.selected, epoch = support.epoch;
             try { const data = await supportEncodeImage(supportEl('supportCameraVideo')); if (supportHasSession(epoch) && support.selected === id) { supportDraft().image = data; supportComposerState(); } supportCloseCamera(); }
             catch (err) { supportEl('supportCameraError').hidden = false; supportEl('supportCameraError').textContent = err.message; }
+        });
+        supportEl('supportPhotoDownload').addEventListener('click', () => {
+            const data = supportEl('supportFullPhoto').getAttribute('src');
+            if (!supportSafeImage(data)) return;
+            const bytes = Uint8Array.from(atob(data.split(',')[1]), char => char.charCodeAt(0));
+            const url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' }));
+            const link = document.createElement('a');
+            link.href = url; link.download = 'Smart-Attendance-Photo-' + Date.now() + '.jpg';
+            link.hidden = true; supportEl('supportPhotoDialog').appendChild(link);
+            link.click(); link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
         });
         supportEl('supportPhotoClose').addEventListener('click', () => supportEl('supportPhotoDialog').close());
         supportEl('supportLoadEarlier').addEventListener('click', () => { support.limit += 80; support.prepend = true; supportListenMessages(); });
