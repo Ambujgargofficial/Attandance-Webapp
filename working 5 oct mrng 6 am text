@@ -313,9 +313,105 @@
             body[data-view="employee-dashboard"] {padding-left:12px;padding-right:12px;}
             body[data-view="employee-dashboard"] #app-shell {max-width:none;}
         }
+        /* Chat uses the available viewport; dashboard and other views keep their layout. */
+        body[data-view="support-chat-view"] {justify-content:flex-start;padding:8px;min-height:100dvh;}
+        body[data-view="support-chat-view"] #app-shell {width:100%;max-width:1100px;min-height:0;padding:8px;border-radius:18px;}
+        body[data-view="support-chat-view"] .premium-header {display:none;}
+        body[data-view="support-chat-view"] #support-chat-view {margin:0;width:100%;}
+        body[data-view="support-chat-view"] .support-topbar {flex-wrap:nowrap;gap:8px;margin:0 0 8px;min-height:34px;}
+        body[data-view="support-chat-view"] #supportExitBtn {background:#FFF1F1;color:#E53935;border:1px solid #ffe1e1;border-radius:9px;padding:7px 10px;font-size:12px;white-space:nowrap;flex-shrink:0;}
+        body[data-view="support-chat-view"] #supportExitBtn:hover {background:#ffe4e4;}
+        body[data-view="support-chat-view"] #supportConnection {margin-left:auto;font-size:10px;white-space:nowrap;}
+        body[data-view="support-chat-view"] .support-shell {height:calc(100vh - 78px);height:calc(100dvh - 78px);min-height:360px;border-radius:14px;box-shadow:none;}
+        body[data-view="support-chat-view"] .support-messages {padding:10px;}
+        body[data-view="support-chat-view"] .support-chat-header {padding:9px 11px;}
+        @media(max-width:640px) {
+            body[data-view="support-chat-view"] #app-shell {max-width:none;}
+            body[data-view="support-chat-view"] #supportScreenTitle {display:none;}
+            body[data-view="support-chat-view"] .support-composer {padding:8px;}
+        }
+
+        /* Login-only visual layer: all IDs, validation, handlers and API logic retained. */
+        body[data-view="login-section"] {justify-content:flex-start;min-height:100dvh;padding:28px 22px;background:#F7FAFF;background-image:radial-gradient(ellipse at 0 18%,#dcefff 0,transparent 52%),radial-gradient(ellipse at 100% 5%,#e9e0ff 0,transparent 46%),linear-gradient(150deg,#F7FAFF,#EEF6FF 58%,#F4F0FF);}
+        body[data-view="login-section"] #app-shell {width:100%;max-width:550px;min-height:0;padding:0;background:none;border:0;box-shadow:none;}
+        body[data-view="login-section"] .premium-header {display:none;}
+        #login-section.show-block {width:100%;margin:0;max-width:none;color:#111936;}
+        .login-brand {text-align:center;margin-bottom:26px;}
+        .login-clock-logo {position:relative;width:clamp(86px,24vw,112px);height:clamp(86px,24vw,112px);margin:0 auto 19px;border-radius:50%;background:linear-gradient(135deg,#278eff,#3645f8 60%,#9360f9);box-shadow:0 10px 28px #5b6ff530,inset 0 2px 3px #ffffff6b;}
+        .login-clock-logo > svg {width:100%;height:100%;}
+        .login-check-badge {position:absolute;right:-4px;bottom:4px;width:34%;height:34%;border-radius:10px;background:linear-gradient(135deg,#fffffff5,#e3ddff);border:1px solid #ffffffd9;color:#4d45f5;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px #4245c524;}
+        .login-check-badge svg {width:65%;height:65%;}
+        .login-brand-title {font-size:clamp(30px,8.6vw,48px);line-height:1.14;letter-spacing:-.055em;font-weight:800;color:#111936;margin:0;}
+        .login-brand-title > span {color:#3155F5;}
+        .login-tagline {margin:10px 0 0;color:#6673A8;font-size:clamp(12px,3.5vw,17px);letter-spacing:.09em;line-height:1.5;}
+        .login-glass-form {position:relative;isolation:isolate;padding:clamp(21px,6vw,34px);border-radius:28px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.8);box-shadow:0 15px 38px #758ad21a,inset 0 1px 0 #fff;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+        .login-glass-form:before {content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:radial-gradient(ellipse at 100% 100%,#d7edff70,transparent 44%),radial-gradient(ellipse at 0 100%,#dedaff55,transparent 40%);}
+        .login-field + .login-field {margin-top:22px;}
+        .login-field label {display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;margin:0 0 10px;color:#111936;}
+        .login-field label svg {width:21px;height:21px;flex-shrink:0;color:#6b5af0;}
+        .login-input-wrap {position:relative;}
+        .login-input-icon {position:absolute;left:15px;top:50%;transform:translateY(-50%);width:21px;height:21px;color:#6170D8;pointer-events:none;}
+        .login-input-icon svg {width:100%;height:100%;}
+        #login-section #employeeId,#login-section #employeePin {display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:64px;border:1px solid #CBD6FF;border-radius:18px;padding:0 14px 0 46px;background:rgba(240,244,255,.75);box-shadow:inset 0 1px 3px #ffffffaa,0 4px 12px #6879a507;color:#111936;font-size:16px;font-weight:500;letter-spacing:normal;outline:none;transition:border-color .15s,box-shadow .15s;}
+        #login-section input::placeholder {color:#7180A8;opacity:1;font-size:clamp(13px,3.5vw,16px);}
+        #login-section #employeeId:focus,#login-section #employeePin:focus {border-color:#5B6FF5;box-shadow:0 0 0 3px #5b6ff522;}
+        #login-section #verifyLoginBtn {display:flex;align-items:center;justify-content:center;position:relative;gap:10px;width:100%;min-height:66px;margin:24px 0 0;padding:12px 53px 12px 16px;border-radius:19px;border:1px solid #ffffff80;background:linear-gradient(110deg,#1687FF,#4D45F5 55%,#B33CFF);color:white;font-size:clamp(18px,5vw,22px);font-weight:700;letter-spacing:-.02em;box-shadow:0 8px 20px #6658eb29,inset 0 1px 0 #ffffff55;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+        #login-section #verifyLoginBtn:hover:not(:disabled) {box-shadow:0 10px 24px #6658eb3b;}
+        #login-section #verifyLoginBtn:active:not(:disabled) {transform:scale(.98);}
+        .login-button-arrow {position:absolute;right:11px;top:50%;transform:translateY(-50%);width:37px;height:37px;border-radius:50%;background:#ffffffb5;box-shadow:inset 0 1px 0 #fff;color:#6737e8;display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;}
+        .login-busy-label {display:none;}#verifyLoginBtn:disabled .login-idle-label {display:none;}#verifyLoginBtn:disabled .login-busy-label {display:inline;}#login-section #verifyLoginBtn:disabled {opacity:.7;cursor:wait;}
+        .login-forgot {text-align:center;margin-top:17px;}
+        #login-section #showForgotBtn {background:none;border:0;color:#4B4BD8;font-size:15px;font-weight:700;min-height:44px;padding:8px 14px;border-radius:9px;}
+        #login-section #showForgotBtn:hover {background:#eceaff88;}
+        #login-section button:focus-visible {outline:3px solid #6879e8;outline-offset:4px;}
+        .login-footer {margin-top:20px;text-align:center;color:#6879A5;font-size:12px;line-height:1.5;}
+        .login-footer-rule {display:flex;align-items:center;gap:13px;margin:0 auto 11px;max-width:260px;color:#6d5de9;}.login-footer-rule > span {height:1px;flex:1;background:#d7def2;}
+        body[data-view="login-section"] #loader-overlay {background:rgba(239,243,255,.88);}
+        body[data-view="login-section"] #loader-overlay .text-white {color:#25335c;}
+        @media(max-width:360px) {body[data-view="login-section"] {padding:22px 20px;}.login-glass-form {padding:21px 17px;}.login-brand-title {font-size:30px;}.login-tagline {font-size:11px;letter-spacing:.06em;}}
+        @media(prefers-reduced-motion:reduce) {#login-section button,#login-section input {transition:none!important;}}
+
+        /* Compact login proportions for the usable mobile viewport. */
+        body[data-view="login-section"] {padding:18px 20px;background-image:radial-gradient(ellipse at -15% 38%,#d4eaff 0,transparent 52%),radial-gradient(ellipse at 110% -5%,#e3d9fc 0,transparent 48%),radial-gradient(ellipse at 20% 115%,#d8dcff 0,transparent 50%),linear-gradient(145deg,#F7FAFF,#EEF6FF 58%,#F4F0FF);}
+        body[data-view="login-section"] #app-shell {max-width:440px;}
+        #login-section .login-brand {margin-bottom:17px;}
+        #login-section .login-clock-logo {width:78px;height:78px;margin-bottom:13px;}
+        #login-section .login-brand-title {font-size:clamp(27px,7.8vw,36px);line-height:1.12;letter-spacing:-.05em;}
+        #login-section .login-tagline {font-size:12px;letter-spacing:.08em;margin-top:8px;}
+        #login-section .login-glass-form {padding:21px 20px 18px;border-radius:27px;box-shadow:0 12px 28px #758ad219;}
+        #login-section .login-field + .login-field {margin-top:17px;}
+        #login-section .login-field label {font-size:14px;gap:8px;margin-bottom:8px;}
+        #login-section .login-field label svg {width:19px;height:19px;}
+        #login-section #employeeId,#login-section #employeePin {height:53px;padding-left:43px;border-radius:16px;font-size:16px;}
+        #login-section .login-input-icon {left:14px;width:19px;height:19px;}
+        #login-section input::placeholder {font-size:13px;}
+        #login-section #verifyLoginBtn {min-height:56px;margin-top:20px;padding:10px 49px 10px 13px;border-radius:17px;font-size:19px;}
+        #login-section .login-button-arrow {width:33px;height:33px;right:10px;font-size:25px;}
+        #login-section .login-forgot {margin-top:9px;}
+        #login-section #showForgotBtn {min-height:42px;font-size:14px;padding:8px 12px;}
+        #login-section .login-footer {margin-top:10px;font-size:11px;}
+        #login-section .login-footer-rule {margin-bottom:7px;gap:12px;}
+        #login-section .login-footer-rule svg {width:20px;height:20px;}
+        @media(max-height:700px) {
+            body[data-view="login-section"] {padding-top:12px;padding-bottom:12px;}
+            #login-section .login-clock-logo {width:68px;height:68px;margin-bottom:11px;}
+            #login-section .login-brand {margin-bottom:14px;}
+            #login-section .login-tagline {margin-top:6px;font-size:11px;}
+            #login-section .login-glass-form {padding-top:18px;padding-bottom:16px;}
+            #login-section .login-field + .login-field {margin-top:14px;}
+            #login-section #employeeId,#login-section #employeePin {height:50px;}
+            #login-section #verifyLoginBtn {min-height:53px;margin-top:17px;}
+            #login-section .login-footer {margin-top:7px;}
+        }
+        @media(max-width:340px) {
+            body[data-view="login-section"] {padding-left:16px;padding-right:16px;}
+            #login-section .login-glass-form {padding-left:16px;padding-right:16px;}
+            #login-section .login-brand-title {font-size:26px;}
+            #login-section .login-tagline {font-size:10px;}
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
+<body data-view="login-section" class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
 
     <div id="app-shell" class="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 p-5 md:p-8 space-y-6 relative min-h-[500px]">
         
@@ -341,18 +437,27 @@
         </div>
 
         <!-- Login Section -->
-        <div id="login-section" class="space-y-5 max-w-sm mx-auto mt-10 show-block">
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Employee ID:</label>
-                <input type="text" id="employeeId" class="block w-full px-4 py-3.5 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-semibold text-lg transition-all" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        <div id="login-section" class="show-block">
+            <div class="login-brand">
+                <div class="login-clock-logo" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="33" stroke="white" stroke-width="6"/><path d="M50 29v22l15 11" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="login-check-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+                </div>
+                <h1 class="login-brand-title">Smart <span>Attendance</span></h1>
+                <p class="login-tagline">Simple • Connected • Smart</p>
             </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Verification PIN:</label>
-                <input type="password" id="employeePin" class="block w-full px-4 py-3.5 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-semibold text-lg tracking-widest transition-all" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            </div>
-            <button id="verifyLoginBtn" class="w-full bg-indigo-600 text-white py-4 px-4 rounded-2xl hover:bg-indigo-700 font-bold text-lg shadow-lg shadow-indigo-200 transition-all mt-4">Login Securely</button>
-            <div class="text-center pt-2">
-                <button id="showForgotBtn" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold transition-all">Forgot PIN?</button>
+            <div class="login-glass-form">
+                <div class="login-field">
+                    <label for="employeeId"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2Z"/></svg><span>Employee ID</span></label>
+                    <div class="login-input-wrap"><span class="login-input-icon"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2Z"/></svg></span><input type="text" id="employeeId" placeholder="Enter your employee ID" autocomplete="username" autocapitalize="none" spellcheck="false" class="block w-full px-4 py-3.5 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-semibold text-lg transition-all" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+                </div>
+                <div class="login-field">
+                    <label for="employeePin"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="10" width="14" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3" stroke="white"/></svg><span>Verification PIN</span></label>
+                    <div class="login-input-wrap"><span class="login-input-icon"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="10" width="14" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3" stroke="white"/></svg></span><input type="password" id="employeePin" placeholder="Enter your PIN" autocomplete="current-password" class="block w-full px-4 py-3.5 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-semibold text-lg tracking-widest transition-all" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+                </div>
+                <button id="verifyLoginBtn" type="button" class="login-primary-button"><span class="login-idle-label">Login Securely</span><span class="login-busy-label">Signing in…</span><span class="login-button-arrow" aria-hidden="true">→</span></button>
+                <div class="login-forgot"><button id="showForgotBtn" type="button">Forgot PIN?</button></div>
+                <div class="login-footer"><div class="login-footer-rule" aria-hidden="true"><span></span><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="4"/><path d="M8 3v4m8-4v4M4 11h16m-12 5 2 2 5-5"/></svg><span></span></div><p>Your attendance, all in one place</p></div>
             </div>
         </div>
 
@@ -449,11 +554,11 @@
                                 <div class="support-reply-copy"><strong id="supportReplyName"></strong><span id="supportReplyText"></span></div>
                                 <button id="supportCancelReply" type="button" class="support-icon-btn" aria-label="Cancel reply" title="Cancel reply">×</button>
                             </div>
-                            <div id="supportCategoryRow" class="support-category-row">
-                                <label>Type<select id="supportCategory"><option value="issue">Issue</option><option value="suggestion">Suggestion</option><option value="other">Other</option></select></label>
-                                <div id="supportIssueFields" class="support-issue-fields">
-                                    <label>Attendance date<input id="supportIssueDate" type="date" required></label>
-                                    <label>Punch<select id="supportPunchType" required><option value="">Select</option><option value="In">IN</option><option value="Out">OUT</option><option value="Both">IN + OUT</option></select></label>
+                            <div id="supportCategoryRow" class="support-category-row" hidden>
+                                <label>Type<select id="supportCategory"><option value="" disabled selected>Select type</option><option value="issue">Issue</option><option value="suggestion">Suggestion</option><option value="other">Other</option></select></label>
+                                <div id="supportIssueFields" class="support-issue-fields" hidden>
+                                    <label>Attendance date<input id="supportIssueDate" type="date"></label>
+                                    <label>Punch<select id="supportPunchType"><option value="">Select</option><option value="In">IN</option><option value="Out">OUT</option><option value="Both">IN + OUT</option></select></label>
                                 </div>
                             </div>
                             <div id="supportAttachmentPreview" class="support-attachment-preview" hidden><img id="supportAttachmentThumb" alt="Photo ready to attach"><span>Photo attached</span><button id="supportRemoveAttachment" type="button" class="support-text-btn">Remove ×</button></div>
@@ -1323,7 +1428,7 @@
             document.getElementById('main-title').textContent = viewId === 'employee-dashboard' ? 'Emp. Dashboard' : titleText;
             const logoutBtn = document.getElementById('btn-logout');
             document.getElementById('cancelPunchBtn').classList.toggle('hidden', viewId !== 'attendance-section');
-            if (viewId === 'login-section' || viewId === 'forgot-pin-section' || viewId === 'attendance-section') logoutBtn.classList.add('hidden'); 
+            if (viewId === 'login-section' || viewId === 'forgot-pin-section' || viewId === 'attendance-section' || viewId === 'support-chat-view') logoutBtn.classList.add('hidden'); 
             else logoutBtn.classList.remove('hidden');
         }
 
@@ -1542,6 +1647,23 @@
             initCameraAndLocation();
         }
 
+        function revealPunchSubmit() {
+            const stream = currentStream;
+            // Wait for the new view and loader removal to finish layout, once per entry.
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                if (activeView !== 'attendance-section' || !stream || currentStream !== stream || document.hidden) return;
+                const button = document.getElementById('captureSubmitBtn');
+                const rect = button.getBoundingClientRect();
+                if (!rect.height) return;
+                const viewport = window.visualViewport;
+                const top = (viewport?.offsetTop || 0) + 12;
+                const bottom = (viewport?.offsetTop || 0) + (viewport?.height || window.innerHeight) - 12;
+                const distance = rect.bottom > bottom ? rect.bottom - bottom : rect.top < top ? rect.top - top : 0;
+                if (Math.abs(distance) > 1) window.scrollBy({ top: distance, left: 0,
+                    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+            }));
+        }
+
         async function initCameraAndLocation() {
             showLoader('Starting Camera...');
             startLocationTracking();
@@ -1552,7 +1674,7 @@
                 showView('attendance-section', `Mark Duty ${currentPunchTarget.toUpperCase()}`);
             } catch (err) {
                 stopCamera(); showMessage('Camera access failed.', 'error'); showView('employee-dashboard', 'Emp. Dashboard');
-            } finally { hideLoader(); }
+            } finally { hideLoader(); revealPunchSubmit(); }
         }
 
         function invalidateLocation(message) {
@@ -3003,7 +3125,7 @@
                 : { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
         }
         function supportDraft() {
-            if (!support.drafts.has(support.selected)) support.drafts.set(support.selected, { text: '', category: 'issue', date: '', punch: '', image: '', attempt: null });
+            if (!support.drafts.has(support.selected)) support.drafts.set(support.selected, { text: '', category: '', date: '', punch: '', image: '', attempt: null, composing: false });
             return support.drafts.get(support.selected);
         }
         function supportValidReply(reply) {
@@ -3042,6 +3164,11 @@
             draft.date = supportEl('supportIssueDate').value;
             draft.punch = supportEl('supportPunchType').value;
         }
+        function supportStartComposing() {
+            if (!support.selected || support.admin || support.sending || support.photoBusy || supportDraft().attempt) return;
+            supportDraft().composing = true;
+            supportComposerState();
+        }
         function supportComposerState() {
             const draft = support.selected ? supportDraft() : null;
             const locked = support.sending || support.photoBusy || !!draft?.attempt;
@@ -3052,8 +3179,9 @@
             supportEl('supportReplyPreview').hidden = !replying;
             supportEl('supportReplyName').textContent = replying ? 'Replying to ' + supportReplyName(draft.replyTo) : '';
             supportEl('supportReplyText').textContent = replying ? draft.replyTo.text : '';
-            const issue = !support.admin && !replying && supportEl('supportCategory').value === 'issue';
-            supportEl('supportCategoryRow').hidden = support.admin || replying;
+            const choosingType = !support.admin && !replying && !!(draft?.composing || draft?.attempt);
+            const issue = choosingType && supportEl('supportCategory').value === 'issue';
+            supportEl('supportCategoryRow').hidden = !choosingType;
             supportEl('supportIssueFields').hidden = !issue;
             supportEl('supportIssueDate').required = issue;
             supportEl('supportPunchType').required = issue;
@@ -3203,7 +3331,7 @@
             if (!currentEmployee || (!support.admin && employeeId !== support.userId) || (support.admin && !employeeIsActive(allEmployeesData[employeeId]))) return;
             supportCloseThread();
             support.newChatMode = false; supportEl('supportSearch').value = '';
-            support.selected = employeeId; support.messages = {}; support.limit = 80; support.prepend = false; support.initial = true;
+            support.selected = employeeId; supportDraft().composing = false; support.messages = {}; support.limit = 80; support.prepend = false; support.initial = true;
             supportEl('supportShell').classList.add('thread-open'); supportEl('supportEmpty').hidden = true; supportEl('supportThread').hidden = false;
             const name = support.admin ? allEmployeesData[employeeId].name || employeeId : 'Admin';
             supportEl('supportContactName').textContent = name; supportEl('supportAvatar').textContent = name.slice(0, 1).toUpperCase();
@@ -3216,7 +3344,7 @@
                 if (!supportHasSession(epoch) || support.selected !== id || generation !== support.threadGeneration) return;
                 support.messages = snap.val() || {};
                 const draft = supportDraft();
-                if (draft.attempt && support.messages[draft.attempt.id]) { support.drafts.set(id, { text: '', category: draft.category, date: draft.date, punch: draft.punch, image: '', attempt: null }); supportRestoreDraft(); }
+                if (draft.attempt && support.messages[draft.attempt.id]) { support.drafts.set(id, { text: '', category: '', date: '', punch: '', image: '', attempt: null, composing: false }); supportRestoreDraft(); }
                 supportRenderMessages();
             }, () => { if (supportHasSession(epoch) && support.selected === id && generation === support.threadGeneration) supportError('Messages load nahi hui. Chat ko dobara kholein; Firebase permissions/index check karein.'); });
         }
@@ -3366,7 +3494,7 @@
                 if (!navigator.onLine || !support.connected) throw new Error('Internet connect karein. Message abhi send nahi hua.');
                 supportValidateMessage(draft, support.admin);
                 if (support.admin && !employeeIsActive(allEmployeesData[support.selected])) throw new Error('Employee inactive hai.');
-            } catch (err) { supportError(err.message); return; }
+            } catch (err) { if (!support.admin && !draft.replyTo) { draft.composing = true; supportComposerState(); } supportError(err.message); return; }
             const id = support.selected, epoch = support.epoch, role = supportRole();
             const isRetry = !!draft.attempt;
             if (!draft.attempt) draft.attempt = { id: crypto.randomUUID(), text: draft.text.trim(), image: draft.image, category: support.admin || draft.replyTo ? 'reply' : draft.category, date: draft.date, punch: draft.punch, replyTo: draft.replyTo ? { ...draft.replyTo } : null };
@@ -3391,7 +3519,7 @@
                     await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates) });
                 }
                 if (!supportHasSession(epoch)) return;
-                support.drafts.set(id, { text: '', category: draft.category, date: draft.date, punch: draft.punch, image: '', attempt: null });
+                support.drafts.set(id, { text: '', category: '', date: '', punch: '', image: '', attempt: null, composing: false });
                 if (support.selected === id) { supportRestoreDraft(); supportEl('supportMessages').scrollTop = supportEl('supportMessages').scrollHeight; }
             } catch (err) {
                 if (supportHasSession(epoch) && support.selected === id && !support.messages[attempt.id]) supportError('Send confirm nahi hua. Retry send dabayein; same message dobara duplicate nahi banega.');
@@ -3467,6 +3595,8 @@
             if (!support.selected || support.sending || support.photoBusy || supportDraft().attempt) return;
             supportDraft().replyTo = null; supportComposerState(); supportEl('supportMessageText').focus();
         });
+        ['focus', 'click', 'input'].forEach(event => supportEl('supportMessageText').addEventListener(event, supportStartComposing));
+        ['supportGalleryBtn', 'supportCameraBtn'].forEach(id => supportEl(id).addEventListener('click', supportStartComposing));
         ['supportCategory', 'supportIssueDate', 'supportPunchType', 'supportMessageText'].forEach(id => supportEl(id).addEventListener('input', () => { supportSaveDraft(); supportComposerState(); }));
         supportEl('supportGalleryBtn').addEventListener('click', () => supportEl('supportImageInput').click());
         supportEl('supportImageInput').addEventListener('change', event => supportAttachFile(event.target.files[0]));
