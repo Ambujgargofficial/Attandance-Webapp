@@ -316,6 +316,11 @@
         /* Chat uses the available viewport; dashboard and other views keep their layout. */
         body[data-view="support-chat-view"] {justify-content:flex-start;padding:8px;min-height:100dvh;}
         body[data-view="support-chat-view"] #app-shell {width:100%;max-width:1100px;min-height:0;padding:8px;border-radius:18px;}
+        /* Admin subpages use their own single heading and existing Back action. */
+        body[data-view^="admin-"]:not([data-view="admin-dashboard"]) .premium-header {display:none;}
+        body[data-view^="admin-"]:not([data-view="admin-dashboard"]) #app-shell > [id^="admin-"][id$="-view"] {margin-top:0;}
+        #app-shell > [id^="admin-"][id$="-view"] > div:first-child {gap:12px;}
+        .admin-back-btn {flex-shrink:0;white-space:nowrap;}
         body[data-view="support-chat-view"] .premium-header {display:none;}
         body[data-view="support-chat-view"] #support-chat-view {margin:0;width:100%;}
         body[data-view="support-chat-view"] .support-topbar {flex-wrap:nowrap;gap:8px;margin:0 0 8px;min-height:34px;}
@@ -782,6 +787,18 @@
                         <option value="all">All Locations</option>
                     </select>
                 </div>
+                <div class="w-full">
+                    <label for="daywiseStatusFilter" class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Status</label>
+                    <select id="daywiseStatusFilter" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-gray-50">
+                        <option value="all">All Statuses</option>
+                        <option value="P">Present (P)</option>
+                        <option value="P/A">Half Day (P/A)</option>
+                        <option value="A">Absent (A)</option>
+                        <option value="L">Late (L)</option>
+                        <option value="E">Early (E)</option>
+                        <option value="W/O">Week Off (W/O)</option>
+                    </select>
+                </div>
                 <div class="flex gap-2 w-full md:w-auto">
                     <button id="fetchDaywiseBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0 transition-colors">Fetch</button>
                     <button id="exportDaywiseBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-xl h-[42px] w-[42px] flex items-center justify-center shrink-0 transition-colors shadow-sm" title="Export CSV">
@@ -800,6 +817,8 @@
                             <th>OUT Time</th>
                             <th>Status</th>
                             <th>Remark / Address</th>
+                            <th>IN Photo</th>
+                            <th>OUT Photo</th>
                         </tr>
                     </thead>
                     <tbody id="daywiseBody"></tbody>
@@ -827,6 +846,10 @@
                 <div class="w-full"><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Start Date</label><input type="date" id="adminStart" class="w-full p-2.5 border rounded-xl text-sm font-bold"></div>
                 <div class="w-full"><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">End Date</label><input type="date" id="adminEnd" class="w-full p-2.5 border rounded-xl text-sm font-bold"></div>
                 <button id="fetchAdminReportBtn" class="bg-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl w-full md:w-auto h-[42px]">Fetch</button>
+            </div>
+            <div class="flex gap-2" aria-label="Quick report date ranges">
+                <button id="adminMtdBtn" type="button" class="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-bold">MTD</button>
+                <button id="adminPrevMtdBtn" type="button" class="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-bold" title="Previous month: first to last day">N-1 MTD</button>
             </div>
         </div>
 
@@ -989,8 +1012,34 @@
                     </select>
                     
                     <div id="globalMsgContainer" class="hidden">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Type Global Message</label>
-                        <textarea id="globalMsgText" rows="3" placeholder="Yahan sabhi employees ke liye common message type karein..." class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-sm font-medium outline-none resize-none"></textarea>
+                        <label for="globalMsgText" class="block text-xs font-bold text-gray-700 mb-1">Type Global Message</label>
+                        <textarea id="globalMsgText" rows="12" placeholder="Yahan sabhi employees ke liye common message type karein..." style="min-height:280px; resize:vertical; line-height:1.65;" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-sm font-medium outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"></textarea>
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                            <button id="globalMsgAttachBtn" type="button" class="px-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm">📎 Attach Photo</button>
+                            <input id="globalMsgImageInput" type="file" accept="image/*" hidden>
+                            <button id="globalMsgRemoveBtn" type="button" class="hidden px-3 py-2 rounded-xl bg-red-50 text-red-600 font-bold text-sm">Remove Photo</button>
+                        </div>
+                        <p id="globalMsgImageStatus" class="text-xs text-gray-500 mt-2" role="status">Optional photo · Up to 12 MB · Automatically compressed</p>
+                        <div id="globalMsgSizeControls" class="hidden mt-3 p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+                            <div class="flex justify-between gap-2 mb-2"><label for="globalMsgImageScale" class="text-sm font-bold text-indigo-900">Photo display size</label><output id="globalMsgImageScaleValue" for="globalMsgImageScale" class="text-sm font-bold text-indigo-700">100%</output></div>
+                            <input id="globalMsgImageScale" type="range" min="25" max="100" step="5" value="100" class="w-full accent-indigo-600" aria-label="Photo display size">
+                            <div class="flex justify-between text-xs text-gray-500"><span>Small</span><span>Full width</span></div>
+                        </div>
+                        <div class="mt-3 rounded-xl bg-slate-50 border p-3">
+                            <p class="text-xs font-bold text-gray-500 mb-3">LIVE PREVIEW · Employee message</p>
+                            <div class="bg-white rounded-2xl shadow-sm p-6 w-full max-w-sm mx-auto">
+                                <h3 class="text-lg font-extrabold text-blue-800 border-b pb-2 mb-3">✉️ Important Message</h3>
+                                <div class="modal-scroll">
+                                    <button id="globalMsgPreviewBtn" type="button" class="hidden w-full mb-3" aria-label="View attached photo full size">
+                                        <img id="globalMsgImagePreview" alt="Global message attachment preview" class="rounded-xl object-contain" style="display:block;margin:0 auto;width:100%;height:auto;max-height:360px;">
+                                    </button>
+                                    <p id="globalMsgTextPreview" class="text-gray-800 text-sm leading-relaxed mb-2 font-medium whitespace-pre-wrap break-words"></p>
+                                </div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-right mb-4">Global update by Admin</p>
+                                <div class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-center" aria-hidden="true">Close</div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Photo aur text publish karne ke liye neeche Save Settings dabayein.</p>
                     </div>
                 </div>
 
@@ -1077,7 +1126,7 @@
         <div id="msg-modal" class="fixed inset-0 bg-black/60 hidden flex-col items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
                 <h3 class="text-lg font-extrabold text-blue-800 border-b pb-2 mb-3">✉️ Important Message</h3>
-                <div class="modal-scroll"><p id="msg-modal-text" class="text-gray-800 text-sm leading-relaxed mb-2 font-medium whitespace-pre-wrap"></p></div>
+                <div class="modal-scroll"><button id="msg-modal-photo-btn" type="button" class="hidden w-full mb-3" aria-label="View message photo full size"><img id="msg-modal-photo" alt="Photo shared by Admin" class="w-full rounded-xl object-contain" style="max-height:360px;"></button><p id="msg-modal-text" class="text-gray-800 text-sm leading-relaxed mb-2 font-medium whitespace-pre-wrap"></p></div>
                 <p id="msg-modal-time" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-right mb-4"></p>
                 <button class="close-modal-btn w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700">Close</button>
             </div>
@@ -1374,6 +1423,8 @@
             deptFraudStrictKeywords: {}, 
             msgSource: 'sheet', 
             globalMsgText: '',
+            globalMsgImage: '',
+            globalMsgImageScale: 100,
             globalMsgUpdatedAt: null, 
             lateThreshold: 3, 
             earlyThreshold: 3, 
@@ -1428,7 +1479,7 @@
             document.getElementById('main-title').textContent = viewId === 'employee-dashboard' ? 'Emp. Dashboard' : titleText;
             const logoutBtn = document.getElementById('btn-logout');
             document.getElementById('cancelPunchBtn').classList.toggle('hidden', viewId !== 'attendance-section');
-            if (viewId === 'login-section' || viewId === 'forgot-pin-section' || viewId === 'attendance-section' || viewId === 'support-chat-view') logoutBtn.classList.add('hidden'); 
+            if (viewId === 'login-section' || viewId === 'forgot-pin-section' || viewId === 'attendance-section' || viewId === 'support-chat-view' || (viewId.startsWith('admin-') && viewId !== 'admin-dashboard')) logoutBtn.classList.add('hidden'); 
             else logoutBtn.classList.remove('hidden');
         }
 
@@ -1464,6 +1515,8 @@
                     globalSettings.deptFraudStrictKeywords = st.deptFraudStrictKeywords || {}; 
                     globalSettings.msgSource = st.msgSource || 'sheet';
                     globalSettings.globalMsgText = st.globalMsgText || '';
+                    globalSettings.globalMsgImage = supportSafeImage(st.globalMsgImage) ? st.globalMsgImage : '';
+                    globalSettings.globalMsgImageScale = normalizeGlobalMsgScale(st.globalMsgImageScale);
                     globalSettings.globalMsgUpdatedAt = st.globalMsgUpdatedAt || null;
                     globalSettings.lateThreshold = st.lateThreshold || 3;
                     globalSettings.earlyThreshold = st.earlyThreshold || 3;
@@ -1571,7 +1624,7 @@
             let textToDisplay = "";
             let timeToDisplay = "";
 
-            if (globalSettings.msgSource === 'global' && globalSettings.globalMsgText) {
+            if (globalSettings.msgSource === 'global' && (globalSettings.globalMsgText || supportSafeImage(globalSettings.globalMsgImage))) {
                 textToDisplay = globalSettings.globalMsgText;
                 timeToDisplay = formatMessageUpdatedAt(globalSettings.globalMsgUpdatedAt); 
                 hasMsg = true;
@@ -1581,6 +1634,11 @@
                 hasMsg = true;
             }
 
+            const messagePhoto = globalSettings.msgSource === 'global' && supportSafeImage(globalSettings.globalMsgImage) ? globalSettings.globalMsgImage : '';
+            document.getElementById('msg-modal-photo-btn').classList.toggle('hidden', !messagePhoto);
+            const messageImage = document.getElementById('msg-modal-photo');
+            if (messagePhoto) messageImage.src = messagePhoto; else messageImage.removeAttribute('src');
+            applyGlobalMsgScale(messageImage, globalSettings.globalMsgImageScale);
             if (hasMsg) {
                 document.getElementById('view-msg-label').innerHTML = globalSettings.msgSource === 'global' ? '<strong>Msg</strong> · <span>Global</span>' : '<strong>Msg</strong> · <span>Personal</span>';
                 document.getElementById('msg-modal-text').innerText = textToDisplay;
@@ -2312,6 +2370,18 @@
             } catch (err) { showMessage(err.message, 'error'); }
         }
 
+        let adminPresetVersion = 0;
+        async function applyAdminReportPreset(preset) {
+            if (!isAdmin || activeView !== 'admin-reports-view') return;
+            const version = ++adminPresetVersion, employeeId = currentEmployee?.id;
+            try {
+                const range = reportDateRange(preset, await ensureAppTime());
+                if (version !== adminPresetVersion || !isAdmin || activeView !== 'admin-reports-view' || currentEmployee?.id !== employeeId) return;
+                document.getElementById('adminStart').value = range.start;
+                document.getElementById('adminEnd').value = range.end;
+            } catch (err) { showMessage(err.message || 'Dates update nahi hui.', 'error'); }
+        }
+
         let deletePreviewVersion = 0, deletePreview = null;
 
         function formatDeletePunch(punch) {
@@ -2746,10 +2816,90 @@
             } catch(e) { showMessage("Error saving rule", "error"); } finally { hideLoader(); }
         });
 
+        function normalizeGlobalMsgScale(value) {
+            const number = Number(value);
+            return value == null || value === '' || !Number.isFinite(number) ? 100 : Math.max(25, Math.min(100, number));
+        }
+        function applyGlobalMsgScale(image, value) {
+            image.style.width = normalizeGlobalMsgScale(value) + '%';
+            image.style.height = 'auto'; image.style.display = 'block'; image.style.margin = '0 auto';
+        }
+        function renderGlobalMsgLivePreview() {
+            const scale = normalizeGlobalMsgScale(document.getElementById('globalMsgImageScale').value);
+            document.getElementById('globalMsgImageScaleValue').textContent = scale + '%';
+            applyGlobalMsgScale(document.getElementById('globalMsgImagePreview'), scale);
+            document.getElementById('globalMsgTextPreview').textContent = document.getElementById('globalMsgText').value;
+        }
+        document.getElementById('globalMsgImageScale').addEventListener('input', renderGlobalMsgLivePreview);
+        document.getElementById('globalMsgText').addEventListener('input', renderGlobalMsgLivePreview);
+        let globalMsgImageDraft = '', globalMsgPhotoBusy = false, globalMsgPhotoVersion = 0;
+        function renderGlobalMsgPhoto() {
+            const valid = supportSafeImage(globalMsgImageDraft);
+            document.getElementById('globalMsgRemoveBtn').classList.toggle('hidden', !valid);
+            document.getElementById('globalMsgSizeControls').classList.toggle('hidden', !valid);
+            renderGlobalMsgLivePreview();
+            document.getElementById('globalMsgPreviewBtn').classList.toggle('hidden', !valid);
+            const image = document.getElementById('globalMsgImagePreview');
+            if (valid) image.src = globalMsgImageDraft; else image.removeAttribute('src');
+            document.getElementById('globalMsgImageStatus').textContent = valid
+                ? 'Attached photo · Approx. ' + Math.ceil((globalMsgImageDraft.length - 23) * .75 / 1024) + ' KB · Tap preview to enlarge'
+                : 'Optional photo · Up to 12 MB · Automatically compressed';
+        }
+        function openGlobalMessagePhoto(data) {
+            if (!supportSafeImage(data)) return;
+            document.getElementById('supportFullPhoto').src = data;
+            document.getElementById('supportPhotoDialog').showModal();
+        }
+        document.getElementById('globalMsgAttachBtn').addEventListener('click', () => {
+            if (isAdmin && !globalMsgPhotoBusy) document.getElementById('globalMsgImageInput').click();
+        });
+        document.getElementById('globalMsgRemoveBtn').addEventListener('click', () => {
+            if (!isAdmin || globalMsgPhotoBusy) return;
+            globalMsgImageDraft = ''; renderGlobalMsgPhoto();
+        });
+        document.getElementById('globalMsgPreviewBtn').addEventListener('click', () => openGlobalMessagePhoto(globalMsgImageDraft));
+        document.getElementById('msg-modal-photo-btn').addEventListener('click', () => openGlobalMessagePhoto(document.getElementById('msg-modal-photo').getAttribute('src')));
+        document.getElementById('globalMsgImageInput').addEventListener('change', async event => {
+            const file = event.target.files[0];
+            event.target.value = '';
+            if (!file || !isAdmin || globalMsgPhotoBusy) return;
+            const version = ++globalMsgPhotoVersion, employee = currentEmployee;
+            globalMsgPhotoBusy = true;
+            document.getElementById('saveSettingsBtn').disabled = true;
+            document.getElementById('globalMsgImageStatus').textContent = 'Preparing photo…';
+            let url = '';
+            try {
+                if (!file.type.startsWith('image/') || file.size > 12 * 1024 * 1024) throw new Error('12 MB tak ki image select karein.');
+                url = URL.createObjectURL(file);
+                const image = new Image(); image.src = url; await image.decode();
+                const data = await supportEncodeImage(image);
+                if (version !== globalMsgPhotoVersion || !isAdmin || currentEmployee !== employee || activeView !== 'admin-settings-view') return;
+                globalMsgImageDraft = data;
+                renderGlobalMsgPhoto();
+                document.getElementById('globalMsgImageStatus').textContent += ' · Original: ' + (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            } catch (err) {
+                if (version === globalMsgPhotoVersion && isAdmin && currentEmployee === employee) {
+                    renderGlobalMsgPhoto(); showMessage(err.message || 'Photo open nahi hui. JPG/PNG try karein.', 'error');
+                }
+            } finally {
+                if (url) URL.revokeObjectURL(url);
+                if (version === globalMsgPhotoVersion) {
+                    globalMsgPhotoBusy = false;
+                    document.getElementById('saveSettingsBtn').disabled = false;
+                }
+            }
+        });
+
         function renderSettingsUI() {
+            ++globalMsgPhotoVersion; globalMsgPhotoBusy = false;
+            document.getElementById('saveSettingsBtn').disabled = false;
+            document.getElementById('globalMsgImageScale').value = normalizeGlobalMsgScale(globalSettings.globalMsgImageScale);
+            globalMsgImageDraft = supportSafeImage(globalSettings.globalMsgImage) ? globalSettings.globalMsgImage : '';
+            renderGlobalMsgPhoto();
             document.getElementById('autoShowMsgToggle').checked = globalSettings.autoShowMsg;
             document.getElementById('msgSourceSelect').value = globalSettings.msgSource;
             document.getElementById('globalMsgText').value = globalSettings.globalMsgText;
+            renderGlobalMsgLivePreview();
             document.getElementById('lateThreshold').value = globalSettings.lateThreshold;
             document.getElementById('earlyThreshold').value = globalSettings.earlyThreshold;
             document.getElementById('veryEarlyThreshold').value = globalSettings.veryEarlyThreshold;
@@ -2812,12 +2962,15 @@
         });
 
         document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+            if (globalMsgPhotoBusy) return showMessage('Photo prepare ho rahi hai. Ek pal rukiye.');
             showLoader("Saving settings...");
             try {
                 let newSettings = { 
                     autoShowMsg: document.getElementById('autoShowMsgToggle').checked,
                     msgSource: document.getElementById('msgSourceSelect').value,
                     globalMsgText: document.getElementById('globalMsgText').value.trim(),
+                    globalMsgImage: supportSafeImage(globalMsgImageDraft) ? globalMsgImageDraft : '',
+                    globalMsgImageScale: normalizeGlobalMsgScale(document.getElementById('globalMsgImageScale').value),
                     globalMsgUpdatedAt: globalSettings.globalMsgUpdatedAt || null,
                     lateThreshold: parseInt(document.getElementById('lateThreshold').value) || 3,
                     earlyThreshold: parseInt(document.getElementById('earlyThreshold').value) || 3,
@@ -2843,14 +2996,67 @@
                     newSettings.deptFraudStrictKeywords[inp.getAttribute('data-dept')] = inp.value.trim();
                 });
                 
-                // Only message-text edits update its timestamp, not unrelated settings saves.
-                if (newSettings.globalMsgText !== globalSettings.globalMsgText) {
+                // Text or photo edits update the message timestamp, not unrelated settings saves.
+                if (newSettings.globalMsgText !== globalSettings.globalMsgText || newSettings.globalMsgImage !== (globalSettings.globalMsgImage || '') || (newSettings.globalMsgImage && newSettings.globalMsgImageScale !== normalizeGlobalMsgScale(globalSettings.globalMsgImageScale))) {
                     newSettings.globalMsgUpdatedAt = { '.sv': 'timestamp' };
                 }
                 globalSettings = await databaseRequest('settings', { method: 'PUT', body: JSON.stringify(newSettings) });
                 showMessage("Settings Saved Successfully!", "success");
             } catch(e) { showMessage("Error saving settings.", "error"); } finally { hideLoader(); }
         });
+
+        function daywisePunchWarning(punch, department) {
+            if (!punch) return '';
+            const address = String(punch.address || '').toLowerCase();
+            const remark = String(punch.remark || '').toLowerCase();
+            if (address === 'manual entry by admin' || remark === 'manual entry by admin' || remark === 'old data imported') return '';
+            let safeText = globalSettings.deptFraudKeywords?.[department] || '';
+            if (!safeText && department === 'Head') safeText = 'shikar pur, shikarpur, devpuri, hans';
+            const keywords = text => String(text).toLowerCase().split(',').map(x => x.trim()).filter(Boolean);
+            const banned = keywords(globalSettings.deptFraudStrictKeywords?.[department] || '').find(word => address.includes(word));
+            const reasons = [];
+            if (banned) reasons.push('Strictly Banned Keyword: "' + banned + '"');
+            else if (!keywords(safeText).some(word => address.includes(word))) reasons.push('Location not in Safe list');
+            const coordinateValid = (value, bound) => (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value)) && Math.abs(Number(value)) <= bound;
+            if (!coordinateValid(punch.latitude, 90) || !coordinateValid(punch.longitude, 180)) reasons.push('GPS coordinates missing/invalid');
+            if (!validPunchAddress(punch.address)) reasons.push('Address unavailable');
+            if (!validPunchPhoto(punch.photoUrl)) reasons.push('Photo unavailable');
+            return reasons.join(' · ');
+        }
+
+        function applyDaywiseStatusFilter() {
+            const tbody = document.getElementById('daywiseBody');
+            const status = document.getElementById('daywiseStatusFilter').value;
+            tbody.querySelector('[data-daywise-empty]')?.remove();
+            let visible = 0;
+            tbody.querySelectorAll('tr').forEach(row => {
+                const cell = row.querySelector('[data-status]');
+                if (!cell) return;
+                row.hidden = status !== 'all' && cell.dataset.status !== status;
+                if (!row.hidden) visible++;
+            });
+            if (!visible) tbody.insertAdjacentHTML('beforeend', '<tr data-daywise-empty><td colspan="9" class="text-center py-4 text-gray-500 font-bold">No records found for selected filters.</td></tr>');
+            document.getElementById('exportDaywiseBtn').classList.toggle('hidden', visible === 0);
+        }
+
+        function daywiseInfoText(dayPunch, specialRule) {
+            const lines = [];
+            if (specialRule?.remark) lines.push('Special day: ' + specialRule.remark +
+                (specialRule.inTime ? ' | IN: ' + specialRule.inTime : '') +
+                (specialRule.outTime ? ' | OUT: ' + specialRule.outTime : ''));
+            ['In', 'Out'].forEach(type => {
+                const punch = dayPunch?.[type]; if (!punch) return;
+                const details = [];
+                if (punch.remark) details.push('Remark: ' + String(punch.remark));
+                if (punch.address) details.push('Address: ' + String(punch.address));
+                if (details.length) lines.push(type.toUpperCase() + '\n' + details.join('\n'));
+            });
+            return lines.join('\n\n');
+        }
+        function daywisePhotoCell(punch) {
+            const url = validPunchPhoto(punch?.photoUrl);
+            return url ? `<td data-export="${punchHtml(url)}"><a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-block px-2 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">View</a></td>` : '<td data-export="-">—</td>';
+        }
 
         async function fetchDaywiseReport() {
             const checkDate = document.getElementById('daywiseDate').value;
@@ -2865,7 +3071,7 @@
                 const allPunches = snap.exists() ? snap.val() : {};
                 const tbody = document.getElementById('daywiseBody');
                 let html = '';
-                let hasRecords = false;
+
 
                 activeEmployeeEntries().forEach(([id, emp]) => {
                     if(deptFilter !== 'all' && emp.department !== deptFilter) return;
@@ -2925,6 +3131,14 @@
 
                     let shift = `${emp.startTime || '00:00'} - ${emp.endTime || '00:00'}`;
 
+                    const warnings = ['In', 'Out'].map(type => {
+                        const reason = daywisePunchWarning(dayPunch?.[type], emp.department);
+                        return reason ? type.toUpperCase() + ' — Suspicious: ' + reason : '';
+                    }).filter(Boolean);
+                    const infoText = [warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, sRule)].filter(Boolean).join('\n\n');
+                    const infoStyle = warnings.length ? 'bg-red-50 border-red-300 text-red-600' : 'bg-indigo-50 border-indigo-200 text-indigo-700';
+                    const infoLabel = warnings.length ? 'Suspicious punch — view reasons, remark and address' : 'View remark / address';
+
                     html += `<tr>
                         <td class="sticky-col-1 font-bold text-gray-700">${id}</td>
                         <td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td>
@@ -2932,21 +3146,17 @@
                         <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${inTime}</td>
                         <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${outTime}</td>
                         <td class="text-center" data-status="${st}">${stBadge}</td>
-                        <td class="text-left text-[10px] max-w-sm" style="white-space: pre-wrap;" title="${remarkTxt.replace(/\"/g, "'")}">${remarkTxt}</td>
+                        <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${infoText ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
+                        ${daywisePhotoCell(dayPunch?.In)}
+                        ${daywisePhotoCell(dayPunch?.Out)}
                     </tr>`;
-                    hasRecords = true;
+
                 });
                 
-                if(!html) html = `<tr><td colspan="7" class="text-center py-4 text-gray-500 font-bold">No records found for selected filters.</td></tr>`;
                 tbody.innerHTML = html;
                 document.getElementById('daywise-container').classList.remove('hidden');
-                
-                if (hasRecords) {
-                    document.getElementById('exportDaywiseBtn').classList.remove('hidden');
-                } else {
-                    document.getElementById('exportDaywiseBtn').classList.add('hidden');
-                }
-                
+                applyDaywiseStatusFilter();
+
             } catch(e) { showMessage('Error fetching daywise report', 'error'); } finally { hideLoader(); }
         }
         
@@ -2963,7 +3173,9 @@
             csvContent += `Daywise Attendance Report\n`;
             csvContent += `Date:,${dateStr}\n`;
             csvContent += `Department:,${deptText}\n`;
-            csvContent += `Location:,${locText}\n\n`;
+            csvContent += `Location:,${locText}\n`;
+            const statusFilter = document.getElementById('daywiseStatusFilter');
+            csvContent += `Status:,${statusFilter.options[statusFilter.selectedIndex].text}\n\n`;
             
             const table = document.getElementById('daywiseTable');
             const headers = [];
@@ -2975,7 +3187,7 @@
             const tbody = document.getElementById('daywiseBody');
             for (let i = 0; i < tbody.rows.length; i++) {
                 const row = tbody.rows[i];
-                if(row.cells.length === 1) continue;
+                if(row.hidden || row.cells.length === 1) continue;
                 
                 const rowData = [];
                 for (let j = 0; j < row.cells.length; j++) {
@@ -2983,7 +3195,7 @@
                     if (j === 5) { 
                         cellText = row.cells[j].getAttribute('data-status') || row.cells[j].innerText;
                     } else {
-                        cellText = row.cells[j].innerText;
+                        cellText = row.cells[j].getAttribute('data-export') ?? row.cells[j].innerText;
                     }
                     rowData.push('"' + cellText.replace(/"/g, '""') + '"');
                 }
@@ -3080,7 +3292,14 @@
         document.getElementById('admin-btn-settings').addEventListener('click', () => { renderSettingsUI(); showView('admin-settings-view', 'System Settings'); });
         document.querySelectorAll('.admin-back-btn').forEach(btn => btn.addEventListener('click', () => { document.getElementById('report-summary-box').classList.add('hidden'); showView('admin-dashboard', 'Admin Portal'); }));
         
+        document.getElementById('adminMtdBtn').addEventListener('click', () => applyAdminReportPreset('MTD'));
+        document.getElementById('adminPrevMtdBtn').addEventListener('click', () => applyAdminReportPreset('PREVIOUS'));
+        document.getElementById('daywiseBody').addEventListener('click', event => {
+            const button = event.target.closest('[data-daywise-info]');
+            if (button) window.showRemark(button.dataset.daywiseInfo);
+        });
         document.getElementById('fetchAdminReportBtn').addEventListener('click', fetchAdminReport);
+        document.getElementById('daywiseStatusFilter').addEventListener('change', applyDaywiseStatusFilter);
         document.getElementById('fetchDaywiseBtn').addEventListener('click', fetchDaywiseReport);
         document.getElementById('exportDaywiseBtn').addEventListener('click', exportDaywiseCsv);
         document.getElementById('generateGridBtn').addEventListener('click', generateGrid);
