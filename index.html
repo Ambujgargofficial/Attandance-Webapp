@@ -308,6 +308,11 @@
             body[data-view="employee-dashboard"] #main-title {font-size:18px;}
             #employee-dashboard #emp-name-dash {font-size:26px;}
         }
+        /* Wider phone card; preserve its internal padding and action heights. */
+        @media(max-width:599px) {
+            body[data-view="employee-dashboard"] {padding-left:12px;padding-right:12px;}
+            body[data-view="employee-dashboard"] #app-shell {max-width:none;}
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
