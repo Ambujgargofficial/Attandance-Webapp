@@ -554,11 +554,11 @@
                                 <div class="support-reply-copy"><strong id="supportReplyName"></strong><span id="supportReplyText"></span></div>
                                 <button id="supportCancelReply" type="button" class="support-icon-btn" aria-label="Cancel reply" title="Cancel reply">×</button>
                             </div>
-                            <div id="supportCategoryRow" class="support-category-row">
-                                <label>Type<select id="supportCategory"><option value="issue">Issue</option><option value="suggestion">Suggestion</option><option value="other">Other</option></select></label>
-                                <div id="supportIssueFields" class="support-issue-fields">
-                                    <label>Attendance date<input id="supportIssueDate" type="date" required></label>
-                                    <label>Punch<select id="supportPunchType" required><option value="">Select</option><option value="In">IN</option><option value="Out">OUT</option><option value="Both">IN + OUT</option></select></label>
+                            <div id="supportCategoryRow" class="support-category-row" hidden>
+                                <label>Type<select id="supportCategory"><option value="" disabled selected>Select type</option><option value="issue">Issue</option><option value="suggestion">Suggestion</option><option value="other">Other</option></select></label>
+                                <div id="supportIssueFields" class="support-issue-fields" hidden>
+                                    <label>Attendance date<input id="supportIssueDate" type="date"></label>
+                                    <label>Punch<select id="supportPunchType"><option value="">Select</option><option value="In">IN</option><option value="Out">OUT</option><option value="Both">IN + OUT</option></select></label>
                                 </div>
                             </div>
                             <div id="supportAttachmentPreview" class="support-attachment-preview" hidden><img id="supportAttachmentThumb" alt="Photo ready to attach"><span>Photo attached</span><button id="supportRemoveAttachment" type="button" class="support-text-btn">Remove ×</button></div>
@@ -3125,7 +3125,7 @@
                 : { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
         }
         function supportDraft() {
-            if (!support.drafts.has(support.selected)) support.drafts.set(support.selected, { text: '', category: 'issue', date: '', punch: '', image: '', attempt: null });
+            if (!support.drafts.has(support.selected)) support.drafts.set(support.selected, { text: '', category: '', date: '', punch: '', image: '', attempt: null, composing: false });
             return support.drafts.get(support.selected);
         }
         function supportValidReply(reply) {
@@ -3164,6 +3164,11 @@
             draft.date = supportEl('supportIssueDate').value;
             draft.punch = supportEl('supportPunchType').value;
         }
+        function supportStartComposing() {
+            if (!support.selected || support.admin || support.sending || support.photoBusy || supportDraft().attempt) return;
+            supportDraft().composing = true;
+            supportComposerState();
+        }
         function supportComposerState() {
             const draft = support.selected ? supportDraft() : null;
             const locked = support.sending || support.photoBusy || !!draft?.attempt;
@@ -3174,8 +3179,9 @@
             supportEl('supportReplyPreview').hidden = !replying;
             supportEl('supportReplyName').textContent = replying ? 'Replying to ' + supportReplyName(draft.replyTo) : '';
             supportEl('supportReplyText').textContent = replying ? draft.replyTo.text : '';
-            const issue = !support.admin && !replying && supportEl('supportCategory').value === 'issue';
-            supportEl('supportCategoryRow').hidden = support.admin || replying;
+            const choosingType = !support.admin && !replying && !!(draft?.composing || draft?.attempt);
+            const issue = choosingType && supportEl('supportCategory').value === 'issue';
+            supportEl('supportCategoryRow').hidden = !choosingType;
             supportEl('supportIssueFields').hidden = !issue;
             supportEl('supportIssueDate').required = issue;
             supportEl('supportPunchType').required = issue;
@@ -3325,7 +3331,7 @@
             if (!currentEmployee || (!support.admin && employeeId !== support.userId) || (support.admin && !employeeIsActive(allEmployeesData[employeeId]))) return;
             supportCloseThread();
             support.newChatMode = false; supportEl('supportSearch').value = '';
-            support.selected = employeeId; support.messages = {}; support.limit = 80; support.prepend = false; support.initial = true;
+            support.selected = employeeId; supportDraft().composing = false; support.messages = {}; support.limit = 80; support.prepend = false; support.initial = true;
             supportEl('supportShell').classList.add('thread-open'); supportEl('supportEmpty').hidden = true; supportEl('supportThread').hidden = false;
             const name = support.admin ? allEmployeesData[employeeId].name || employeeId : 'Admin';
             supportEl('supportContactName').textContent = name; supportEl('supportAvatar').textContent = name.slice(0, 1).toUpperCase();
@@ -3338,7 +3344,7 @@
                 if (!supportHasSession(epoch) || support.selected !== id || generation !== support.threadGeneration) return;
                 support.messages = snap.val() || {};
                 const draft = supportDraft();
-                if (draft.attempt && support.messages[draft.attempt.id]) { support.drafts.set(id, { text: '', category: draft.category, date: draft.date, punch: draft.punch, image: '', attempt: null }); supportRestoreDraft(); }
+                if (draft.attempt && support.messages[draft.attempt.id]) { support.drafts.set(id, { text: '', category: '', date: '', punch: '', image: '', attempt: null, composing: false }); supportRestoreDraft(); }
                 supportRenderMessages();
             }, () => { if (supportHasSession(epoch) && support.selected === id && generation === support.threadGeneration) supportError('Messages load nahi hui. Chat ko dobara kholein; Firebase permissions/index check karein.'); });
         }
@@ -3488,7 +3494,7 @@
                 if (!navigator.onLine || !support.connected) throw new Error('Internet connect karein. Message abhi send nahi hua.');
                 supportValidateMessage(draft, support.admin);
                 if (support.admin && !employeeIsActive(allEmployeesData[support.selected])) throw new Error('Employee inactive hai.');
-            } catch (err) { supportError(err.message); return; }
+            } catch (err) { if (!support.admin && !draft.replyTo) { draft.composing = true; supportComposerState(); } supportError(err.message); return; }
             const id = support.selected, epoch = support.epoch, role = supportRole();
             const isRetry = !!draft.attempt;
             if (!draft.attempt) draft.attempt = { id: crypto.randomUUID(), text: draft.text.trim(), image: draft.image, category: support.admin || draft.replyTo ? 'reply' : draft.category, date: draft.date, punch: draft.punch, replyTo: draft.replyTo ? { ...draft.replyTo } : null };
@@ -3513,7 +3519,7 @@
                     await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates) });
                 }
                 if (!supportHasSession(epoch)) return;
-                support.drafts.set(id, { text: '', category: draft.category, date: draft.date, punch: draft.punch, image: '', attempt: null });
+                support.drafts.set(id, { text: '', category: '', date: '', punch: '', image: '', attempt: null, composing: false });
                 if (support.selected === id) { supportRestoreDraft(); supportEl('supportMessages').scrollTop = supportEl('supportMessages').scrollHeight; }
             } catch (err) {
                 if (supportHasSession(epoch) && support.selected === id && !support.messages[attempt.id]) supportError('Send confirm nahi hua. Retry send dabayein; same message dobara duplicate nahi banega.');
@@ -3589,6 +3595,8 @@
             if (!support.selected || support.sending || support.photoBusy || supportDraft().attempt) return;
             supportDraft().replyTo = null; supportComposerState(); supportEl('supportMessageText').focus();
         });
+        ['focus', 'click', 'input'].forEach(event => supportEl('supportMessageText').addEventListener(event, supportStartComposing));
+        ['supportGalleryBtn', 'supportCameraBtn'].forEach(id => supportEl(id).addEventListener('click', supportStartComposing));
         ['supportCategory', 'supportIssueDate', 'supportPunchType', 'supportMessageText'].forEach(id => supportEl(id).addEventListener('input', () => { supportSaveDraft(); supportComposerState(); }));
         supportEl('supportGalleryBtn').addEventListener('click', () => supportEl('supportImageInput').click());
         supportEl('supportImageInput').addEventListener('change', event => supportAttachFile(event.target.files[0]));
