@@ -253,6 +253,61 @@
             #employee-dashboard .premium-help-label {font-size:10px;}
             #employee-dashboard .premium-msg-chevron,#employee-dashboard .premium-help-chevron {font-size:22px;}
         }
+
+        /* Approved final palette and hierarchy. These rules own dashboard styling. */
+        body[data-view="employee-dashboard"] {background-color:#F8FAFF;padding:18px 24px 26px;}
+        body[data-view="employee-dashboard"] #app-shell {padding:20px;border-radius:28px;box-shadow:0 10px 32px #8ba4cf13;background:rgba(255,255,255,.96);}
+        body[data-view="employee-dashboard"] #main-title {color:#101A3D;}
+        body[data-view="employee-dashboard"] #btn-logout {background:#FFF1F1;color:#E53935;border-color:#ffe9e9;}
+        #employee-dashboard .premium-welcome {background:linear-gradient(120deg,#eeedff,#edf5ff);padding:20px;border-radius:22px;}
+        #employee-dashboard .premium-welcome > div:first-child > p:first-child {color:#7C83F5;}
+        #employee-dashboard #emp-name-dash {color:#2538D8;}
+        #employee-dashboard #emp-details-dash {color:#2538D8;}
+        #employee-dashboard #emp-status-badge[data-state="ready"] {background:#e7eaf2;color:#101A3D;}
+        #employee-dashboard #emp-status-badge[data-state="in"] {background:#dcf8e8;color:#087A3B;}
+        #employee-dashboard #emp-status-badge[data-state="complete"] {background:#e8edff;color:#202FC8;}
+        #employee-dashboard #emp-status-badge[data-state="complete"]:before {content:"✓";display:flex;align-items:center;justify-content:center;background:none;border:0;font-size:24px;font-weight:800;}
+        #employee-dashboard #emp-action-buttons > button {min-height:clamp(124px,34vw,164px);padding:18px;border-radius:22px;gap:10px;box-shadow:0 5px 15px #24a36b0c,inset 0 1px 0 #ffffffc9;}
+        #employee-dashboard #markInBtn {background:linear-gradient(130deg,#effff6,#E0FBEA 65%,#d0f9e5);border:1px solid #B8F0D0;color:#087A3B;}
+        #employee-dashboard #markInBtn:hover {background:linear-gradient(130deg,#e8fff1,#d4f7e1);}
+        #employee-dashboard #markOutBtn {background:linear-gradient(130deg,#fff7f5,#ffe8ec 65%,#ffdae3);border:1px solid #f5bbc9;color:#a22c49;}
+        #employee-dashboard #markOutBtn:hover {background:linear-gradient(130deg,#fff1ee,#ffdae3);}
+        #employee-dashboard #openReportDirectBtn {min-height:68px;height:clamp(68px,18vw,88px);padding:11px 13px;background:linear-gradient(115deg,#faf6ff,#F1F3FF 52%,#eaf4ff 75%,#f0dbff);border-color:#C7C9FF;color:#202FC8;box-shadow:0 5px 14px #7C83F519;}
+        #employee-dashboard .premium-report-arrow {color:#202FC8;background:linear-gradient(135deg,#ffffffbd,#f4e9ffb0);}
+        #employee-dashboard .employee-message-row {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+        #employee-dashboard .message-button,#employee-dashboard #supportEmployeeBtn {height:55px;min-height:55px;padding:7px;gap:5px;}
+        #employee-dashboard .message-button {background:linear-gradient(120deg,#fff8fa,#FFF0F4);border-color:#f7cddd;color:#101A3D;}
+        #employee-dashboard #supportEmployeeBtn {background:linear-gradient(120deg,#f4fffa,#ECFFF7);border-color:#c4f2df;color:#101A3D;}
+        #employee-dashboard .message-title {font-weight:400;}
+        #employee-dashboard .message-title strong {font-weight:800;}
+        #employee-dashboard .premium-action-tile {background:linear-gradient(140deg,#ff81a5,#F01855);width:29px;height:33px;}
+        #employee-dashboard #supportEmployeeBtn .premium-action-tile {background:linear-gradient(140deg,#23dfb3,#08B77A);}
+        #employee-dashboard .premium-msg-chevron {color:#F01855;}
+        #employee-dashboard .premium-help-chevron {color:#08B77A;}
+        #employee-dashboard #message-updated {color:#858c9d;font-size:10px;}
+        .premium-duty-complete {min-height:clamp(124px,34vw,164px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border-radius:22px;border:1px solid #c7d9f7;background:linear-gradient(120deg,#effbf6,#edf1ff);color:#202FC8;padding:18px;box-shadow:inset 0 1px 0 white;}
+        .premium-duty-complete strong {font-size:21px;font-weight:800;}.premium-duty-complete > span:last-child {font-size:11px;color:#596581;}
+        .premium-complete-icon {width:37px;height:37px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#ddf8e8;color:#087A3B;border:1px solid #B8F0D0;font-size:26px;}
+        @media(min-width:600px) {
+            #employee-dashboard #emp-action-buttons > button,.premium-duty-complete {min-height:200px;}
+            #employee-dashboard #emp-action-buttons > button {font-size:28px;}
+            #employee-dashboard #emp-action-buttons > button > span:first-child {font-size:43px;}
+            #employee-dashboard #openReportDirectBtn {height:105px;}
+        }
+        @media(max-width:400px) {
+            body[data-view="employee-dashboard"] #app-shell {padding:17px 14px 20px;}
+            #employee-dashboard .premium-welcome {padding:18px 13px;}
+            #employee-dashboard .message-button,#employee-dashboard #supportEmployeeBtn {padding:6px;gap:4px;}
+            #employee-dashboard .premium-action-tile {width:24px;height:29px;}
+            #employee-dashboard .message-title {font-size:10px;}
+            #employee-dashboard .premium-help-label {font-size:9.5px;}
+            #employee-dashboard .premium-msg-chevron,#employee-dashboard .premium-help-chevron {font-size:20px;}
+        }
+        @media(max-width:340px) {
+            body[data-view="employee-dashboard"] {padding-left:16px;padding-right:16px;}
+            body[data-view="employee-dashboard"] #main-title {font-size:18px;}
+            #employee-dashboard #emp-name-dash {font-size:26px;}
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -344,7 +399,7 @@
                 <div id="message-panel" class="hidden">
                     <button id="view-msg-btn" type="button" class="hidden message-button" aria-haspopup="dialog">
                         <span class="premium-action-tile" aria-hidden="true"><svg class="dashboard-action-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.2 12 14l9-6.8V19H3Z" fill="currentColor" stroke="none"/><path d="M3 5h18l-9 7Z" fill="currentColor" stroke="none"/></svg></span>
-                        <span id="view-msg-label" class="message-title">MSG · Global</span><span class="premium-msg-chevron" aria-hidden="true">›</span>
+                        <span id="view-msg-label" class="message-title"><strong>Msg</strong> · <span>Global</span></span><span class="premium-msg-chevron" aria-hidden="true">›</span>
                     </button>
                 </div>
                 <button id="supportEmployeeBtn" type="button" class="support-launch" aria-label="Help Chat with Admin — register an issue or suggestion">
@@ -1419,7 +1474,7 @@
             }
 
             if (hasMsg) {
-                document.getElementById('view-msg-label').textContent = globalSettings.msgSource === 'global' ? 'MSG · Global' : 'MSG · Personal';
+                document.getElementById('view-msg-label').innerHTML = globalSettings.msgSource === 'global' ? '<strong>Msg</strong> · <span>Global</span>' : '<strong>Msg</strong> · <span>Personal</span>';
                 document.getElementById('msg-modal-text').innerText = textToDisplay;
                 document.getElementById('msg-modal-time').innerText = globalSettings.msgSource === 'global' ? 'Global update by Admin' : 'Individual message from Admin';
                 document.getElementById('message-updated').textContent = timeToDisplay;
@@ -1466,16 +1521,16 @@
             const badge = document.getElementById('emp-status-badge');
             
             if (status === "None") {
-                badge.innerText = "No Punch Yet"; badge.className = "bg-gray-200 text-gray-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider";
+                badge.dataset.state = "ready"; badge.innerText = "No Punch Yet"; badge.className = "bg-gray-200 text-gray-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider";
                 container.innerHTML = `<button id="markInBtn" class="w-full bg-[#dcfce7] border border-[#bbf7d0] text-[#166534] py-5 rounded-2xl hover:bg-[#bbf7d0] font-extrabold text-lg shadow-sm transition-all flex flex-col items-center justify-center gap-1"><span class="text-2xl">➡️</span> Mark Duty IN</button>`;
                 document.getElementById('markInBtn').addEventListener('click', () => startPunchSequence('In'));
             } else if (status === "PunchedIn") {
-                badge.innerText = "Punched IN"; badge.className = "bg-[#dcfce7] text-[#166534] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider";
+                badge.dataset.state = "in"; badge.innerText = "Punched IN"; badge.className = "bg-[#dcfce7] text-[#166534] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider";
                 container.innerHTML = `<button id="markOutBtn" class="w-full bg-[#fee2e2] border border-[#fecaca] text-[#991b1b] py-5 rounded-2xl hover:bg-[#fecaca] font-extrabold text-lg shadow-sm transition-all flex flex-col items-center justify-center gap-1"><span class="text-2xl">⬅️</span> Mark Duty OUT</button>`;
                 document.getElementById('markOutBtn').addEventListener('click', () => startPunchSequence('Out'));
             } else {
-                badge.innerText = "Duty Completed"; badge.className = "bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider";
-                container.innerHTML = `<div class="bg-gray-50 border border-gray-200 text-gray-500 p-4 rounded-2xl text-center font-bold shadow-sm">✅ Aaj ki attendance puri ho gayi.</div>`;
+                badge.dataset.state = "complete"; badge.innerText = "Duty Completed"; badge.className = "bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider";
+                container.innerHTML = `<div class="premium-duty-complete" role="status"><span class="premium-complete-icon" aria-hidden="true">✓</span><strong>Duty Completed</strong><span>IN &amp; OUT marked for today</span></div>`;
             }
         }
 
