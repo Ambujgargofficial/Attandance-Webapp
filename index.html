@@ -415,6 +415,21 @@
             #login-section .login-brand-title {font-size:26px;}
             #login-section .login-tagline {font-size:10px;}
         }
+
+        /* Keep glass colours; avoid expensive backdrop repaints on mobile. */
+        @media (max-width:768px), (prefers-reduced-motion:reduce) {
+            .premium-welcome,.login-glass-form,[class*="backdrop-blur"] {backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+            .login-glass-form {background:rgba(255,255,255,.94);}
+            .transition-all {transition-property:background-color,color,opacity!important;}
+        }
+        .support-findbar {display:flex;gap:6px;flex-wrap:wrap;padding:7px 10px;border-bottom:1px solid #e2e8f0;background:#f8fafc;}
+        .support-findbar input {flex:1;min-width:100px;}.support-findbar input,.support-findbar select,.support-findbar button,.read-report-filters input,.read-report-filters select {border:1px solid #dbe3ee;border-radius:9px;padding:7px;font-size:12px;background:white;}
+        .support-findbar small {flex-basis:100%;color:#64748b;font-size:10px;}
+        .support-ticket {display:flex;align-items:center;gap:6px;margin:6px 0;font-size:11px;}.support-ticket select {font:inherit;padding:4px;border:1px solid #cbd5e1;border-radius:7px;background:white;}
+        .ticket-badge {padding:3px 7px;border-radius:8px;background:#fef3c7;color:#92400e;font-weight:700;}.ticket-badge[data-status="progress"] {background:#dbeafe;color:#1e40af;}.ticket-badge[data-status="resolved"] {background:#d1fae5;color:#065f46;}
+        .support-thread-actions[hidden] {display:none!important;}
+        .support-thread-actions {position:relative;}.support-thread-actions summary {cursor:pointer;list-style:none;font-size:24px;padding:0 12px;}.support-thread-actions>div {position:absolute;right:0;top:100%;z-index:20;min-width:175px;background:white;padding:6px;border-radius:12px;box-shadow:0 4px 18px #0002;}.support-thread-actions button {display:block;padding:10px;width:100%;text-align:left;color:#b91c1c;font-size:12px;}
+        .read-report-filters {display:flex;flex-wrap:wrap;gap:8px;}.read-report-filters>* {flex:1 1 130px;min-width:0;}
     </style>
 </head>
 <body data-view="login-section" class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -547,7 +562,13 @@
                             <button id="supportListBack" type="button" class="support-icon-btn" aria-label="Back to employee chats">←</button>
                             <div id="supportAvatar" class="support-avatar">A</div>
                             <div class="support-contact"><h2 id="supportContactName">Admin</h2><p id="supportContactStatus">Checking availability…</p></div>
-                            <span class="support-header-label">SUPPORT</span>
+                            <details id="supportAdminActions" class="support-thread-actions" hidden><summary aria-label="Chat actions">⋮</summary><div><button id="supportClearChat" type="button">Clear messages</button><button id="supportDeleteChat" type="button">Delete conversation</button></div></details>
+                        </div>
+                        <div class="support-findbar">
+                            <input id="supportMessageSearch" type="search" placeholder="Search messages…" aria-label="Search this chat" autocomplete="off">
+                            <select id="supportTicketFilter" aria-label="Filter ticket status"><option value="all">All</option><option value="open">Open</option><option value="progress">In Progress</option><option value="resolved">Resolved</option></select>
+                            <button id="supportSearchOlder" type="button" title="Search the next 80 older messages">Older ↑</button>
+                            <small id="supportSearchInfo" role="status"></small>
                         </div>
                         <p id="supportChatError" class="support-error" role="status" hidden></p>
                         <div id="supportMessages" class="support-messages" tabindex="0" aria-label="Chat history, newest messages at the bottom">
@@ -693,6 +714,7 @@
                 <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
+                <button id="adminMessageReadsBtn" type="button" class="bg-indigo-50 p-5 rounded-3xl shadow-sm border border-indigo-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">✓✓</span><span class="font-bold text-[15px] text-indigo-800">Message Read Reports</span></button>
                 <button id="supportAdminBtn" type="button" class="bg-teal-50 p-5 rounded-3xl shadow-sm border border-teal-200 hover:shadow-md flex flex-col items-center text-center"><span class="text-3xl mb-3">💬</span><span class="font-bold text-[15px] text-teal-800">Employee Chats</span><span id="supportAdminUnread" class="support-unread-badge mt-2" hidden>0</span></button>
                 <button id="admin-btn-delete" type="button" class="bg-red-50 p-5 rounded-3xl shadow-sm border border-red-200 hover:shadow-md flex flex-col items-center text-center">
                     <span class="text-3xl mb-3">🗑️</span><span class="font-bold text-[15px] text-red-700">Delete Attendance</span>
@@ -707,6 +729,21 @@
                     <div class="text-3xl mb-3">🎉</div><h3 class="font-bold text-[15px] leading-tight text-indigo-800">Special Events</h3>
                 </div>
             </div>
+        </div>
+
+        <div id="admin-message-reads-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center gap-3"><h2 class="text-xl font-bold">Message Read Reports</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button></div>
+            <p class="text-xs text-gray-500">Latest Global / Individual message · Read means the message was opened. Tracking starts with this app update.</p>
+            <div class="read-report-filters">
+                <select id="messageReadSource" aria-label="Message type"><option value="global">Global</option><option value="individual">Individual</option></select>
+                <select id="messageReadDept" aria-label="Department"><option value="all">All Departments</option></select>
+                <select id="messageReadLoc" aria-label="Location"><option value="all">All Locations</option></select>
+                <select id="messageReadStatus" aria-label="Read status"><option value="all">All statuses</option><option value="read">Read</option><option value="unread">Not read</option><option value="none">No message</option></select>
+                <input id="messageReadSearch" type="search" placeholder="Name / ID / phone" aria-label="Search employees">
+                <button id="messageReadsRefresh" type="button" class="support-send">Refresh</button><button id="messageReadsExport" type="button" class="support-attach-btn" disabled>CSV ↓</button>
+            </div>
+            <p id="messageReadSummary" class="text-sm font-bold" role="status"></p>
+            <div class="report-table-wrapper"><table class="report-table"><thead><tr><th>Employee</th><th>ID</th><th>Department</th><th>Location</th><th>Status</th><th>Read at (IST)</th><th>Message</th></tr></thead><tbody id="messageReadBody"></tbody></table></div>
         </div>
 
         <!-- Admin Sub View: Special Days -->
@@ -1185,7 +1222,7 @@
     <!-- MAIN JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, get, set, update, child, onValue, onDisconnect, serverTimestamp, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, get, set, update, child, onValue, onDisconnect, serverTimestamp, query, orderByChild, limitToLast, orderByKey, endBefore, startAt, endAt, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyBTxsmXcmNECtLkht-OVtqXqFNrJvO-ja8", 
@@ -1216,14 +1253,16 @@
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 15000);
             try {
-                const response = await fetch(`${firebaseConfig.databaseURL.replace(/\/$/, '')}/${path}.json`, {
-                    ...options, cache: 'no-store', signal: controller.signal
+                const { queryParams = {}, ...requestOptions } = options;
+                const suffix = new URLSearchParams(queryParams).toString();
+                const response = await fetch(`${firebaseConfig.databaseURL.replace(/\/$/, '')}/${path}.json${suffix ? '?' + suffix : ''}`, {
+                    ...requestOptions, cache: 'no-store', signal: controller.signal
                 });
                 if (!response.ok) {
                     if (response.status === 412) throw new Error('Record pehle se saved hai ya change hua hai. Refresh karke check karein.');
                     throw new Error('Server verification failed. Internet / Firebase permissions check karein.');
                 }
-                const data = await response.json();
+                const data = response.status === 204 ? null : await response.json();
                 return withEtag ? { data, etag: response.headers.get('ETag') } : data;
             } finally { clearTimeout(timer); }
         }
@@ -1331,8 +1370,10 @@
             if (currentEmployee && !document.hidden && navigator.onLine &&
                 (!appClock || tick - appClock.at >= CLOCK_SYNC_MS) &&
                 tick - lastClockAttempt >= 10000) syncAppClock().catch(() => {});
-            renderAppClock();
-            updateCaptureButton();
+            if (!document.hidden) {
+                if (activeView === 'employee-dashboard') renderAppClock();
+                if (activeView === 'attendance-section') updateCaptureButton();
+            }
         }, 1000);
         window.addEventListener('pageshow', event => { if (event.persisted) resumeAppClock(); });
         window.addEventListener('online', () => {
@@ -1456,11 +1497,12 @@
         function showView(viewId, titleText = "Smart Attendance") {
             if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportLeaveView();
             if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
+            if (activeView === 'admin-message-reads-view' && viewId !== activeView) ++messageReadVersion;
             activeView = viewId;
             document.body.dataset.view = viewId;
             if (viewId !== 'employee-dashboard') hideWelcomeClock();
             renderAppClock();
-            const viewsList = ['support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
+            const viewsList = ['admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -1507,7 +1549,7 @@
 
         async function fetchGlobalData(forAdmin = false) {
             try {
-                const setSnap = await get(ref(database, 'settings'));
+                const [setSnap, empSnap] = await Promise.all([get(ref(database, 'settings')), forAdmin ? get(ref(database, 'employees')) : Promise.resolve(null)]);
                 if (setSnap.exists()) {
                     let st = setSnap.val();
                     globalSettings.autoShowMsg = st.autoShowMsg || false;
@@ -1529,8 +1571,7 @@
                 }
                 
                 if (forAdmin) {
-                    const empSnap = await get(ref(database, 'employees'));
-                    if (empSnap.exists()) allEmployeesData = empSnap.val();
+                    if (empSnap?.exists()) allEmployeesData = empSnap.val();
                     
                     populateEmployeeSelects();
 
@@ -2232,7 +2273,7 @@
             const empDat = isAdmin ? allEmployeesData[empId] : currentEmployee;
             document.getElementById('btn-text').style.display='none'; document.getElementById('btn-loader').style.display='block';
             try {
-                const snap = await get(ref(database, `attendance/${empId}`));
+                const snap = await get(query(ref(database, `attendance/${empId}`), orderByKey(), startAt(sd), endAt(ed)));
                 if (version !== reportVersion || currentEmployee?.id !== sessionEmployee || activeView !== 'report-section') return;
                 const data = calculateReport(empDat, snap.exists() ? snap.val() : {}, sd, ed);
                 renderReportUI(data, 'duty-timings', 'report-container', isAdmin);
@@ -3220,7 +3261,7 @@
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
         document.getElementById('btn-logout').addEventListener('click', () => { supportStop(); ++dashboardVersion; ++reportVersion; hideWelcomeClock(); currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
-        document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); });
+        document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); trackAnnouncementRead(); });
         document.getElementById('openReportDirectBtn').addEventListener('click', openTodayReport);
 
         document.getElementById('showForgotBtn').addEventListener('click', () => showView('forgot-pin-section', 'Reset Password (PIN)'));
@@ -3330,7 +3371,7 @@
             epoch: 0, userId: null, admin: false, newChatMode: false, connected: false, unsubscribers: [], threadOff: null,
             selected: null, messages: {}, inbox: {}, presence: {}, presenceRef: null, presenceGeneration: 0,
             limit: 80, threadGeneration: 0, prepend: false, initial: true, drafts: new Map(), sending: false, photoBusy: false,
-            deleting: new Set(), reading: new Set(), camera: null, cameraGeneration: 0, facing: 'environment'
+            clearing: false, searchResults: {}, searchCursor: null, searchVersion: 0, searchExhausted: false, searchBusy: false, deleting: new Set(), reading: new Set(), camera: null, cameraGeneration: 0, facing: 'environment'
         };
         const supportEl = id => document.getElementById(id);
         const supportServerValue = () => ({ '.sv': 'timestamp' });
@@ -3364,7 +3405,7 @@
         }
         function supportBeginReply(messageId) {
             if (!support.selected || support.sending || support.photoBusy || supportDraft().attempt) return;
-            const message = support.messages[messageId];
+            const message = supportMessageById(messageId);
             if (!message || message.deleted || !['admin', 'employee'].includes(message.senderRole)) return;
             supportSaveDraft();
             const caption = typeof message.text === 'string' ? message.text : '';
@@ -3396,9 +3437,9 @@
         }
         function supportComposerState() {
             const draft = support.selected ? supportDraft() : null;
-            const locked = support.sending || support.photoBusy || !!draft?.attempt;
+            const locked = support.clearing || support.sending || support.photoBusy || !!draft?.attempt;
             ['supportMessageText', 'supportCategory', 'supportIssueDate', 'supportPunchType', 'supportGalleryBtn', 'supportCameraBtn', 'supportRemoveAttachment', 'supportCancelReply'].forEach(id => supportEl(id).disabled = locked);
-            supportEl('supportSendBtn').disabled = support.sending || support.photoBusy || !support.connected || !support.selected;
+            supportEl('supportSendBtn').disabled = support.clearing || support.sending || support.photoBusy || !support.connected || !support.selected;
             supportEl('supportSendBtn').textContent = support.sending ? 'Sending…' : draft?.attempt ? 'Retry send ➤' : 'Send ➤';
             const replying = supportValidReply(draft?.replyTo);
             supportEl('supportReplyPreview').hidden = !replying;
@@ -3424,6 +3465,9 @@
             supportComposerState();
         }
         function supportCloseThread() {
+            ++support.searchVersion; support.searchBusy = false; support.searchResults = {}; support.searchCursor = null; support.searchExhausted = false;
+            supportEl('supportMessageSearch').value = ''; supportEl('supportTicketFilter').value = 'all';
+            supportEl('supportSearchInfo').textContent = ''; supportEl('supportAdminActions').open = false;
             ++support.threadGeneration;
             supportSaveDraft();
             if (support.threadOff) support.threadOff();
@@ -3444,7 +3488,7 @@
             supportLeaveView();
             support.unsubscribers.forEach(off => off()); support.unsubscribers = [];
             support.presenceRef = null; support.userId = null; support.connected = false;
-            support.sending = false; support.photoBusy = false;
+            support.sending = false; support.photoBusy = false; support.clearing = false;
             support.newChatMode = false; supportEl('supportSearch').value = '';
             support.inbox = {}; support.presence = {}; support.drafts.clear(); support.reading.clear();
             if (oldPresence) set(oldPresence, null).catch(() => {});
@@ -3505,10 +3549,10 @@
         }
         function supportUnread(meta, role) { return Object.keys(meta?.[role === 'admin' ? 'pendingAdmin' : 'pendingEmployee'] || {}).length; }
         function supportRenderInbox() {
-            const total = support.admin ? activeEmployeeEntries().reduce((sum, [id]) => sum + supportUnread(support.inbox[id], 'admin'), 0) : supportUnread(support.inbox[support.userId], 'employee');
+            const total = support.admin ? Object.entries(support.inbox).reduce((sum, [id, meta]) => sum + (employeeIsActive(allEmployeesData[id] || { status: 'inactive' }) ? supportUnread(meta, 'admin') : 0), 0) : supportUnread(support.inbox[support.userId], 'employee');
             const badge = supportEl(support.admin ? 'supportAdminUnread' : 'supportEmployeeUnread');
             badge.textContent = total > 99 ? '99+' : String(total); badge.hidden = total === 0;
-            if (!support.admin) return;
+            if (!support.admin || activeView !== 'support-chat-view') return;
             supportEl('supportListTitle').textContent = support.newChatMode ? 'New chat' : 'Chats';
             supportEl('supportSearchLabel').textContent = support.newChatMode ? 'Select an active employee' : 'Search conversations';
             const newButton = supportEl('supportNewChatBtn');
@@ -3560,6 +3604,7 @@
             supportEl('supportShell').classList.add('thread-open'); supportEl('supportEmpty').hidden = true; supportEl('supportThread').hidden = false;
             const name = support.admin ? allEmployeesData[employeeId].name || employeeId : 'Admin';
             supportEl('supportContactName').textContent = name; supportEl('supportAvatar').textContent = name.slice(0, 1).toUpperCase();
+            supportEl('supportAdminActions').hidden = !support.admin;
             supportRenderPresence(); supportRestoreDraft(); supportError(); supportRenderInbox(); supportListenMessages();
         }
         function supportListenMessages() {
@@ -3574,13 +3619,11 @@
             }, () => { if (supportHasSession(epoch) && support.selected === id && generation === support.threadGeneration) supportError('Messages load nahi hui. Chat ko dobara kholein; Firebase permissions/index check karein.'); });
         }
         function supportCanDelete(message) {
-            return !!currentEmployee && !!message && !message.deleted && message.senderRole === supportRole() &&
-                message.senderId === support.userId && currentEmployee.id === support.userId &&
-                (support.admin || support.selected === support.userId);
+            return !!currentEmployee && isAdmin && support.admin && currentEmployee.id === support.userId && !!message && !message.deleted;
         }
         async function supportDeleteMessage(messageId) {
             const thread = support.selected, epoch = support.epoch, key = `${epoch}/${thread}/${messageId}`;
-            if (!thread || !supportCanDelete(support.messages[messageId]) || support.deleting.has(key) || support.sending || support.photoBusy) return;
+            if (!thread || !supportCanDelete(supportMessageById(messageId)) || support.deleting.has(key) || support.sending || support.photoBusy || support.clearing) return;
             if (!confirm('Delete this message for everyone? This cannot be undone.')) return;
             support.deleting.add(key); supportError();
             let deleted = false;
@@ -3590,15 +3633,16 @@
                 const snapshot = await databaseRequest(path, { headers: { 'X-Firebase-ETag': 'true' } }, true);
                 if (!supportHasSession(epoch) || support.selected !== thread) return;
                 const original = snapshot.data;
-                if (!original || original.senderRole !== supportRole() || original.senderId !== support.userId) throw new Error('Sirf apna bheja message delete kar sakte hain.');
+                if (!isAdmin || !support.admin || !original) throw new Error('Sirf admin message delete kar sakta hai.');
                 if (!original.deleted) {
                     if (!snapshot.etag) throw new Error('Message verify nahi hua. Dobara try karein.');
                     const tombstone = { senderRole: original.senderRole, senderId: original.senderId, createdAt: original.createdAt,
-                        category: 'reply', text: '', deleted: true, deletedAt: supportServerValue() };
+                        category: 'reply', text: '', deleted: true, deletedAt: supportServerValue(), deletedBy: support.userId };
                     ['readByAdminAt', 'readByEmployeeAt'].forEach(field => { if (original[field]) tombstone[field] = original[field]; });
                     await databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify(tombstone) });
                 }
                 deleted = true;
+                if (support.searchResults[messageId]) { support.searchResults[messageId] = { ...original, text: '', image: '', deleted: true }; supportRenderMessages(); }
                 // Only replace the preview if this is still the latest message. ETags protect a concurrent send.
                 for (let attempt = 0; attempt < 3; attempt++) {
                     if (!supportHasSession(epoch)) return;
@@ -3644,11 +3688,14 @@
         function supportRenderMessages() {
             const scroll = supportEl('supportMessages'), oldHeight = scroll.scrollHeight, oldTop = scroll.scrollTop;
             const atBottom = oldHeight - oldTop - scroll.clientHeight < 80;
-            const entries = Object.entries(support.messages).sort(([a, x], [b, y]) => (Number(x.createdAt) || 0) - (Number(y.createdAt) || 0) || a.localeCompare(b));
+            const entries = Object.entries({ ...support.searchResults, ...support.messages }).filter(([, message]) => supportMatchesSearch(message)).sort(([a, x], [b, y]) => (Number(x.createdAt) || 0) - (Number(y.createdAt) || 0) || a.localeCompare(b));
             const items = supportEl('supportMessageItems'); items.replaceChildren();
-            supportEl('supportLoadEarlier').hidden = entries.length < support.limit;
+            supportEl('supportLoadEarlier').hidden = supportSearchActive() || Object.keys(support.messages).length < support.limit;
+            supportEl('supportSearchOlder').disabled = support.searchBusy || support.searchExhausted;
+            if (supportSearchActive()) supportEl('supportSearchInfo').textContent = entries.length + ' matches · ' + (support.searchExhausted ? 'All history searched' : 'Recent / searched history · Older ↑ searches more');
+            else supportEl('supportSearchInfo').textContent = 'Search text, date or punch type · Use Older ↑ for earlier history';
             let lastDay = '';
-            if (!entries.length) { const empty = document.createElement('p'); empty.className = 'support-date'; empty.textContent = 'No messages yet. Start the conversation below.'; items.append(empty); }
+            if (!entries.length) { const empty = document.createElement('p'); empty.className = 'support-date'; empty.textContent = supportSearchActive() ? 'No matches here. Use Older ↑ to search earlier messages.' : 'No messages yet. Start the conversation below.'; items.append(empty); }
             entries.forEach(([id, message]) => {
                 const day = Number.isFinite(message.createdAt) ? getLocalDateStr(new Date(message.createdAt)) : 'Pending';
                 if (day !== lastDay) { const divider = document.createElement('div'); divider.className = 'support-date'; divider.textContent = day === 'Pending' ? 'Sending…' : new Date(message.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'long', year: 'numeric' }); items.append(divider); lastDay = day; }
@@ -3664,6 +3711,7 @@
                     quote.append(author, excerpt); quote.addEventListener('click', () => supportJumpToReply(message.replyTo)); bubble.append(quote);
                 }
                 if (!message.deleted && message.category && message.category !== 'reply') { const tag = document.createElement('div'); tag.className = 'support-message-tag'; tag.textContent = message.category === 'issue' ? `Issue · ${message.issueDate || '—'} · ${message.punchType === 'Both' ? 'IN + OUT' : message.punchType || '—'}` : message.category === 'suggestion' ? 'Suggestion' : 'Other'; bubble.append(tag); }
+                if (supportIsTicket(message)) bubble.append(supportTicketControl(id, message));
                 if (!message.deleted && supportSafeImage(message.image)) {
                     const photoButton = document.createElement('button'); photoButton.type = 'button'; photoButton.className = 'support-photo-btn'; photoButton.setAttribute('aria-label', 'Open attached photo');
                     const image = document.createElement('img'); image.src = message.image; image.alt = 'Attached photo'; image.loading = 'lazy';
@@ -3682,20 +3730,35 @@
             support.initial = false;
             requestAnimationFrame(supportMarkVisibleRead);
         }
-        async function supportMarkVisibleRead() {
+        let supportReadFrame = null;
+        function supportMarkVisibleRead() {
+            if (supportReadFrame !== null) return;
+            supportReadFrame = requestAnimationFrame(() => { supportReadFrame = null; supportFlushVisibleRead(); });
+        }
+        async function supportFlushVisibleRead() {
             if (!support.selected || !support.connected || document.hidden || activeView !== 'support-chat-view') return;
             const id = support.selected, epoch = support.epoch, role = supportRole();
             const bounds = supportEl('supportMessages').getBoundingClientRect(), updates = {}, keys = [];
             const readField = support.admin ? 'readByAdminAt' : 'readByEmployeeAt';
             supportEl('supportMessageItems').querySelectorAll('[data-message-id]').forEach(row => {
-                const key = row.dataset.messageId, message = support.messages[key], rect = row.getBoundingClientRect();
+                const key = row.dataset.messageId, message = supportMessageById(key), rect = row.getBoundingClientRect();
                 if (!message || message.deleted || message.senderRole === role || message[readField] || support.reading.has(`${id}/${key}`) || rect.bottom <= bounds.top || rect.top >= bounds.bottom) return;
-                updates[`supportThreads/${id}/messages/${key}/${readField}`] = supportServerValue();
                 updates[`supportInbox/${id}/${support.admin ? 'pendingAdmin' : 'pendingEmployee'}/${key}`] = null;
                 keys.push(`${id}/${key}`); support.reading.add(`${id}/${key}`);
             });
             if (!keys.length) return;
-            try { await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates) }); }
+            try {
+                await Promise.all(keys.map(compound => {
+                    const key = compound.slice(id.length + 1);
+                    return runTransaction(ref(database, `supportThreads/${id}/messages/${key}`), message => {
+                        if (!supportHasSession(epoch) || !message || message.deleted || message[readField]) return;
+                        return { ...message, [readField]: serverTimestamp() };
+                    }, { applyLocally: false }).then(result => {
+                        if (supportHasSession(epoch) && support.selected === id && support.searchResults[key] && result.snapshot.exists()) support.searchResults[key] = result.snapshot.val();
+                    });
+                }));
+                await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates), queryParams: { print: 'silent' } });
+            }
             catch (err) { if (supportHasSession(epoch)) supportError('Read status sync nahi hua. Connection aane par chat dobara kholein.'); }
             finally { keys.forEach(key => support.reading.delete(key)); }
         }
@@ -3713,7 +3776,7 @@
         }
         async function supportSend(event) {
             event.preventDefault();
-            if (!support.selected || !currentEmployee || support.sending || support.photoBusy) return;
+            if (!support.selected || !currentEmployee || support.sending || support.photoBusy || support.clearing) return;
             supportSaveDraft(); const draft = supportDraft();
             try {
                 if (!navigator.onLine || !support.connected) throw new Error('Internet connect karein. Message abhi send nahi hua.');
@@ -3733,6 +3796,7 @@
                     const message = { text: attempt.text, senderRole: role, senderId: support.userId, createdAt: supportServerValue(), category: attempt.category };
                     if (attempt.image) message.image = attempt.image;
                     if (attempt.replyTo) message.replyTo = { ...attempt.replyTo };
+                    if (['issue', 'suggestion', 'other'].includes(attempt.category)) message.ticketStatus = 'open';
                     if (attempt.category === 'issue') { message.issueDate = attempt.date; message.punchType = attempt.punch; }
                     const updates = {};
                     // Leaf writes preserve read receipts if a retry races with the original response.
@@ -3740,6 +3804,7 @@
                     updates[`supportInbox/${id}/lastAt`] = supportServerValue();
                     updates[`supportInbox/${id}/lastText`] = (role === 'admin' ? 'Admin: ' : '') + (attempt.text || '📷 Photo').slice(0, 100);
                     updates[`supportInbox/${id}/lastSender`] = role;
+                    updates[`supportInbox/${id}/lastMessageId`] = attempt.id;
                     updates[`supportInbox/${id}/${role === 'admin' ? 'pendingEmployee' : 'pendingAdmin'}/${attempt.id}`] = true;
                     await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates) });
                 }
@@ -3800,6 +3865,247 @@
                 supportEl('supportCameraCapture').disabled = false;
             } catch (err) { if (generation === support.cameraGeneration) { supportEl('supportCameraError').hidden = false; supportEl('supportCameraError').textContent = 'Camera permission allow karein, ya Photo button se image choose karein.'; } }
         }
+        const ticketLabels = { open: 'Open', progress: 'In Progress', resolved: 'Resolved' };
+        function supportMessageById(id) { return support.messages[id] || support.searchResults[id]; }
+        function supportIsTicket(message) { return !!message && !message.deleted && ['issue', 'suggestion', 'other'].includes(message.category); }
+        function supportSearchActive() { return !!supportEl('supportMessageSearch').value.trim() || supportEl('supportTicketFilter').value !== 'all'; }
+        function supportMatchesSearch(message) {
+            const term = supportEl('supportMessageSearch').value.trim().toLocaleLowerCase();
+            const status = supportEl('supportTicketFilter').value;
+            if (status !== 'all' && (!supportIsTicket(message) || (message.ticketStatus || 'open') !== status)) return false;
+            if (!term) return true;
+            if (message.deleted) return false;
+            return [message.text, message.category, message.issueDate, message.punchType, Number.isFinite(message.createdAt) ? supportDate(message.createdAt) : '', message.image ? 'photo' : ''].join(' ').toLocaleLowerCase().includes(term);
+        }
+        function supportTicketControl(id, message) {
+            const wrap = document.createElement('div'); wrap.className = 'support-ticket';
+            const state = ticketLabels[message.ticketStatus] ? message.ticketStatus : 'open';
+            const badge = document.createElement('span'); badge.className = 'ticket-badge'; badge.dataset.status = state; badge.textContent = ticketLabels[state];
+            wrap.append(badge);
+            if (support.admin && isAdmin) {
+                const select = document.createElement('select'); select.setAttribute('aria-label', 'Change ticket status');
+                Object.entries(ticketLabels).forEach(([value, label]) => select.add(new Option(label, value)));
+                select.value = state;
+                const thread = support.selected, epoch = support.epoch;
+                select.addEventListener('change', async () => {
+                    if (!isAdmin || !support.admin || support.selected !== thread || support.clearing) return;
+                    const next = select.value; select.disabled = true;
+                    try {
+                        if (!navigator.onLine) throw new Error('Internet connect karein.');
+                        const result = await runTransaction(ref(database, `supportThreads/${thread}/messages/${id}`), current => {
+                            if (!supportHasSession(epoch) || !isAdmin || !supportIsTicket(current)) return;
+                            return { ...current, ticketStatus: next, statusUpdatedBy: support.userId, statusUpdatedAt: serverTimestamp() };
+                        }, { applyLocally: false });
+                        if (!result.committed) throw new Error('Ticket unavailable. Chat refresh karein.');
+                        if (supportHasSession(epoch) && support.selected === thread) {
+                            if (support.searchResults[id]) support.searchResults[id] = result.snapshot.val();
+                            if (support.messages[id]) support.messages[id] = result.snapshot.val();
+                            supportRenderMessages();
+                        }
+                    } catch (err) { if (supportHasSession(epoch)) { select.value = state; supportError(err.message || 'Status save nahi hua.'); } }
+                    finally { select.disabled = false; }
+                }); wrap.append(select);
+            }
+            if (Number.isFinite(message.statusUpdatedAt)) wrap.title = 'Updated ' + supportDate(message.statusUpdatedAt);
+            return wrap;
+        }
+        let supportSearchTimer = null;
+        function supportResetSearch() {
+            clearTimeout(supportSearchTimer); ++support.searchVersion;
+            support.searchBusy = false; support.searchResults = {}; support.searchCursor = null; support.searchExhausted = false;
+            supportSearchTimer = setTimeout(() => { if (support.selected && activeView === 'support-chat-view') { support.initial = true; supportRenderMessages(); } }, 180);
+        }
+        async function supportSearchOlderMessages() {
+            if (!support.selected || support.searchBusy || support.searchExhausted) return;
+            const thread = support.selected, epoch = support.epoch, version = support.searchVersion;
+            support.searchBusy = true; supportEl('supportSearchOlder').disabled = true;
+            supportEl('supportSearchInfo').textContent = 'Searching older messages…';
+            try {
+                // Paginate by timestamp and key; UUID message IDs are not chronological.
+                let cursor = support.searchCursor;
+                if (!cursor) {
+                    const recent = Object.entries(support.messages).filter(([, m]) => Number.isFinite(m.createdAt)).sort(([a,x],[b,y]) => x.createdAt-y.createdAt || a.localeCompare(b));
+                    if (recent.length) cursor = { at: recent[0][1].createdAt, key: recent[0][0] };
+                }
+                const target = ref(database, `supportThreads/${thread}/messages`);
+                const page = await get(cursor
+                    ? query(target, orderByChild('createdAt'), endBefore(cursor.at, cursor.key), limitToLast(80))
+                    : query(target, orderByChild('createdAt'), limitToLast(80)));
+                if (!supportHasSession(epoch) || support.selected !== thread || version !== support.searchVersion) return;
+                const entries = Object.entries(page.val() || {}).sort(([a,x],[b,y]) => (Number(x.createdAt)||0)-(Number(y.createdAt)||0) || a.localeCompare(b));
+                entries.forEach(([id, message]) => { if (supportMatchesSearch(message)) support.searchResults[id] = message; });
+                support.searchCursor = entries.length ? { at: entries[0][1].createdAt, key: entries[0][0] } : cursor;
+                support.searchExhausted = entries.length < 80;
+                support.initial = true; supportRenderMessages();
+            } catch (err) { if (supportHasSession(epoch) && version === support.searchVersion) supportError('Search load nahi hui. Dobara Older dabayein.'); }
+            finally { if (supportHasSession(epoch) && version === support.searchVersion) { support.searchBusy = false; supportEl('supportSearchOlder').disabled = support.searchExhausted; } }
+        }
+        async function supportClearConversation(removeConversation) {
+            if (!isAdmin || !support.admin || !support.selected || support.clearing || support.sending || support.photoBusy || support.deleting.size) return;
+            const thread = support.selected, epoch = support.epoch;
+            if (!confirm((removeConversation ? 'Delete conversation' : 'Clear all messages') + ' for this employee and admin? Photos and ticket history will also be removed. This cannot be undone.')) return;
+            support.clearing = true; supportComposerState(); supportEl('supportAdminActions').open = false;
+            try {
+                if (!navigator.onLine) throw new Error('Internet connect karein.');
+                const inboxPath = `supportInbox/${thread}`;
+                const inboxSnapshot = await databaseRequest(inboxPath, { headers: { 'X-Firebase-ETag': 'true' } }, true);
+                const keys = await databaseRequest(`supportThreads/${thread}/messages`, { queryParams: { shallow: 'true' } });
+                if (!supportHasSession(epoch) || !isAdmin) return;
+                const updates = {};
+                Object.keys(keys || {}).forEach(id => {
+                    updates[`supportThreads/${thread}/messages/${id}`] = null;
+                    updates[`${inboxPath}/pendingAdmin/${id}`] = null;
+                    updates[`${inboxPath}/pendingEmployee/${id}`] = null;
+                });
+                if (Object.keys(updates).length) await databaseRequest('', { method: 'PATCH', body: JSON.stringify(updates), queryParams: { print: 'silent' } });
+                // A concurrent new message is preserved. Only replace metadata when it still
+                // describes a message included in this clear (or the same empty conversation).
+                let removed = false;
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    if (!supportHasSession(epoch)) return;
+                    const latest = await databaseRequest(inboxPath, { headers: { 'X-Firebase-ETag': 'true' } }, true);
+                    const meta = latest.data;
+                    if (!latest.etag) throw new Error('Chat metadata verify nahi hua.');
+                    if (meta && (meta.lastMessageId ? !keys?.[meta.lastMessageId] : meta.lastAt !== inboxSnapshot.data?.lastAt)) break;
+                    try {
+                        await databaseRequest(inboxPath, { method: 'PUT', headers: { 'if-match': latest.etag }, body: JSON.stringify(removeConversation ? null : { lastAt: meta?.lastAt || supportServerValue(), lastText: 'Chat cleared', lastSender: 'admin' }) });
+                        removed = removeConversation; break;
+                    } catch (error) { if (attempt === 2) throw error; }
+                }
+                if (supportHasSession(epoch) && support.selected === thread) {
+                    support.drafts.delete(thread); support.searchResults = {}; ++support.searchVersion;
+                    supportRestoreDraft(); supportResetSearch();
+                    if (removed) supportCloseThread(); else supportRenderMessages();
+                    showMessage(removed ? 'Conversation deleted.' : 'Messages cleared. Any new incoming messages are preserved.', 'success');
+                }
+            } catch (err) { if (supportHasSession(epoch)) supportError('Clear/delete complete nahi hua. Chat refresh karke check karein. ' + (err.message || '')); }
+            finally { if (supportHasSession(epoch)) { support.clearing = false; supportComposerState(); } }
+        }
+        supportEl('supportMessageSearch').addEventListener('input', supportResetSearch);
+        supportEl('supportTicketFilter').addEventListener('change', supportResetSearch);
+        supportEl('supportSearchOlder').addEventListener('click', supportSearchOlderMessages);
+        supportEl('supportClearChat').addEventListener('click', () => supportClearConversation(false));
+        supportEl('supportDeleteChat').addEventListener('click', () => supportClearConversation(true));
+
+        // Announcement versions are SHA-256 hashes of the exact message and update timestamp.
+        // The report reads receipts only for the latest global/individual message version.
+        const announcementHashes = new Map(), announcementReceipted = new Set(), announcementPending = new Set();
+        let messageReadRows = [], messageReadVersion = 0;
+        function announcementContent(source, employee = currentEmployee, settings = globalSettings) {
+            if (source === 'global') {
+                if (!settings.globalMsgText && !supportSafeImage(settings.globalMsgImage)) return null;
+                return { source, text: settings.globalMsgText || '', image: settings.globalMsgImage || '', scale: normalizeGlobalMsgScale(settings.globalMsgImageScale), updated: settings.globalMsgUpdatedAt || null };
+            }
+            if (!employee?.msg?.text) return null;
+            return { source: 'individual', text: String(employee.msg.text), updated: employee.msg.lastUpdated || null };
+        }
+        function announcementHash(content) {
+            const serialized = JSON.stringify(content);
+            if (!announcementHashes.has(serialized)) {
+                if (announcementHashes.size >= 8) announcementHashes.delete(announcementHashes.keys().next().value);
+                announcementHashes.set(serialized, crypto.subtle.digest('SHA-256', new TextEncoder().encode(serialized)).then(buffer => Array.from(new Uint8Array(buffer), n => n.toString(16).padStart(2, '0')).join('')));
+            }
+            return announcementHashes.get(serialized);
+        }
+        function announcementReceiptPath(source, id, hash) {
+            return source === 'global' ? `announcementReads/global/${hash}/${id}` : `announcementReads/individual/${id}/${hash}`;
+        }
+        async function trackAnnouncementRead() {
+            if (!currentEmployee || isAdmin || document.hidden || document.getElementById('msg-modal').classList.contains('hidden')) return;
+            const employee = currentEmployee, source = globalSettings.msgSource === 'global' ? 'global' : 'individual';
+            const content = announcementContent(source, employee); if (!content) return;
+            try {
+                const hash = await announcementHash(content), path = announcementReceiptPath(source, employee.id, hash);
+                if (currentEmployee !== employee || isAdmin || document.hidden || document.getElementById('msg-modal').classList.contains('hidden') || announcementReceipted.has(path) || announcementPending.has(path)) return;
+                announcementPending.add(path);
+                try {
+                    if (!navigator.onLine) return;
+                    await runTransaction(ref(database, path), existing => {
+                        if (existing || currentEmployee !== employee || isAdmin) return;
+                        return { readAt: serverTimestamp(), employeeId: employee.id, source };
+                    }, { applyLocally: false });
+                    announcementReceipted.add(path);
+                } finally { announcementPending.delete(path); }
+            } catch (err) { console.warn('Message read receipt pending.'); }
+        }
+        window.addEventListener('online', trackAnnouncementRead);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) trackAnnouncementRead(); });
+        function messageReadFilteredRows() {
+            const value = id => document.getElementById(id).value;
+            const term = value('messageReadSearch').trim().toLocaleLowerCase();
+            return messageReadRows.filter(row => (value('messageReadDept') === 'all' || row.department === value('messageReadDept')) &&
+                (value('messageReadLoc') === 'all' || row.location === value('messageReadLoc')) && (value('messageReadStatus') === 'all' || row.status === value('messageReadStatus')) &&
+                [row.name, row.id, row.phone].join(' ').toLocaleLowerCase().includes(term));
+        }
+        function renderMessageReadReport() {
+            const rows = messageReadFilteredRows();
+            document.getElementById('messageReadSummary').textContent = `${rows.length} employees · ${rows.filter(r => r.status === 'read').length} Read · ${rows.filter(r => r.status === 'unread').length} Not read · ${rows.filter(r => r.status === 'none').length} No message`;
+            const body = document.getElementById('messageReadBody'); body.replaceChildren();
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                [row.name, row.id, row.department, row.location, row.status === 'read' ? '✓✓ Read' : row.status === 'none' ? 'No message' : 'Not read', row.readAt ? supportDate(row.readAt) : '—'].forEach(text => { const td = document.createElement('td'); td.textContent = text || '—'; tr.append(td); });
+                const td = document.createElement('td');
+                if (row.content) { const button = document.createElement('button'); button.type = 'button'; button.textContent = 'ⓘ'; button.className = 'text-indigo-600 font-bold'; button.setAttribute('aria-label', 'View message'); button.addEventListener('click', () => window.showRemark(row.content.text || 'Photo message')); td.append(button); }
+                else td.textContent = '—'; tr.append(td); body.append(tr);
+            });
+            if (!rows.length) body.innerHTML = '<tr><td colspan="7">No employees match these filters.</td></tr>';
+            document.getElementById('messageReadsExport').disabled = !rows.length;
+        }
+        async function refreshMessageReadReport() {
+            if (!isAdmin || !currentEmployee) return;
+            const admin = currentEmployee, version = ++messageReadVersion;
+            const source = document.getElementById('messageReadSource').value;
+            messageReadRows = []; document.getElementById('messageReadBody').replaceChildren();
+            const button = document.getElementById('messageReadsRefresh'); button.disabled = true;
+            document.getElementById('messageReadsExport').disabled = true;
+            document.getElementById('messageReadSummary').textContent = 'Loading read status…';
+            try {
+                const [employees, settings] = await Promise.all([databaseRequest('employees'), databaseRequest('settings')]);
+                const entries = Object.entries(employees || {}).filter(([, emp]) => employeeIsActive(emp)).sort(([, a], [, b]) => String(a.name || '').localeCompare(String(b.name || '')));
+                const globalContent = announcementContent('global', null, settings || {});
+                const globalHash = source === 'global' && globalContent ? await announcementHash(globalContent) : null;
+                const globalReads = globalHash ? await databaseRequest(`announcementReads/global/${globalHash}`) || {} : {};
+                let next = 0; const rows = new Array(entries.length);
+                await Promise.all(Array.from({ length: Math.min(6, entries.length) }, async () => {
+                    while (next < entries.length) {
+                        if (version !== messageReadVersion || currentEmployee !== admin || !isAdmin || activeView !== 'admin-message-reads-view') return;
+                        const index = next++, [id, emp] = entries[index];
+                        const content = source === 'global' ? globalContent : announcementContent('individual', emp);
+                        let receipt = null;
+                        if (content) receipt = source === 'global' ? globalReads[id] : await databaseRequest(announcementReceiptPath('individual', id, await announcementHash(content)));
+                        rows[index] = { id, name: emp.name || id, department: emp.department || '', location: emp.location || '', phone: emp.phone || emp.mobile || '', content,
+                            status: !content ? 'none' : Number.isFinite(receipt?.readAt) ? 'read' : 'unread', readAt: Number.isFinite(receipt?.readAt) ? receipt.readAt : null };
+                    }
+                }));
+                if (version !== messageReadVersion || currentEmployee !== admin || !isAdmin || activeView !== 'admin-message-reads-view') return;
+                messageReadRows = rows;
+                [['messageReadDept', 'department', 'All Departments'], ['messageReadLoc', 'location', 'All Locations']].forEach(([id, key, label]) => {
+                    const select = document.getElementById(id), previous = select.value;
+                    select.replaceChildren(new Option(label, 'all'));
+                    [...new Set(rows.map(row => row[key]).filter(Boolean))].sort().forEach(value => select.add(new Option(value, value)));
+                    select.value = [...select.options].some(option => option.value === previous) ? previous : 'all';
+                }); renderMessageReadReport();
+            } catch (err) { if (version === messageReadVersion && currentEmployee === admin) { messageReadRows = []; document.getElementById('messageReadBody').replaceChildren(); document.getElementById('messageReadSummary').textContent = 'Read report unavailable. Check connection / permissions, then Refresh.'; } }
+            finally { if (version === messageReadVersion) button.disabled = false; }
+        }
+        document.getElementById('adminMessageReadsBtn').addEventListener('click', () => {
+            if (!isAdmin) return;
+            messageReadRows = []; document.getElementById('messageReadBody').replaceChildren();
+            ['messageReadDept', 'messageReadLoc', 'messageReadStatus'].forEach(id => document.getElementById(id).value = 'all');
+            document.getElementById('messageReadSearch').value = ''; document.getElementById('messageReadSource').value = 'global';
+            showView('admin-message-reads-view', 'Message Read Reports'); refreshMessageReadReport();
+        });
+        document.getElementById('messageReadSource').addEventListener('change', refreshMessageReadReport);
+        document.getElementById('messageReadsRefresh').addEventListener('click', refreshMessageReadReport);
+        ['messageReadDept', 'messageReadLoc', 'messageReadStatus', 'messageReadSearch'].forEach(id => document.getElementById(id).addEventListener('input', renderMessageReadReport));
+        document.getElementById('messageReadsExport').addEventListener('click', () => {
+            if (!isAdmin) return;
+            const quote = value => '"' + String(value ?? '').replace(/^[=+@-]/, "'" + String(value ?? '')[0]).replace(/"/g, '""') + '"';
+            const data = [['Name', 'ID', 'Department', 'Location', 'Message type', 'Status', 'Read at (IST)'], ...messageReadFilteredRows().map(row => [row.name, row.id, row.department, row.location, document.getElementById('messageReadSource').value, row.status, row.readAt ? supportDate(row.readAt) : ''])];
+            const url = URL.createObjectURL(new Blob(['\uFEFF' + data.map(row => row.map(quote).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+            const link = document.createElement('a'); link.href = url; link.download = 'Message-Read-Report.csv'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+
         supportEl('supportEmployeeBtn').addEventListener('click', supportOpen);
         supportEl('supportAdminBtn').addEventListener('click', supportOpen);
         supportEl('supportExitBtn').addEventListener('click', () => showView(isAdmin ? 'admin-dashboard' : 'employee-dashboard', isAdmin ? 'Admin Portal' : 'Emp. Dashboard'));
