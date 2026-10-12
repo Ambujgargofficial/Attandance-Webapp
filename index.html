@@ -430,6 +430,8 @@
         .support-thread-actions[hidden] {display:none!important;}
         .support-thread-actions {position:relative;}.support-thread-actions summary {cursor:pointer;list-style:none;font-size:24px;padding:0 12px;}.support-thread-actions>div {position:absolute;right:0;top:100%;z-index:20;min-width:175px;background:white;padding:6px;border-radius:12px;box-shadow:0 4px 18px #0002;}.support-thread-actions button {display:block;padding:10px;width:100%;text-align:left;color:#b91c1c;font-size:12px;}
         .read-report-filters {display:flex;flex-wrap:wrap;gap:8px;}.read-report-filters>* {flex:1 1 130px;min-width:0;}
+        .fraud-time {position:relative;display:inline-block;padding-top:9px;color:#dc2626;white-space:nowrap;}
+        .fraud-time-caution {position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:10px;height:10px;pointer-events:none;}
     </style>
 </head>
 <body data-view="login-section" class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -751,12 +753,19 @@
             <div class="flex justify-between items-center gap-3"><h2 class="text-xl font-bold text-red-800">Fraud Approval</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button></div>
             <p class="text-xs text-gray-600">Flagged punches appear automatically. F = not counted until approved. One valid punch = Half Day. Approval restores normal attendance rules.</p>
             <div class="read-report-filters">
-                <input id="fraudApprovalDate" type="date" aria-label="Date (blank for all dates)">
+                <label class="text-xs font-bold text-gray-600">Start Date<input id="fraudApprovalStart" type="date" class="w-full" aria-label="Start date"></label>
+                <label class="text-xs font-bold text-gray-600">End Date<input id="fraudApprovalEnd" type="date" class="w-full" aria-label="End date"></label>
                 <select id="fraudApprovalStatus" aria-label="Review status"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="all">All</option></select>
                 <select id="fraudApprovalDept" aria-label="Department"><option value="all">All Departments</option></select>
                 <select id="fraudApprovalLoc" aria-label="Location"><option value="all">All Locations</option></select>
                 <input id="fraudApprovalSearch" type="search" placeholder="Name / employee ID" aria-label="Find employee">
                 <button id="fraudApprovalRefresh" type="button" class="support-send">Refresh</button>
+            </div>
+            <div class="rounded-2xl border border-green-200 bg-green-50 p-3 space-y-2">
+                <p class="text-xs text-gray-600">Bulk approval applies to pending IN / OUT punches in the selected date range and filters, including results beyond Show more.</p>
+                <input id="fraudBulkNote" type="text" maxlength="500" placeholder="Approval reason (optional), e.g. branch transfer" aria-label="Bulk approval note" class="w-full p-2 border rounded-lg text-sm">
+                <button id="fraudBulkApprove" type="button" class="support-send" disabled>Approve All Pending</button>
+                <p id="fraudBulkProgress" class="text-xs font-bold" role="status" aria-live="polite"></p>
             </div>
             <p id="fraudApprovalSummary" role="status" class="text-sm font-bold"></p>
             <div id="fraudApprovalRows" class="space-y-3"></div>
@@ -2147,8 +2156,6 @@
                         if (held.length) {
                             const details = held.map(type => type.toUpperCase() + ': ' + fraudPunchState(p[type], emp.department).reason);
                             s.rem = [s.rem, 'Fraud punch detected. Please ask admin to approve.\n' + details.join('\n')].filter(Boolean).join('\n\n');
-                            if (held.includes('In')) s.in += ' · F';
-                            if (held.includes('Out')) s.out += ' · F';
                             p = { ...p, In: held.includes('In') ? null : p.In, Out: held.includes('Out') ? null : p.Out };
                             if (!p.In && !p.Out) s.st = 'F';
                             // Held punches must not earn an automatic weekly-off credit.
@@ -2258,6 +2265,12 @@
             return { statuses, sum, emp, lateDed, earlyDed, totalDed };
         }
 
+        function renderPunchTime(time, flagged) {
+            const text = punchHtml(time);
+            if (!flagged) return text;
+            return `<span class="fraud-time" title="Fraud punch detected. Please ask admin to approve." aria-label="${text} — Fraud approval required"><svg class="fraud-time-caution" aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.8 1.9 18.3a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></svg>${text}</span>`;
+        }
+
         function renderReportUI(data, headId, contId, isAdminMode) {
             document.getElementById(headId).innerHTML = `<strong>${data.emp.name || 'N/A'}</strong> | Shift: ${data.emp.startTime||'00:00'} to ${data.emp.endTime||'00:00'}`;
             document.getElementById(headId).classList.remove('hidden');
@@ -2280,7 +2293,7 @@
                 if (d.st === 'F') cls = 'status-A';
                 const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: d.rem || '' }));
                 const inf = d.rem ? `<button type="button" data-report-info="${payload}" class="${d.fraudTypes?.length ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
-                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${d.in}</td><td class="font-mono text-xs">${d.out}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
+                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
             });
             h+= `</tbody></table>`;
             document.getElementById(contId).innerHTML = h;
@@ -3130,7 +3143,8 @@
         }
         let fraudApprovalData = [], fraudApprovalVersion = 0, fraudApprovalLimit = 40;
         const fraudBusy = new Set();
-        async function updateFraudPunch(id, date, type, action, note = '', expectedFingerprint = null) {
+        let fraudBulkRunning = false;
+        async function updateFraudPunch(id, date, type, action, note = '', expectedFingerprint = null, pendingOnly = false) {
             const actor = currentEmployee, admin = isAdmin;
             if (!actor || !['In','Out'].includes(type) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Invalid punch selection.');
             if (action === 'request' ? admin || actor.id !== id : !admin || !['approved','rejected'].includes(action)) throw new Error('Action not permitted.');
@@ -3145,6 +3159,7 @@
             if (expectedFingerprint && expectedFingerprint !== fingerprint) throw new Error('Punch changed. Refresh and review the new details before approval.');
             if (!state.reason) throw new Error('This punch is not flagged. Refresh report.');
             if (action === 'request' && state.status === 'approved') throw new Error('Admin already approved this punch. Refresh report.');
+            if (pendingOnly && state.status !== 'pending') throw new Error('Punch already reviewed. Refresh to see the latest decision.');
             const review = { ...(state.review || {}), fingerprint, reason: state.reason };
             if (action === 'request') {
                 review.requestedAt = { '.sv': 'timestamp' }; review.requestedBy = actor.id;
@@ -3180,7 +3195,9 @@
         function openFraudApprovals(date = '', employeeId = '') {
             if (!isAdmin) return;
             fraudApprovalData = []; fraudApprovalLimit = 40;
-            document.getElementById('fraudApprovalDate').value = date;
+            document.getElementById('fraudApprovalStart').value = date;
+            document.getElementById('fraudApprovalEnd').value = date;
+            if (!fraudBulkRunning) { document.getElementById('fraudBulkProgress').textContent = ''; document.getElementById('fraudBulkNote').value = ''; }
             document.getElementById('fraudApprovalSearch').value = employeeId;
             document.getElementById('fraudApprovalStatus').value = 'pending';
             document.getElementById('fraudApprovalDept').value = 'all'; document.getElementById('fraudApprovalLoc').value = 'all';
@@ -3215,11 +3232,18 @@
             } catch(error) { if (currentEmployee === actor && version === fraudApprovalVersion) document.getElementById('fraudApprovalSummary').textContent = 'Unable to load approvals. Check connection and Refresh.'; }
             finally { if (version === fraudApprovalVersion) button.disabled = false; }
         }
+        function filteredFraudApprovals() {
+            const val=id=>document.getElementById(id).value, term=val('fraudApprovalSearch').trim().toLowerCase();
+            return fraudApprovalData.filter(r => (!val('fraudApprovalStart') || r.date>=val('fraudApprovalStart')) && (!val('fraudApprovalEnd') || r.date<=val('fraudApprovalEnd')) && (val('fraudApprovalStatus')==='all'||r.state.status===val('fraudApprovalStatus')) &&
+                (val('fraudApprovalDept')==='all'||r.emp.department===val('fraudApprovalDept')) && (val('fraudApprovalLoc')==='all'||r.emp.location===val('fraudApprovalLoc')) && `${r.emp.name} ${r.id}`.toLowerCase().includes(term));
+        }
         function renderFraudApprovals() {
             if (!isAdmin) return;
-            const val=id=>document.getElementById(id).value, term=val('fraudApprovalSearch').trim().toLowerCase();
-            const rows = fraudApprovalData.filter(r => (!val('fraudApprovalDate') || r.date===val('fraudApprovalDate')) && (val('fraudApprovalStatus')==='all'||r.state.status===val('fraudApprovalStatus')) &&
-                (val('fraudApprovalDept')==='all'||r.emp.department===val('fraudApprovalDept')) && (val('fraudApprovalLoc')==='all'||r.emp.location===val('fraudApprovalLoc')) && `${r.emp.name} ${r.id}`.toLowerCase().includes(term));
+            const rows = filteredFraudApprovals(), pending = rows.filter(r=>r.state.status==='pending');
+            const start=document.getElementById('fraudApprovalStart').value, end=document.getElementById('fraudApprovalEnd').value;
+            const bulk=document.getElementById('fraudBulkApprove');
+            bulk.disabled=fraudBulkRunning || fraudBusy.size>0 || !start || !end || start>end || !pending.length;
+            bulk.textContent=`Approve All Pending (${pending.length})`;
             document.getElementById('fraudApprovalSummary').textContent = `${rows.length} flagged punches · ${fraudApprovalData.filter(r=>r.state.status==='pending').length} pending overall`;
             const parent=document.getElementById('fraudApprovalRows'); parent.replaceChildren();
             if (!rows.length) { const p=document.createElement('p'); p.textContent='No flagged punches match these filters.'; parent.append(p); }
@@ -3246,9 +3270,10 @@
                 ['approved','rejected'].forEach(action=>{
                     if(row.state.status===action)return;
                     const btn=document.createElement('button');btn.type='button';btn.textContent=action==='approved'?'Approve punch':'Reject punch';btn.className=action==='approved'?'support-send':'support-attach-btn';
+                    btn.disabled=fraudBulkRunning;
                     btn.onclick=async()=>{
                         const key=`${row.id}/${row.date}/${row.type}`;
-                        if(!isAdmin||fraudBusy.has(key))return;
+                        if(!isAdmin||fraudBulkRunning||fraudBusy.has(key))return;
                         if(!confirm(`${action==='approved'?'Approve':'Reject'} ${row.type.toUpperCase()} for ${row.emp.name||row.id} on ${row.date}?`))return;
                         const actor=currentEmployee;fraudBusy.add(key);Array.from(actions.children).forEach(b=>b.disabled=true);
                         try {
@@ -3256,15 +3281,53 @@
                             if(currentEmployee!==actor||!isAdmin)return;
                             row.punch=saved;row.state=fraudPunchState(saved,row.emp.department);renderFraudApprovals();showMessage(action==='approved'?'Approved. Reports will count this punch using normal rules.':'Rejected. This punch remains excluded.','success');
                         }catch(err){showMessage(err.message,'error');Array.from(actions.children).forEach(b=>b.disabled=false);}
-                        finally{fraudBusy.delete(key);}
+                        finally{fraudBusy.delete(key);renderFraudApprovals();}
                     };actions.append(btn);
                 });card.append(actions);parent.append(card);
             });
             document.getElementById('fraudApprovalMore').classList.toggle('hidden',rows.length<=fraudApprovalLimit);
         }
+        document.getElementById('fraudBulkApprove').addEventListener('click', async()=>{
+            if (!isAdmin || fraudBulkRunning || fraudBusy.size) return;
+            const start=document.getElementById('fraudApprovalStart').value, end=document.getElementById('fraudApprovalEnd').value;
+            if (!start || !end || start>end) { showMessage('Select a valid Start and End Date.','error'); return; }
+            const rows=filteredFraudApprovals().filter(r=>r.state.status==='pending').map(r=>({...r, fingerprint:fraudPunchFingerprint(r.punch)}));
+            if (!rows.length) return;
+            const employees=new Set(rows.map(r=>r.id)).size;
+            if (!confirm(`Approve ${rows.length} pending punches for ${employees} employees from ${start} to ${end}?\nCurrent department, location and search filters apply. Attendance will be recalculated using normal rules.`)) return;
+            const actor=currentEmployee, note=document.getElementById('fraudBulkNote').value;
+            const progress=document.getElementById('fraudBulkProgress');
+            let completed=0, approved=0, failed=0, next=0;
+            const errors=[];
+            fraudBulkRunning=true;
+            const controls=Array.from(document.querySelectorAll('#admin-fraud-approvals-view .read-report-filters input, #admin-fraud-approvals-view .read-report-filters select, #fraudApprovalRefresh, #fraudBulkNote'));
+            controls.forEach(el=>el.disabled=true);renderFraudApprovals();
+            progress.textContent=`Approving 0 / ${rows.length}…`;
+            try {
+                await Promise.all(Array.from({length:Math.min(3,rows.length)},async()=>{
+                    while (next<rows.length && currentEmployee===actor && isAdmin) {
+                        const row=rows[next++];
+                        try {
+                            const saved=await updateFraudPunch(row.id,row.date,row.type,'approved',note,row.fingerprint,true);
+                            approved++;
+                            const cached=fraudApprovalData.find(r=>r.id===row.id&&r.date===row.date&&r.type===row.type);
+                            if(cached) { cached.punch=saved;cached.state=fraudPunchState(saved,cached.emp.department); }
+                        } catch(error) { failed++;errors.push(`${row.id} · ${row.date} · ${row.type}: ${error.message}`); }
+                        completed++;
+                        if(currentEmployee===actor&&isAdmin) progress.textContent=`Processed ${completed} / ${rows.length} · Approved ${approved} · Unsuccessful ${failed}`;
+                    }
+                }));
+            } finally {
+                fraudBulkRunning=false;controls.forEach(el=>el.disabled=false);
+                if(currentEmployee===actor&&isAdmin) {
+                    renderFraudApprovals();
+                    progress.textContent=`Approved ${approved} / ${rows.length} punches. ${failed ? `${failed} unsuccessful — Refresh and review before retrying. ` : ''}${rows.length-completed ? `${rows.length-completed} not processed. ` : ''}${errors.slice(0,3).join(' | ')}`;
+                }
+            }
+        });
         document.getElementById('adminFraudApprovalsBtn').addEventListener('click',()=>openFraudApprovals());
         document.getElementById('fraudApprovalRefresh').addEventListener('click',loadFraudApprovals);
-        ['fraudApprovalDate','fraudApprovalStatus','fraudApprovalDept','fraudApprovalLoc','fraudApprovalSearch'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{fraudApprovalLimit=40;renderFraudApprovals();}));
+        ['fraudApprovalStart','fraudApprovalEnd','fraudApprovalStatus','fraudApprovalDept','fraudApprovalLoc','fraudApprovalSearch'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{fraudApprovalLimit=40;renderFraudApprovals();}));
         document.getElementById('fraudApprovalMore').addEventListener('click',()=>{fraudApprovalLimit+=40;renderFraudApprovals();});
 
         function applyDaywiseStatusFilter() {
@@ -3387,8 +3450,8 @@
                         <td class="sticky-col-1 font-bold text-gray-700">${id}</td>
                         <td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td>
                         <td class="font-mono text-xs text-gray-600">${shift}</td>
-                        <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${inTime}</td>
-                        <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${outTime}</td>
+                        <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${renderPunchTime(inTime, report.statuses[0].fraudTypes?.includes('In'))}</td>
+                        <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${renderPunchTime(outTime, report.statuses[0].fraudTypes?.includes('Out'))}</td>
                         <td class="text-center" data-status="${st}">${stBadge}</td>
                         <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${infoText ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
                         ${daywisePhotoCell(dayPunch?.In)}
