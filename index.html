@@ -2001,6 +2001,18 @@
             return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
+        function verifiedPunchResponse(geo,fix,requestId,employeeId,timestamp) {
+            if (!geo || geo.version!==1 || geo.country!=='IN' || geo.requestId!==requestId ||
+                geo.employeeId!==String(employeeId) || geo.timestamp!==timestamp ||
+                !Number.isFinite(geo.latitude) || !Number.isFinite(geo.longitude) ||
+                Math.abs(geo.latitude-fix.latitude)>1e-7 || Math.abs(geo.longitude-fix.longitude)>1e-7 ||
+                !Number.isFinite(geo.addressLatitude) || !Number.isFinite(geo.addressLongitude) ||
+                geo.addressLatitude<6 || geo.addressLatitude>38 || geo.addressLongitude<68 || geo.addressLongitude>98)return false;
+            const rad=Math.PI/180,a=(geo.addressLatitude-fix.latitude)*rad,b=(geo.addressLongitude-fix.longitude)*rad;
+            const h=Math.sin(a/2)**2+Math.cos(fix.latitude*rad)*Math.cos(geo.addressLatitude*rad)*Math.sin(b/2)**2;
+            return 6371000*2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,h))))<=2000;
+        }
+
         async function handlePunch() {
             if (punchInFlight || !currentEmployee || !locationActive) return;
             punchInFlight = true;
@@ -2038,18 +2050,24 @@
                 ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
                 const photoData = cvs.toDataURL('image/jpeg', 0.5);
                 if (!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photoData) || photoData.length < 100) throw new Error('Photo capture fail hua. Dobara photo lein.');
+                const requestId=crypto.randomUUID();
                 const fd = new FormData();
+                fd.append('requestId',requestId);
                 fd.append('action', 'uploadPhoto'); fd.append('employeeId', employee.id);
                 fd.append('timestamp', timeIso); fd.append('photo', photoData.split(',')[1]);
                 fd.append('lat', fix.latitude); fd.append('lng', fix.longitude);
                 showLoader('Attendance mark ho rahi hai…');
-                let pUrl, tAdd;
+                let pUrl, tAdd, geoVerification;
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 18000);
                 try {
                     const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, signal: controller.signal });
                     if (!response.ok) throw new Error('Upload server unavailable.');
                     const res = await response.json();
+                    if (res.status !== 'success') throw new Error(res.message || 'Location verification failed. Please retry.');
+                    geoVerification=res.geoVerification;
+                    if (!verifiedPunchResponse(geoVerification,fix,requestId,employee.id,timeIso))
+                        throw new Error('GPS/address response match nahi hua. Refresh Location karein. Admin updated Code.gs deployment check karein.');
                     pUrl = validPunchPhoto(res.photoUrl);
                     if (res.status !== 'success' || !pUrl) throw new Error('Photo upload confirm nahi hua. Internet check karke dobara try karein.');
                     if (!validPunchAddress(res.address)) throw new Error('Location ka address nahi mila. Refresh Location karke dobara try karein.');
@@ -2064,7 +2082,7 @@
                 const punchRecord = { timestamp: timeIso, timeSource: 'firebase-synced-app-clock',
                     receivedAt: { '.sv': 'timestamp' }, latitude: fix.latitude, longitude: fix.longitude,
                     accuracy: fix.accuracy, locationAgeMs: Math.round(performance.now() - fix.receivedAt),
-                    address: tAdd, photoUrl: pUrl, location: employee.location || 'N/A', department: employee.department || 'N/A' };
+                    address: tAdd, photoUrl: pUrl, geoVerification, location: employee.location || 'N/A', department: employee.department || 'N/A' };
                 const flagReason = daywisePunchWarning(punchRecord, employee.department);
                 if (flagReason) punchRecord.fraudFlagReason = flagReason;
                 attendanceWriteStarted = true;
