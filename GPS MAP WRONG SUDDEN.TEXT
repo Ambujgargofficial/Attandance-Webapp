@@ -716,6 +716,7 @@
                 <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
+                <button id="adminPhotoCleanupBtn" type="button" class="bg-orange-50 p-5 rounded-3xl border border-orange-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">🗑️</span><span class="font-bold text-[15px] text-orange-800">Delete Old Photos</span></button>
                 <button id="adminFraudApprovalsBtn" type="button" class="bg-red-50 p-5 rounded-3xl border border-red-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">🛡️</span><span class="font-bold text-[15px] text-red-800">Fraud Approval</span></button>
                 <button id="adminMessageReadsBtn" type="button" class="bg-indigo-50 p-5 rounded-3xl shadow-sm border border-indigo-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">✓✓</span><span class="font-bold text-[15px] text-indigo-800">Message Read Reports</span></button>
                 <button id="supportAdminBtn" type="button" class="bg-teal-50 p-5 rounded-3xl shadow-sm border border-teal-200 hover:shadow-md flex flex-col items-center text-center"><span class="text-3xl mb-3">💬</span><span class="font-bold text-[15px] text-teal-800">Employee Chats</span><span id="supportAdminUnread" class="support-unread-badge mt-2" hidden>0</span></button>
@@ -747,6 +748,21 @@
             </div>
             <p id="messageReadSummary" class="text-sm font-bold" role="status"></p>
             <div class="report-table-wrapper"><table class="report-table"><thead><tr><th>Employee</th><th>ID</th><th>Department</th><th>Location</th><th>Status</th><th>Read at (IST)</th><th>Message</th></tr></thead><tbody id="messageReadBody"></tbody></table></div>
+        </div>
+
+        <div id="admin-photo-cleanup-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center gap-3"><h2 class="text-xl font-bold text-orange-800">Delete Old Photos</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button></div>
+            <p class="text-xs text-gray-600">Remove old attendance selfies from Drive. Punch times, GPS and attendance records stay unchanged. Deleted photos will no longer open.</p>
+            <div class="space-y-3 rounded-2xl border p-4 bg-orange-50">
+                <label class="block text-sm font-bold">Before Date (IST)<input id="photoCleanupDate" type="date" class="block w-full border rounded-xl p-3 mt-1"></label>
+                <label class="block text-sm font-bold">Cleanup Password<input id="photoCleanupKey" type="password" autocomplete="off" placeholder="Admin cleanup password" class="block w-full border rounded-xl p-3 mt-1"></label>
+                <div class="flex flex-wrap gap-2"><button id="photoCleanupScan" type="button" class="support-send">Scan Photos</button><button id="photoCleanupLoad" type="button" class="support-attach-btn">Load Current Job</button></div>
+            </div>
+            <p id="photoCleanupSummary" class="text-sm font-bold whitespace-pre-line p-3 bg-indigo-50 rounded-xl" role="status"></p>
+            <p class="text-xs text-red-700">Permanent deletion cannot be undone. Size shown is an estimate based on Drive file storage. Only owned attendance selfies matching the selected date are eligible.</p>
+            <div class="flex flex-wrap gap-2"><button id="photoCleanupDelete" type="button" class="px-3 py-2 bg-red-600 text-white font-bold rounded-xl disabled:opacity-40" disabled>Delete Photos Permanently</button><button id="photoCleanupResume" type="button" class="support-attach-btn" disabled>Resume Scan</button><button id="photoCleanupPause" type="button" class="support-attach-btn" disabled>Pause</button></div>
+            <p id="photoCleanupStatus" class="text-sm" role="status" aria-live="polite"></p>
+            <a id="photoCleanupAudit" class="hidden text-sm text-indigo-700 font-bold" target="_blank" rel="noopener noreferrer">View Cleanup Audit ↗</a>
         </div>
 
         <div id="admin-fraud-approvals-view" class="hidden w-full flex-col space-y-4">
@@ -1526,11 +1542,12 @@
             if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportLeaveView();
             if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
             if (activeView === 'admin-message-reads-view' && viewId !== activeView) ++messageReadVersion;
+            if (activeView === 'admin-photo-cleanup-view' && viewId !== activeView) { cleanupStop=true; document.getElementById('photoCleanupKey').value=''; }
             activeView = viewId;
             document.body.dataset.view = viewId;
             if (viewId !== 'employee-dashboard') hideWelcomeClock();
             renderAppClock();
-            const viewsList = ['admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
+            const viewsList = ['admin-photo-cleanup-view', 'admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -2291,14 +2308,18 @@
             document.getElementById('sum-net').innerText = data.sum.Net;
             document.getElementById('report-summary-box').classList.remove('hidden');
 
-            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th></tr></thead><tbody>`;
+            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th>${isAdminMode ? '<th>IN Photo</th><th>OUT Photo</th>' : ''}</tr></thead><tbody>`;
             data.statuses.forEach(d => {
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 
                 if (d.st === 'F') cls = 'status-A';
                 const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: d.rem || '' }));
                 const inf = (d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
-                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
+                const photoCells = isAdminMode ? ['In','Out'].map(type => {
+                    const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
+                    return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
+                }).join('') : '';
+                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}</tr>`;
             });
             h+= `</tbody></table>`;
             document.getElementById(contId).innerHTML = h;
@@ -3180,7 +3201,12 @@
             const details = JSON.parse(button.dataset.reportInfo);
             window.showRemark(details.text);
             const punchBox=document.getElementById('attendancePunchDetails');
-            (reportPunchDetails.get(details.date)||[]).forEach(({type,punch,review,approved})=>{
+            const dayPunchDetails = reportPunchDetails.get(details.date) || [];
+            const hasFraudDetails = details.types?.length || dayPunchDetails.some(detail => detail.approved);
+            const visiblePunchDetails = hasFraudDetails
+                ? dayPunchDetails.filter(detail => details.types?.includes(detail.type) || detail.approved)
+                : dayPunchDetails;
+            visiblePunchDetails.forEach(({type,punch,review,approved})=>{
                 const card=document.createElement('section');card.className='border border-indigo-100 rounded-xl p-3 space-y-2';
                 const line=(text,cls)=>{const el=document.createElement('p');el.className=cls||'text-xs text-gray-600 break-words';el.textContent=text;card.append(el);};
                 line(type.toUpperCase()+' · '+new Date(punch.timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}),'text-sm font-bold text-indigo-800');
@@ -3349,6 +3375,69 @@
                 }
             }
         });
+        var cleanupStop = true, cleanupRunning = false, cleanupJob = null;
+        const cleanupSize = bytes => bytes >= 1e9 ? (bytes/1e9).toFixed(2)+' GB' : (bytes/1e6).toFixed(2)+' MB';
+        function renderPhotoCleanup() {
+            const j=cleanupJob, el=id=>document.getElementById(id);
+            el('photoCleanupScan').disabled=cleanupRunning;
+            el('photoCleanupLoad').disabled=cleanupRunning;
+            el('photoCleanupDate').disabled=cleanupRunning;
+            el('photoCleanupKey').disabled=cleanupRunning;
+            el('photoCleanupDelete').disabled=cleanupRunning || !j || !['ready','deleting'].includes(j.phase) || !j.count;
+            el('photoCleanupResume').disabled=cleanupRunning || !j || j.phase!=='scanning';
+            el('photoCleanupPause').disabled=!cleanupRunning;
+            el('photoCleanupDelete').textContent=j?.phase==='deleting'?'Resume Deletion':'Delete Photos Permanently';
+            el('photoCleanupSummary').textContent=j ? `Before ${j.cutoff} (IST) · ${j.phase.toUpperCase()}\nPhotos: ${j.count.toLocaleString()} · ${j.phase==='scanning'?'Size so far':'Estimated space to free'}: ${cleanupSize(j.bytes)}\nScanned: ${j.scanned.toLocaleString()} · Processed: ${j.processed} / ${j.count}\nDeleted: ${j.deleted} · Failed: ${j.failed} · Skipped / missing: ${j.skipped}\nDeleted file storage: ${cleanupSize(j.freedBytes)}` : 'Choose a date and Scan Photos. Selected date itself is excluded.';
+            const link=el('photoCleanupAudit');link.classList.toggle('hidden',!j);
+            if(j) link.href=j.auditUrl;
+        }
+        async function photoCleanupCall(action, extra={}) {
+            if(!isAdmin || !currentEmployee) throw new Error('Admin login required.');
+            const key=document.getElementById('photoCleanupKey').value;
+            if(key.length<16) throw new Error('Enter your cleanup password (16+ characters).');
+            const body=new URLSearchParams({action,cleanupKey:key,...extra});
+            const response=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',body});
+            if(!response.ok)throw new Error('Server unavailable. Use Load / Resume to check progress.');
+            let result;try{result=await response.json();}catch{throw new Error('Deploy the updated Code.gs web app version first.');}
+            if(result.status!=='success')throw new Error(result.message||'Cleanup request failed.');
+            return result.job;
+        }
+        async function runPhotoCleanup(mode) {
+            if(cleanupRunning || !isAdmin)return;
+            const actor=currentEmployee, status=document.getElementById('photoCleanupStatus');
+            if(mode==='start' && !document.getElementById('photoCleanupDate').value){status.textContent='Select Before Date.';return;}
+            if(mode==='delete' && (!cleanupJob || !confirm(`PERMANENTLY delete ${cleanupJob.count-cleanupJob.processed} remaining attendance photos before ${cleanupJob.cutoff} (IST)?\nPreview total: ${cleanupSize(cleanupJob.bytes)}. Photos cannot be restored. Attendance records remain unchanged.`)))return;
+            cleanupRunning=true;cleanupStop=false;renderPhotoCleanup();status.textContent='Connecting…';
+            const stillHere=()=>isAdmin&&currentEmployee===actor&&activeView==='admin-photo-cleanup-view';
+            try {
+                let job;
+                if(mode==='start')job=await photoCleanupCall('photoCleanupStart',{cutoff:document.getElementById('photoCleanupDate').value});
+                else if(mode==='load')job=await photoCleanupCall('photoCleanupStatus');
+                else job=cleanupJob;
+                if(!stillHere())return;
+                cleanupJob=job;renderPhotoCleanup();
+                if(mode==='load'){status.textContent=job?'Current job loaded. Resume scanning or deletion below.':'No cleanup job found.';return;}
+                while(!cleanupStop && stillHere() && cleanupJob && (mode==='delete'?['ready','deleting'].includes(cleanupJob.phase):cleanupJob.phase==='scanning')) {
+                    status.textContent=mode==='delete'?'Deleting selected photos…':'Scanning photo sizes…';
+                    job=await photoCleanupCall(mode==='delete'?'photoCleanupDelete':'photoCleanupScan',{jobId:cleanupJob.id,...(mode==='delete'?{confirm:'DELETE'}:{})});
+                    if(!stillHere())return;
+                    cleanupJob=job;renderPhotoCleanup();
+                }
+                status.textContent=cleanupStop?'Paused after current batch. You can resume.':cleanupJob?.phase==='ready'?'Scan complete. Review count and size before deleting.':cleanupJob?.phase==='done'?'Completed. Review failed/skipped entries in the audit; a new scan can retry remaining photos. Drive storage display may take time to update.':'Stopped.';
+            } catch(error){if(stillHere())status.textContent=error.message+' Use Load Current Job before retrying.';}
+            finally{cleanupRunning=false;cleanupStop=true;renderPhotoCleanup();}
+        }
+        document.getElementById('adminPhotoCleanupBtn').addEventListener('click',()=>{
+            if(!isAdmin)return;
+            cleanupJob=null;document.getElementById('photoCleanupKey').value='';document.getElementById('photoCleanupStatus').textContent='';
+            showView('admin-photo-cleanup-view','Delete Old Photos');renderPhotoCleanup();
+        });
+        document.getElementById('photoCleanupScan').addEventListener('click',()=>runPhotoCleanup('start'));
+        document.getElementById('photoCleanupLoad').addEventListener('click',()=>runPhotoCleanup('load'));
+        document.getElementById('photoCleanupResume').addEventListener('click',()=>runPhotoCleanup('resume'));
+        document.getElementById('photoCleanupDelete').addEventListener('click',()=>runPhotoCleanup('delete'));
+        document.getElementById('photoCleanupPause').addEventListener('click',()=>{cleanupStop=true;document.getElementById('photoCleanupStatus').textContent='Pausing after current batch…';});
+
         document.getElementById('adminFraudApprovalsBtn').addEventListener('click',()=>openFraudApprovals());
         document.getElementById('fraudApprovalRefresh').addEventListener('click',loadFraudApprovals);
         ['fraudApprovalStart','fraudApprovalEnd','fraudApprovalStatus','fraudApprovalDept','fraudApprovalLoc','fraudApprovalSearch'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{fraudApprovalLimit=40;renderFraudApprovals();}));
