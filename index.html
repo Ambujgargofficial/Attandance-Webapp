@@ -1059,7 +1059,7 @@
                 <h2 class="text-xl font-bold">👥 Employee Directory</h2>
                 <button class="admin-back-btn text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">← Back</button>
             </div>
-            <div class="bg-white p-4 rounded-2xl border shadow-sm flex justify-between items-end gap-4">
+            <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-wrap sm:flex-nowrap justify-between items-end gap-4">
                 <div class="w-full">
                     <label class="block text-sm font-bold mb-2">Filter by Status</label>
                     <select id="empDirStatusFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none">
@@ -1068,13 +1068,17 @@
                         <option value="inactive">Inactive Only</option>
                     </select>
                 </div>
+                <div class="w-full">
+                    <label for="empDirDesignationFilter" class="block text-sm font-bold mb-2">Designation</label>
+                    <select id="empDirDesignationFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none"><option value="all">All Designations</option></select>
+                </div>
                 <button id="addEmployeeBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-xl shrink-0 h-[42px] shadow-md transition-colors flex items-center gap-2">
                     <span>+ Add Employee</span>
                 </button>
             </div>
             <div class="report-table-wrapper bg-white mt-2">
                 <table class="report-table text-[12px]">
-                    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Location</th><th>Shift</th><th>Status</th><th>Action</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Location</th><th>Designation</th><th>Shift</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="empdirBody"></tbody>
                 </table>
             </div>
@@ -2248,6 +2252,10 @@
 
                             if((oT - iT) / 3600000 < minHalfDayHrs) {
                                 s.st = 'A';
+                                const workedMinutes = Math.round((oT - iT) / 60000);
+                                const requiredMinutes = Math.round(minHalfDayHrs * 60);
+                                const duration = minutes => `${Math.floor(minutes / 60)} hr ${minutes % 60} min`;
+                                s.explanation = `Absent · ${dKey}\n\nIN: ${s.in} · OUT: ${s.out}\nCounted duty: ${duration(workedMinutes)}\nMinimum duty required for Half Day: ${duration(requiredMinutes)} (${minHalfDayHrs} hours)\nShort by: ${duration(requiredMinutes - workedMinutes)}\n\nYour duty duration was below the configured minimum for Half Day, so this day is counted as Absent (A).\nAttendance credit: 0 day.\n${sRule?.minHrs ? 'Special-day minimum duty rule applied.' : 'Configured minimum duty rule applied.'}`;
                             } else {
                                 let exp = emp.startTime ? emp.startTime.split(':') : null;
                                 let outExp = emp.endTime ? emp.endTime.split(':') : null;
@@ -2871,10 +2879,22 @@
         function renderEmpDirectory() {
             const tbody = document.getElementById('empdirBody');
             const filter = document.getElementById('empDirStatusFilter').value;
+            const select = document.getElementById('empDirDesignationFilter');
+            const previous = select.value || 'all';
+            const entries = sortedEmployeeEntries().filter(([,emp]) => filter === 'all' || String(emp.status ?? 'active').trim().toLowerCase() === filter);
+            const mapped = emp => !!designationMaster[emp.designationId]?.name;
+            const mappedCount = entries.filter(([,emp]) => mapped(emp)).length;
+            select.replaceChildren(new Option(`All Designations (${entries.length})`, 'all'), new Option(`Mapped (${mappedCount})`, 'mapped'), new Option(`Unmapped (${entries.length-mappedCount})`, 'unmapped'));
+            Object.entries(designationMaster).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([id,d])=>select.add(new Option(`${d.name} (${entries.filter(([,emp])=>emp.designationId===id).length})`, 'designation:'+id)));
+            select.value = [...select.options].some(o=>o.value===previous) ? previous : 'all';
+            const designationFilter = select.value;
             let html = '';
             sortedEmployeeEntries().forEach(([id, emp]) => {
                 let stat = String(emp.status ?? 'active').trim().toLowerCase();
                 if(filter !== 'all' && stat !== filter) return;
+                if(designationFilter === 'mapped' && !mapped(emp)) return;
+                if(designationFilter === 'unmapped' && mapped(emp)) return;
+                if(designationFilter.startsWith('designation:') && emp.designationId !== designationFilter.slice(12)) return;
                 
                 let badge = stat === 'active' 
                     ? `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold text-[10px] uppercase">Active</span>` 
@@ -2885,12 +2905,13 @@
                     <td class="font-bold">${emp.name || 'N/A'}</td>
                     <td>${emp.department || '-'}</td>
                     <td>${emp.location || '-'}</td>
+                    <td>${punchHtml(designationName(emp))}</td>
                     <td class="font-mono text-xs">${emp.startTime||'00:00'} - ${emp.endTime||'00:00'}</td>
                     <td>${badge}</td>
                     <td><button onclick="window.openEmpModal('${id}')" class="bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 rounded p-1 text-xs font-bold" title="Edit/View Full Details">✏️ Edit</button></td>
                 </tr>`;
             });
-            tbody.innerHTML = html;
+            tbody.innerHTML = html || '<tr><td colspan="8" class="text-center py-4 text-gray-500">No employees match these filters.</td></tr>';
         }
 
         window.openEmpModal = (empId = null) => {
@@ -3792,7 +3813,7 @@
                         const state = fraudPunchState(dayPunch?.[type], emp.department);
                         return state.reason ? type.toUpperCase() + ' — ' + (state.held ? 'F: Fraud punch detected. Please ask admin to approve. ' : 'Approved by Admin. ') + state.reason : '';
                     }).filter(Boolean);
-                    const infoText = [warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, sRule)].filter(Boolean).join('\n\n');
+                    const infoText = [report.statuses[0].explanation || '', warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, sRule)].filter(Boolean).join('\n\n');
                     const infoStyle = report.statuses[0].fraudTypes?.length ? 'bg-red-50 border-red-300 text-red-600' : 'bg-indigo-50 border-indigo-200 text-indigo-700';
                     const infoLabel = warnings.length ? 'Suspicious punch — view reasons, remark and address' : 'View remark / address';
 
@@ -3802,7 +3823,7 @@
                         <td class="font-mono text-xs text-gray-600">${shift}</td>
                         <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${renderPunchTime(inTime, report.statuses[0].fraudTypes?.includes('In'))}</td>
                         <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${renderPunchTime(outTime, report.statuses[0].fraudTypes?.includes('Out'))}</td>
-                        <td class="text-center" data-status="${st}">${stBadge}</td>
+                        <td class="text-center" data-status="${st}">${report.statuses[0].explanation ? `<button type="button" data-daywise-info="${punchHtml(report.statuses[0].explanation)}" aria-label="Explain ${st}" title="View attendance reason" class="underline decoration-dotted underline-offset-4">${stBadge}</button>` : stBadge}</td>
                         <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${infoText ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
                         ${daywisePhotoCell(dayPunch?.In)}
                         ${daywisePhotoCell(dayPunch?.Out)}
@@ -3946,6 +3967,7 @@
             });
         });
         document.getElementById('empDirStatusFilter').addEventListener('change', renderEmpDirectory);
+        document.getElementById('empDirDesignationFilter').addEventListener('change', renderEmpDirectory);
         document.getElementById('addEmployeeBtn').addEventListener('click', () => window.openEmpModal(null));
         document.getElementById('admin-btn-settings').addEventListener('click', () => { renderSettingsUI(); showView('admin-settings-view', 'System Settings'); });
         document.querySelectorAll('.admin-back-btn').forEach(btn => btn.addEventListener('click', () => { document.getElementById('report-summary-box').classList.add('hidden'); showView('admin-dashboard', 'Admin Portal'); }));
