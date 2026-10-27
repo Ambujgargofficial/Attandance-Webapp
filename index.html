@@ -445,7 +445,6 @@
             <button id="cancelPunchBtn" type="button" class="hidden text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-colors" aria-label="Back to dashboard">← Back</button>
         </div>
 
-        <p id="app-clock" class="hidden text-center text-sm font-semibold text-indigo-700" aria-live="off"></p>
 
         <!-- Offline Banner -->
         <div id="offline-banner" class="hidden bg-yellow-50 border border-yellow-300 text-yellow-800 p-3 mb-4 rounded-xl shadow-sm justify-between items-center transition-all mx-auto max-w-md">
@@ -1366,38 +1365,16 @@
             return appClock.serverMs + (performance.now() - appClock.at);
         }
 
-        let activeView = 'login-section', clockWelcomePending = false;
-        let clockWelcomeUntil = 0, clockWelcomeTimer = null;
+        let activeView = 'login-section';
         let dashboardVersion = 0, reportVersion = 0, loginInFlight = false;
 
-        function hideWelcomeClock() {
-            clockWelcomePending = false; clockWelcomeUntil = 0;
-            clearTimeout(clockWelcomeTimer);
-            document.getElementById('app-clock').classList.add('hidden');
-        }
-
-        function renderAppClock() {
-            const el = document.getElementById('app-clock');
-            if (isAdmin || !currentEmployee || activeView !== 'employee-dashboard') {
-                el.classList.add('hidden'); return;
-            }
-            if (clockWelcomePending && clockIsReady()) {
-                clockWelcomePending = false;
-                clockWelcomeUntil = performance.now() + 2000;
-                clockWelcomeTimer = setTimeout(hideWelcomeClock, 2000);
-            }
-            const visible = clockIsReady() && performance.now() < clockWelcomeUntil;
-            el.classList.toggle('hidden', !visible);
-            if (visible) el.textContent = 'India time: ' + new Date(readAppTime()).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-
+        // Trusted time is maintained silently; no dashboard clock banner.
         function invalidateAppClock() {
             ++clockEpoch;
             appClock = null;
             clockSync = null;
             lastClockAttempt = -Infinity;
             lastClockTick = performance.now();
-            renderAppClock();
             updateCaptureButton();
         }
 
@@ -1414,7 +1391,6 @@
                 // Anchor at receipt. No Date.now() or device timezone is used.
                 // This conservative estimate can lag by the response travel time.
                 appClock = { empId: employeeId, serverMs, at: performance.now() };
-                renderAppClock();
                 updateCaptureButton();
                 return readAppTime();
             })();
@@ -1442,7 +1418,6 @@
                 (!appClock || tick - appClock.at >= CLOCK_SYNC_MS) &&
                 tick - lastClockAttempt >= 10000) syncAppClock().catch(() => {});
             if (!document.hidden) {
-                if (activeView === 'employee-dashboard') renderAppClock();
                 if (activeView === 'attendance-section') updateCaptureButton();
             }
         }, 1000);
@@ -1575,8 +1550,6 @@
             activeView = viewId;
             document.body.dataset.view = viewId;
             if(isAdmin && ['admin-dashboard','admin-location-health-view'].includes(viewId))setTimeout(()=>loadLocationHealth(),0);
-            if (viewId !== 'employee-dashboard') hideWelcomeClock();
-            renderAppClock();
             const viewsList = ['admin-team-status-view', 'admin-location-health-view', 'admin-photo-cleanup-view', 'admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
@@ -1626,7 +1599,7 @@
 
         async function fetchGlobalData(forAdmin = false) {
             try {
-                const [setSnap, empSnap] = await Promise.all([get(ref(database, 'settings')), forAdmin ? get(ref(database, 'employees')) : Promise.resolve(null)]);
+                const [setSnap, empSnap, designationSnap] = await Promise.all([get(ref(database, 'settings')), forAdmin ? get(ref(database, 'employees')) : Promise.resolve(null), forAdmin ? get(ref(database, 'designations')) : Promise.resolve(null)]);
                 if (setSnap.exists()) {
                     let st = setSnap.val();
                     globalSettings.autoShowMsg = st.autoShowMsg || false;
@@ -1649,7 +1622,7 @@
                 
                 if (forAdmin) {
                     if (empSnap?.exists()) allEmployeesData = empSnap.val();
-                    await loadDesignations();
+                    designationMaster = designationSnap?.val() || {};
                     
                     populateEmployeeSelects();
 
@@ -1684,7 +1657,7 @@
                 if (adminSnap?.exists() && String(adminSnap.val().pin) === pin) {
                     isAdmin = true;
                     currentEmployee = { ...adminSnap.val(), id: empId };
-                    hideWelcomeClock(); invalidateAppClock();
+                    invalidateAppClock();
                     await fetchGlobalData(true);
                     showView('admin-dashboard', 'Admin Portal');
                     // Chat connects on demand.
@@ -1698,8 +1671,7 @@
                 if (!employeeIsActive(empData)) throw new Error('Account inactive. Contact Admin.');
                 isAdmin = false;
                 currentEmployee = { ...empData, id: empId };
-                hideWelcomeClock(); invalidateAppClock();
-                clockWelcomePending = true;
+                invalidateAppClock();
                 document.getElementById('emp-name-dash').textContent = currentEmployee.name;
                 document.getElementById('emp-details-dash').textContent = `ID: ${empId} | ${currentEmployee.department || ''} | ${currentEmployee.location || ''}`;
                 document.getElementById('view-msg-btn').classList.add('hidden');
@@ -1734,6 +1706,11 @@
             if (!currentEmployee || isAdmin) return;
             const employeeId = currentEmployee.id, version = ++dashboardVersion;
             const sameSession = () => version === dashboardVersion && currentEmployee?.id === employeeId && !isAdmin;
+            const attendanceReady = (async () => {
+                const today = getLocalDateStr(new Date(await ensureAppTime()));
+                if (!sameSession()) return null;
+                return await get(ref(database, `attendance/${employeeId}/${today}`));
+            })().then(snapshot => ({snapshot}), error => ({error}));
             await settingsReady;
             if (!sameSession()) return;
             document.getElementById('emp-name-dash').textContent = currentEmployee.name;
@@ -1778,8 +1755,8 @@
                 msgBtn.click();
             }
 
-            let today;
-            try { today = getLocalDateStr(new Date(await ensureAppTime())); }
+            let punchSnap;
+            try { const result = await attendanceReady; if (result.error) throw result.error; punchSnap = result.snapshot; }
             catch (err) {
                 if (!sameSession()) return;
                 document.getElementById('emp-action-buttons').innerHTML = '<button id="retryServerTimeBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold">Retry Attendance</button>';
@@ -1788,8 +1765,7 @@
                 return;
             }
             if (!sameSession()) return;
-            const punchSnap = await get(ref(database, `attendance/${employeeId}/${today}`));
-            if (!sameSession()) return;
+            if (!punchSnap) return;
             let status = "None";
             if (punchSnap.exists()) {
                 const p = punchSnap.val();
@@ -1807,7 +1783,6 @@
                 badge.title = 'Fraud punch detected. Open View My Report and tap ⓘ to request admin approval.';
             }
             if (activeView === 'attendance-section') showView('employee-dashboard', 'Emp. Dashboard');
-            renderAppClock();
 
         }
 
@@ -2391,13 +2366,13 @@
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 
                 if (d.st === 'F') cls = 'status-A';
-                const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: d.rem || '' }));
-                const inf = (d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
+                const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: [d.explanation, d.rem].filter(Boolean).join('\n\n'), explanationOnly: !!d.explanation && !d.rem && !d.punchDetails?.some(detail => detail.approved) }));
+                const inf = (d.explanation || d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
                 const photoCells = isAdminMode ? ['In','Out'].map(type => {
                     const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
                     return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
                 }).join('') : '';
-                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.explanation ? `<button type="button" data-explain-date="${d.date}" class="underline decoration-dotted underline-offset-4 font-bold" aria-label="Explain ${d.st}">${d.st}</button>` : d.st}</td><td>${inf}</td>${photoCells}</tr>`;
+                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}</tr>`;
             });
             h+= `</tbody></table>`;
             document.getElementById(contId).innerHTML = h;
@@ -2456,6 +2431,18 @@
             fetchMyReport();
         }
 
+        async function fetchAttendanceRange(entries, start, end) {
+            const result = {}; let next = 0;
+            await Promise.all(Array.from({length:Math.min(8, entries.length)}, async()=>{
+                while(next < entries.length) {
+                    const [id] = entries[next++];
+                    const snap = await get(query(ref(database, `attendance/${id}`), orderByKey(), startAt(start), endAt(end)));
+                    result[id] = snap.val() || {};
+                }
+            }));
+            return result;
+        }
+
         async function generateGrid() {
             const monthVal = document.getElementById('gridMonth').value;
             if(!monthVal) return showMessage('Please select a month', 'error');
@@ -2468,8 +2455,7 @@
                 const startStr = getLocalDateStr(startDate);
                 const endStr = getLocalDateStr(endDate);
 
-                const snap = await get(ref(database, 'attendance'));
-                const allPunches = snap.exists() ? snap.val() : {};
+                const allPunches = await fetchAttendanceRange(activeEmployeeEntries(), startStr, endStr);
 
                 const thead = document.getElementById('gridHead');
                 const tbody = document.getElementById('gridBody');
@@ -3351,15 +3337,13 @@
             return databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify({ ...punch, fraudFlagReason: state.reason, fraudReview: review }) });
         }
         document.getElementById('report-container').addEventListener('click', event => {
-            const explain=event.target.closest('[data-explain-date]');
-            if(explain){window.showRemark(reportExplanations.get(explain.dataset.explainDate)||'');return;}
             const button = event.target.closest('[data-report-info]'); if (!button) return;
             const details = JSON.parse(button.dataset.reportInfo);
             window.showRemark(details.text);
             const punchBox=document.getElementById('attendancePunchDetails');
             const dayPunchDetails = reportPunchDetails.get(details.date) || [];
             const hasFraudDetails = details.types?.length || dayPunchDetails.some(detail => detail.approved);
-            const visiblePunchDetails = hasFraudDetails
+            const visiblePunchDetails = details.explanationOnly ? [] : hasFraudDetails
                 ? dayPunchDetails.filter(detail => details.types?.includes(detail.type) || detail.approved)
                 : dayPunchDetails;
             visiblePunchDetails.forEach(({type,punch,review,approved})=>{
@@ -3744,8 +3728,8 @@
             showLoader('Fetching Daywise Data...');
             
             try {
-                const snap = await get(ref(database, `attendance`));
-                const allPunches = snap.exists() ? snap.val() : {};
+                const selectedEmployees = activeEmployeeEntries().filter(([,emp]) => (deptFilter === 'all' || emp.department === deptFilter) && (locFilter === 'all' || emp.location === locFilter));
+                const allPunches = await fetchAttendanceRange(selectedEmployees, checkDate, checkDate);
                 const tbody = document.getElementById('daywiseBody');
                 let html = '';
 
@@ -3823,7 +3807,7 @@
                         <td class="font-mono text-xs text-gray-600">${shift}</td>
                         <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${renderPunchTime(inTime, report.statuses[0].fraudTypes?.includes('In'))}</td>
                         <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${renderPunchTime(outTime, report.statuses[0].fraudTypes?.includes('Out'))}</td>
-                        <td class="text-center" data-status="${st}">${report.statuses[0].explanation ? `<button type="button" data-daywise-info="${punchHtml(report.statuses[0].explanation)}" aria-label="Explain ${st}" title="View attendance reason" class="underline decoration-dotted underline-offset-4">${stBadge}</button>` : stBadge}</td>
+                        <td class="text-center" data-status="${st}">${stBadge}</td>
                         <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${infoText ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
                         ${daywisePhotoCell(dayPunch?.In)}
                         ${daywisePhotoCell(dayPunch?.Out)}
@@ -3891,7 +3875,7 @@
         }
 
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
-        document.getElementById('btn-logout').addEventListener('click', () => { supportStop(); ++dashboardVersion; ++reportVersion; hideWelcomeClock(); currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
+        document.getElementById('btn-logout').addEventListener('click', () => { supportStop(); ++dashboardVersion; ++reportVersion; currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
         document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); trackAnnouncementRead(); });
         document.getElementById('openReportDirectBtn').addEventListener('click', openTodayReport);
