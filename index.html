@@ -716,6 +716,8 @@
                 <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
+                <button id="adminTeamStatusBtn" type="button" class="bg-blue-50 p-5 rounded-3xl border border-blue-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">📊</span><span class="font-bold text-[15px] text-blue-800">Today’s Team Status</span></button>
+                <button id="adminLocationHealthBtn" type="button" class="bg-amber-50 p-5 rounded-3xl border border-amber-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">🚨</span><span class="font-bold text-[15px] text-amber-800">Location Service Health</span><span id="locationHealthBadge" class="text-xs mt-2" role="status">Checking…</span></button>
                 <button id="adminPhotoCleanupBtn" type="button" class="bg-orange-50 p-5 rounded-3xl border border-orange-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">🗑️</span><span class="font-bold text-[15px] text-orange-800">Delete Old Photos</span></button>
                 <button id="adminFraudApprovalsBtn" type="button" class="bg-red-50 p-5 rounded-3xl border border-red-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">🛡️</span><span class="font-bold text-[15px] text-red-800">Fraud Approval</span></button>
                 <button id="adminMessageReadsBtn" type="button" class="bg-indigo-50 p-5 rounded-3xl shadow-sm border border-indigo-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">✓✓</span><span class="font-bold text-[15px] text-indigo-800">Message Read Reports</span></button>
@@ -726,6 +728,7 @@
                 <div id="admin-btn-fraud" class="bg-white p-5 rounded-3xl shadow-sm border border-red-100 cursor-pointer hover:shadow-md transition-all bg-red-50 flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">🚨</div><h3 class="font-bold text-[15px] leading-tight text-red-800">Fraud Check</h3>
                 </div>
+                <button type="button" id="manageDesignationsBtn" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col items-center text-center"><span class="text-3xl mb-3" aria-hidden="true">💼</span><span class="font-bold text-[15px] leading-tight text-gray-800">Manage Designations</span></button>
                 <div id="admin-btn-empdir" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">👥</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Emp Directory</h3>
                 </div>
@@ -750,6 +753,21 @@
             <div class="report-table-wrapper"><table class="report-table"><thead><tr><th>Employee</th><th>ID</th><th>Department</th><th>Location</th><th>Status</th><th>Read at (IST)</th><th>Message</th></tr></thead><tbody id="messageReadBody"></tbody></table></div>
         </div>
 
+        <div id="admin-team-status-view" class="hidden w-full flex-col space-y-3">
+            <div class="flex justify-between items-center gap-2"><h2 class="font-bold text-xl text-blue-900">Today’s Team Status</h2><button type="button" class="admin-back-btn text-red-600 font-bold">← Back</button></div>
+            <div class="read-report-filters"><select id="teamDept" aria-label="Department"><option value="all">All Departments</option></select><select id="teamLoc" aria-label="Location"><option value="all">All Locations</option></select><input id="teamSearch" type="search" placeholder="Name / employee ID" aria-label="Employee search"><select id="teamState" aria-label="Team status"><option value="all">All Statuses</option><option>On Duty</option><option>Punched Out</option><option>Not Arrived</option><option>Shift Not Started</option><option>Weekly Off</option><option>Approval Pending</option><option>Unavailable</option><option value="late">Late</option><option value="held">Approval Issue</option></select></div>
+            <div class="flex items-center justify-between gap-2"><label class="text-xs"><input id="teamAuto" type="checkbox"> Auto-refresh every 60s</label><button id="teamRefresh" type="button" class="support-send">Refresh</button></div>
+            <p id="teamProgress" class="text-xs text-gray-600" role="status"></p><div id="teamCards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+            <p class="text-xs text-gray-500">Today (IST) · Active employees only. Live presence based on accepted punches; this is not a final payroll report. “Late” and “Approval Issue” can overlap other statuses.</p>
+            <div class="report-table-wrapper"><table class="report-table"><thead><tr><th>Employee</th><th>Branch / Dept.</th><th>IN</th><th>OUT</th><th>Current Status</th></tr></thead><tbody id="teamRows"></tbody></table></div>
+        </div>
+        <div id="admin-location-health-view" class="hidden w-full flex-col space-y-3">
+            <div class="flex justify-between items-center gap-2"><h2 class="font-bold text-xl text-amber-900">Location Service Health</h2><button type="button" class="admin-back-btn text-red-600 font-bold">← Back</button></div>
+            <div class="flex justify-between gap-2 items-center"><p class="text-xs text-gray-500">Today (IST) · Updates every 60s while visible</p><button id="healthRefresh" type="button" class="support-send">Refresh</button></div>
+            <div id="healthSummary" class="p-3 rounded-xl bg-amber-50 text-sm whitespace-pre-line" role="status"></div>
+            <p class="text-xs text-gray-600">3 or more employees with unresolved location errors in 15 minutes triggers a service alert. A shared unexpected address is highlighted. This is a review signal, not proof of fraud. Attendance is never approved or changed automatically.</p>
+            <div id="healthRows" class="space-y-2"></div>
+        </div>
         <div id="admin-photo-cleanup-view" class="hidden w-full flex-col space-y-4">
             <div class="flex justify-between items-center gap-3"><h2 class="text-xl font-bold text-orange-800">Delete Old Photos</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button></div>
             <p class="text-xs text-gray-600">Remove old attendance selfies from Drive. Punch times, GPS and attendance records stay unchanged. Deleted photos will no longer open.</p>
@@ -899,7 +917,7 @@
                             <th>Remark / Address</th>
                             <th>IN Photo</th>
                             <th>OUT Photo</th>
-                        </tr>
+                        <th>Designation</th></tr>
                     </thead>
                     <tbody id="daywiseBody"></tbody>
                 </table>
@@ -1264,6 +1282,11 @@
     </div>
 
     <!-- MAIN JAVASCRIPT -->
+    <dialog id="designationDialog" class="rounded-2xl p-5 w-full max-w-md shadow-xl">
+        <div class="flex justify-between items-center mb-3"><h2 class="font-bold">Manage Designations</h2><button id="designationClose" type="button">Close ×</button></div>
+        <button id="designationAdd" type="button" class="bg-blue-600 text-white rounded-lg p-2">+ New Designation</button>
+        <div id="designationList" class="max-h-80 overflow-auto mt-3"></div>
+    </dialog>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, get, set, update, child, onValue, onDisconnect, serverTimestamp, query, orderByChild, limitToLast, orderByKey, endBefore, startAt, endAt, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
@@ -1539,15 +1562,18 @@
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         function showView(viewId, titleText = "Smart Attendance") {
-            if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportLeaveView();
+            if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportStop();
             if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
             if (activeView === 'admin-message-reads-view' && viewId !== activeView) ++messageReadVersion;
             if (activeView === 'admin-photo-cleanup-view' && viewId !== activeView) { cleanupStop=true; document.getElementById('photoCleanupKey').value=''; }
+            if(activeView==='admin-team-status-view' && viewId!==activeView){++teamVersion;clearTimeout(teamTimer);}
+            clearTimeout(healthTimer);
             activeView = viewId;
             document.body.dataset.view = viewId;
+            if(isAdmin && ['admin-dashboard','admin-location-health-view'].includes(viewId))setTimeout(()=>loadLocationHealth(),0);
             if (viewId !== 'employee-dashboard') hideWelcomeClock();
             renderAppClock();
-            const viewsList = ['admin-photo-cleanup-view', 'admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
+            const viewsList = ['admin-team-status-view', 'admin-location-health-view', 'admin-photo-cleanup-view', 'admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -1619,6 +1645,7 @@
                 
                 if (forAdmin) {
                     if (empSnap?.exists()) allEmployeesData = empSnap.val();
+                    await loadDesignations();
                     
                     populateEmployeeSelects();
 
@@ -1656,7 +1683,7 @@
                     hideWelcomeClock(); invalidateAppClock();
                     await fetchGlobalData(true);
                     showView('admin-dashboard', 'Admin Portal');
-                    supportStart();
+                    // Chat connects on demand.
                     return;
                 }
                 if (employeeResult.status !== 'fulfilled') throw employeeResult.reason;
@@ -1682,7 +1709,7 @@
                 // Render the authenticated dashboard immediately. Sync and settings run together.
                 syncAppClock().catch(() => {});
                 setupEmployeeDashboard(fetchGlobalData(false), { showLoginMessage: true }).catch(err => showMessage(err.message, 'error'));
-                supportStart();
+                // Chat connects on demand.
             } catch (err) { showMessage(err.message || 'Login failed. Please retry.', 'error'); }
             finally { loginInFlight = false; document.getElementById('verifyLoginBtn').disabled = false; hideLoader(); }
         }
@@ -2013,6 +2040,18 @@
             return 6371000*2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,h))))<=2000;
         }
 
+        let lastLocationSignalAt=-Infinity;
+        async function recordDeviceLocationSignal(employee,error) {
+            if(!/location|gps/i.test(String(error?.message)) || performance.now()-lastLocationSignalAt<60000 || !clockIsReady())return;
+            lastLocationSignalAt=performance.now();
+            try {
+                const date=istDate(readAppTime());
+                const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(employee.id)));
+                const key='device_'+Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+                await databaseRequest(`locationHealth/${date}/events/${key}`,{method:'PUT',body:JSON.stringify({employeeId:String(employee.id),at:{'.sv':'timestamp'},code:'DEVICE_LOCATION_FAILURE',source:'device',outcome:'blocked',message:String(error.message).slice(0,300)})});
+            } catch(_) { /* Telemetry never blocks the employee or changes attendance. */ }
+        }
+
         async function handlePunch() {
             if (punchInFlight || !currentEmployee || !locationActive) return;
             punchInFlight = true;
@@ -2093,6 +2132,7 @@
                 showMessage(flagReason ? `${punchType} saved as F. Admin approval required.` : `${punchType} Marked!`, flagReason ? 'info' : 'success');
                 await setupEmployeeDashboard();
             } catch (err) {
+                if(!attendanceWriteStarted)void recordDeviceLocationSignal(employee,err);
                 showMessage(`${err.message || 'Network error.'} ${attendanceWriteStarted ? 'Success confirm nahi hua; retry se pehle dashboard check karein.' : 'Attendance save nahi hui.'}`, 'error');
             } finally {
                 punchInFlight = false;
@@ -2255,7 +2295,10 @@
                                     else if(isVeryEarly) s.st = 'P/A'; 
                                     else if(isLate && isEarly) s.st = 'P/A'; 
                                     else if(isLate) s.st = 'L';
-                                    else if(isEarly) s.st = 'E';
+                                    else if(isEarly) {
+                                        s.st = 'E';
+                                        s.explanation = `Early Exit · ${dKey}\n\nIN: ${s.in} · OUT: ${s.out}\nAllowed OUT from: ${earlyCut.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}\nOUT grace: ${Number(emp.allowanceOut)||0} minutes\nYou punched OUT ${Math.round((earlyCut-oT)/60000)} minutes before the allowed time.\n${sRule?.outTime ? 'Special-day OUT timing applied.\n' : ''}Base attendance credit: 1 day (before period deductions).`;
+                                    }
                                     else s.st = 'P';
                                 } else {
                                     s.st = 'P'; 
@@ -2276,6 +2319,13 @@
                     else if(s.st === 'E') { sum.E++; physicalDaysPresent++; }
                     else if(s.st === 'W/O') sum.WO++;
                 }
+                if(s.st==='P/A' && s.fraudTypes.length) {
+                    const heldText=s.fraudTypes.map(type=>{
+                        const state=fraudPunchState(punches[dKey][type],emp.department);
+                        return `${type.toUpperCase()}: ${state.status==='rejected'?'Rejected by Admin':'Admin approval pending'}`;
+                    }).join('\n');
+                    s.explanation=`Half Day · ${dKey}\n\n${heldText}\nOnly the other valid punch is currently counted.\nAttendance credit: 0.5 day.\nAfter approval, normal timing rules will recalculate this day.\nUse the red ⓘ button for punch details and Request to Admin.`;
+                }
                 statuses.push(s);
             }
             
@@ -2284,6 +2334,7 @@
             let lateDed = Math.floor(sum.L / lThresh) * 0.5;
             let earlyDed = Math.floor(sum.E / eThresh) * 0.5;
             let totalDed = lateDed + earlyDed;
+            statuses.forEach(day=>{if(day.st==='E' && day.explanation)day.explanation+=`\n\nSelected report period: ${startStr} to ${endStr}\nEarly Exit count: ${sum.E}\nRule: every ${eThresh} Early Exits deduct 0.5 day.\nEarly-exit deduction in this report: ${earlyDed} day(s).`;});
             
             if (diffDays >= 20) {
                 let absents = sum.A + sum.F;
@@ -2309,10 +2360,11 @@
             return `<span class="fraud-time" title="Fraud punch detected. Please ask admin to approve." aria-label="${text} — Fraud approval required"><svg class="fraud-time-caution" aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.8 1.9 18.3a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></svg>${text}</span>`;
         }
 
-        let reportPunchDetails = new Map();
+        let reportPunchDetails = new Map(), reportExplanations = new Map();
         function renderReportUI(data, headId, contId, isAdminMode) {
+            reportExplanations = new Map(data.statuses.filter(d=>d.explanation).map(d=>[d.date,d.explanation]));
             reportPunchDetails = new Map(data.statuses.map(d=>[d.date,d.punchDetails || []]));
-            document.getElementById(headId).innerHTML = `<strong>${data.emp.name || 'N/A'}</strong> | Shift: ${data.emp.startTime||'00:00'} to ${data.emp.endTime||'00:00'}`;
+            document.getElementById(headId).innerHTML = `<strong>${data.emp.name || 'N/A'}</strong> | Shift: ${data.emp.startTime||'00:00'} to ${data.emp.endTime||'00:00'}${isAdminMode ? ' | Designation: '+punchHtml(designationName(data.emp)) : ''}`;
             document.getElementById(headId).classList.remove('hidden');
             
             document.getElementById('sum-tot').innerText = data.sum.Tot;
@@ -2337,7 +2389,7 @@
                     const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
                     return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
                 }).join('') : '';
-                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}</tr>`;
+                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.explanation ? `<button type="button" data-explain-date="${d.date}" class="underline decoration-dotted underline-offset-4 font-bold" aria-label="Explain ${d.st}">${d.st}</button>` : d.st}</td><td>${inf}</td>${photoCells}</tr>`;
             });
             h+= `</tbody></table>`;
             document.getElementById(contId).innerHTML = h;
@@ -2415,7 +2467,7 @@
                 const tbody = document.getElementById('gridBody');
                 
                 const daysInMonth = endDate.getDate();
-                let headHtml = `<tr><th class="sticky-col-1">ID</th><th class="sticky-col-2">Name</th><th class="bg-gray-100">Email</th>`;
+                let headHtml = `<tr><th class="sticky-col-1">ID</th><th class="sticky-col-2">Name</th><th class="bg-gray-100">Email</th><th>Designation</th>`;
                 for(let i=1; i<=daysInMonth; i++) headHtml += `<th class="bg-gray-50">${i}</th>`;
                 
                 headHtml += `
@@ -2437,7 +2489,7 @@
                     const empPunches = allPunches[id] || {};
                     const report = calculateReport(emp, empPunches, startStr, endStr);
 
-                    let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td><td class="text-gray-500 text-left font-normal">${emp.email || '-'}</td>`;
+                    let rowHtml = `<tr><td class="sticky-col-1 font-bold text-gray-700">${id}</td><td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td><td class="text-gray-500 text-left font-normal">${emp.email || '-'}</td><td>${punchHtml(designationName(emp))}</td>`;
                     report.statuses.forEach(day => {
                         let cellClass = 'font-bold ';
                         if(day.st === 'P') cellClass += 'bg-green-100 text-green-800';
@@ -2756,6 +2808,66 @@
             } catch(e) { showMessage('Error in Fraud check', 'error'); } finally { hideLoader(); }
         }
 
+        let designationMaster = {};
+        async function loadDesignations() {
+            const snap = await get(ref(database, 'designations'));
+            designationMaster = snap.val() || {};
+        }
+        function designationName(emp) { return designationMaster[emp?.designationId]?.name || 'Unmapped'; }
+        function fillDesignationSelect(value = '') {
+            let select = document.getElementById('mod-emp-designation');
+            if (!select) {
+                const box = document.createElement('div');
+                const label = document.createElement('label'); label.textContent = 'Designation (Optional)'; label.htmlFor = 'mod-emp-designation';
+                select = document.createElement('select'); select.id = 'mod-emp-designation'; select.className = 'w-full p-2.5 border rounded-lg';
+                box.append(label, select); document.getElementById('mod-emp-status').parentElement.after(box);
+            }
+            select.replaceChildren(new Option('Unmapped', ''));
+            Object.entries(designationMaster).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([id,d])=>select.add(new Option(d.name,id)));
+            select.value = designationMaster[value] ? value : '';
+        }
+        function renderDesignationManager() {
+            const list = document.getElementById('designationList'); list.replaceChildren();
+            Object.entries(designationMaster).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([id,d])=>{
+                const row = document.createElement('div'); row.className='flex items-center gap-2 py-2 border-b';
+                const name = document.createElement('span'); name.className='flex-1'; name.textContent=d.name;
+                const edit = document.createElement('button'); edit.textContent='Edit'; edit.className='text-blue-700 p-2'; edit.onclick=()=>saveDesignation(id);
+                const del = document.createElement('button'); del.textContent='Delete'; del.className='text-red-600 p-2';
+                del.onclick=async()=>{
+                    if(!isAdmin || !confirm('Delete '+d.name+'? Assigned employees will show Unmapped.'))return;
+                    try { await set(ref(database,'designations/'+id),null); await loadDesignations(); renderDesignationManager(); }
+                    catch(e){showMessage('Could not delete designation.','error');}
+                };
+                row.append(name,edit,del); list.append(row);
+            });
+        }
+        async function saveDesignation(id = '') {
+            if(!isAdmin)return;
+            const input=prompt(id?'Edit designation':'New designation',designationMaster[id]?.name||'');
+            if(input===null)return;
+            const name=input.trim();
+            if(!name || name.length>80)return showMessage('Enter a designation (1–80 characters).','error');
+            try {
+                const key=id || crypto.randomUUID();
+                const result=await runTransaction(ref(database,'designations'),current=>{
+                    if(!isAdmin)return;
+                    current=current||{};
+                    if(id&&!current[id])return;
+                    if(Object.entries(current).some(([k,d])=>k!==key&&d.name.toLowerCase()===name.toLowerCase()))return;
+                    return {...current,[key]:{name}};
+                });
+                if(!result.committed)throw new Error('Duplicate or changed designation. Refresh and retry.');
+                designationMaster=result.snapshot.val()||{};renderDesignationManager();
+            }catch(e){showMessage(e.message,'error');}
+        }
+        document.getElementById('manageDesignationsBtn').onclick=async()=>{
+            if(!isAdmin)return;
+            try {await loadDesignations();renderDesignationManager();document.getElementById('designationDialog').showModal();}
+            catch(e){showMessage('Could not load designations.','error');}
+        };
+        document.getElementById('designationAdd').onclick=()=>saveDesignation();
+        document.getElementById('designationClose').onclick=()=>document.getElementById('designationDialog').close();
+
         function renderEmpDirectory() {
             const tbody = document.getElementById('empdirBody');
             const filter = document.getElementById('empDirStatusFilter').value;
@@ -2823,6 +2935,7 @@
                 document.getElementById('mod-emp-status').value = 'active';
             }
             
+            fillDesignationSelect(empId ? allEmployeesData[empId]?.designationId : '');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         };
@@ -2844,11 +2957,13 @@
                     allowanceIn: parseInt(document.getElementById('mod-emp-all-in').value) || 0,
                     allowanceOut: parseInt(document.getElementById('mod-emp-all-out').value) || 0,
                     salary: parseFloat(document.getElementById('mod-emp-salary').value) || 0,
+                    designationId: document.getElementById('mod-emp-designation').value,
                     status: document.getElementById('mod-emp-status').value
                 };
                 
-                await update(ref(database), { [`employees/${empId}`]: newEmpData });
-                allEmployeesData[empId] = newEmpData;
+                if (!isAdmin) throw new Error('Admin access required.');
+                await update(ref(database, `employees/${empId}`), newEmpData);
+                allEmployeesData[empId] = {...allEmployeesData[empId], ...newEmpData};
                 populateEmployeeSelects(); 
                 
                 showMessage("Employee Saved Successfully!", "success");
@@ -3215,6 +3330,8 @@
             return databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify({ ...punch, fraudFlagReason: state.reason, fraudReview: review }) });
         }
         document.getElementById('report-container').addEventListener('click', event => {
+            const explain=event.target.closest('[data-explain-date]');
+            if(explain){window.showRemark(reportExplanations.get(explain.dataset.explainDate)||'');return;}
             const button = event.target.closest('[data-report-info]'); if (!button) return;
             const details = JSON.parse(button.dataset.reportInfo);
             window.showRemark(details.text);
@@ -3456,6 +3573,108 @@
         document.getElementById('photoCleanupDelete').addEventListener('click',()=>runPhotoCleanup('delete'));
         document.getElementById('photoCleanupPause').addEventListener('click',()=>{cleanupStop=true;document.getElementById('photoCleanupStatus').textContent='Pausing after current batch…';});
 
+        var teamVersion=0, teamTimer=null, teamRowsData=[], teamLoadedAt=0;
+        var healthTimer=null, healthBusy=false, healthSession=null, healthLoadedAt=0, healthData=null;
+        const istDate = ms => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(ms));
+        const istTime = ms => Number.isFinite(Number(ms)) ? new Date(Number(ms)).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'}) : '—';
+        function teamStatusRow(id,emp,day,date,now,unavailable=false) {
+            if(unavailable)return {id,emp,state:'Unavailable',late:false,held:false,day:{}};
+            day=day||{};
+            const inHeld=fraudPunchState(day.In,emp.department).held, outHeld=fraudPunchState(day.Out,emp.department).held;
+            const validIn=day.In&&!inHeld,validOut=day.Out&&!outHeld;
+            const special=globalSettings.specialDays?.[date]?.[emp.department] || globalSettings.specialDays?.[date]?.all || {};
+            const rawStart=String(special.inTime||emp.startTime||'00:00').split(':');
+            const start=Date.parse(`${date}T${rawStart[0].padStart(2,'0')}:${(rawStart[1]||'00').padStart(2,'0')}:00+05:30`);
+            const wo=Number(globalSettings.deptWeekOffs?.[emp.department] ?? 6);
+            const isOff=new Date(`${date}T12:00:00+05:30`).getUTCDay()===wo;
+            const late=!!validIn && new Date(day.In.timestamp).getTime()>start+(Number(emp.allowanceIn)||0)*60000;
+            const state=validOut?'Punched Out':validIn?'On Duty':inHeld||outHeld?'Approval Pending':isOff?'Weekly Off':Number.isFinite(start)&&now<start?'Shift Not Started':'Not Arrived';
+            return {id,emp,day,state,late,held:inHeld||outHeld,inHeld,outHeld};
+        }
+        function renderTeamStatus() {
+            const val=id=>document.getElementById(id).value,term=val('teamSearch').trim().toLowerCase();
+            const scope=teamRowsData.filter(r=>(val('teamDept')==='all'||r.emp.department===val('teamDept'))&&(val('teamLoc')==='all'||r.emp.location===val('teamLoc'))&&`${r.emp.name} ${r.id}`.toLowerCase().includes(term));
+            const options=['On Duty','Punched Out','Not Arrived','Shift Not Started','Weekly Off','Approval Pending','Unavailable'];
+            const card=(name,count,value)=>`<button type="button" data-team-filter="${punchHtml(value)}" class="p-3 border rounded-xl text-left ${val('teamState')===value?'bg-blue-100 border-blue-500':'bg-white border-blue-100'}"><span class="block text-xs text-gray-600">${name}</span><strong class="text-xl text-blue-900">${count}</strong></button>`;
+            document.getElementById('teamCards').innerHTML=card('All Employees',scope.length,'all')+options.map(st=>card(st,scope.filter(r=>r.state===st).length,st)).join('')+card('Late',scope.filter(r=>r.late).length,'late')+card('Approval Issue',scope.filter(r=>r.held).length,'held');
+            const list=scope.filter(r=>val('teamState')==='all'||(val('teamState')==='late'?r.late:val('teamState')==='held'?r.held:r.state===val('teamState')));
+            document.getElementById('teamRows').innerHTML=list.map(r=>`<tr><td><strong>${punchHtml(r.emp.name||r.id)}</strong><small class="block text-gray-500">${punchHtml(r.id)}</small><small class="block">${punchHtml(designationName(r.emp))}</small></td><td>${punchHtml(r.emp.location||'—')}<small class="block">${punchHtml(r.emp.department||'—')}</small></td><td>${renderPunchTime(r.day.In?istTime(new Date(r.day.In.timestamp).getTime()):'—',r.inHeld)}</td><td>${renderPunchTime(r.day.Out?istTime(new Date(r.day.Out.timestamp).getTime()):'—',r.outHeld)}</td><td><strong>${r.state}</strong>${r.late?'<small class="block text-amber-700">Late IN</small>':''}${r.held?'<small class="block text-red-600">Approval issue</small>':''}</td></tr>`).join('')||'<tr><td colspan="5">No employees match these filters.</td></tr>';
+        }
+        async function loadTeamStatus() {
+            if(!isAdmin||activeView!=='admin-team-status-view')return;
+            clearTimeout(teamTimer);const version=++teamVersion,actor=currentEmployee;
+            const valid=()=>isAdmin&&currentEmployee===actor&&teamVersion===version&&activeView==='admin-team-status-view';
+            const button=document.getElementById('teamRefresh'),progress=document.getElementById('teamProgress');button.disabled=true;progress.textContent='Loading today’s punches…';
+            try {
+                const now=await ensureAppTime();const date=istDate(now);
+                const employees=await databaseRequest('employees');if(!valid())return;
+                allEmployeesData=employees||{};
+                const entries=activeEmployeeEntries(),rows=[];let next=0,done=0;
+                await Promise.all(Array.from({length:Math.min(8,entries.length)},async()=>{
+                    while(next<entries.length&&valid()){
+                        const [id,emp]=entries[next++];let day,failed=false;
+                        try{day=await databaseRequest(`attendance/${encodeURIComponent(id)}/${date}`);}catch{failed=true;}
+                        if(!valid())return;
+                        rows.push(teamStatusRow(id,emp,day,date,now,failed));done++;progress.textContent=`Loading ${done} / ${entries.length} employees…`;
+                    }
+                }));if(!valid())return;
+                teamRowsData=rows.sort((a,b)=>String(a.emp.name||a.id).localeCompare(String(b.emp.name||b.id)));
+                for(const [id,key,label] of [['teamDept','department','All Departments'],['teamLoc','location','All Locations']]){
+                    const el=document.getElementById(id),old=el.value;el.replaceChildren(new Option(label,'all'));
+                    [...new Set(rows.map(r=>r.emp[key]).filter(Boolean))].sort().forEach(v=>el.add(new Option(v,v)));el.value=[...el.options].some(o=>o.value===old)?old:'all';
+                }
+                teamLoadedAt=now;renderTeamStatus();progress.textContent=`${date} · Updated ${istTime(now)} IST · ${rows.filter(r=>r.state==='Unavailable').length} unavailable (not counted as absent)`;
+            }catch(error){if(valid())progress.textContent='Refresh failed. Previous results may be stale. '+error.message;}
+            finally{if(valid()){button.disabled=false;if(document.getElementById('teamAuto').checked)teamTimer=setTimeout(()=>{if(!document.hidden)loadTeamStatus();},60000);}}
+        }
+        function locationHealthSummary(data,now) {
+            const events=Object.values(data?.events||{}).filter(e=>e&&Number.isFinite(Number(e.at))).sort((a,b)=>b.at-a.at);
+            const recent=events.filter(e=>now-e.at>=0&&now-e.at<=15*60000);
+            const blocked=recent.filter(e=>e.outcome!=='recovered');
+            const people=new Set(blocked.map(e=>String(e.employeeId)));
+            const addresses=new Map();
+            blocked.forEach(e=>{if(e.returnedAddress){const key=e.returnedAddress.trim().toLowerCase();if(!addresses.has(key))addresses.set(key,new Set());addresses.get(key).add(String(e.employeeId));}});
+            return {events,recent,affected:people.size,alert:people.size>=3,shared:[...addresses.values()].some(set=>set.size>=3)};
+        }
+        function renderLocationHealth(data,now) {
+            const summary=locationHealthSummary(data,now),recent=summary.recent;
+            const badge=document.getElementById('locationHealthBadge');
+            badge.textContent=summary.alert?`🚨 ${summary.affected} employees · recent errors`:recent.length?`⚠ ${recent.length} recent signals`:'No recent recorded alerts';
+            badge.className=`text-xs mt-2 ${summary.alert?'text-red-700 font-bold':recent.length?'text-amber-700':'text-gray-600'}`;
+            const monitor=data?.meta?.version===1;
+            document.getElementById('healthSummary').textContent=`${summary.alert?'🚨 Possible location service issue':recent.length?'⚠ Location signals recorded':'No recent recorded alerts'}\n${summary.affected} employees with blocked verification in the last 15 minutes.${summary.shared?'\nSame unexpected address returned for 3+ employees.':''}\n${monitor?'Latest server activity: '+istTime(data.meta.at)+' IST':'No server monitoring heartbeat yet. Deploy the updated Code.gs; monitoring begins with new punch attempts.'}\nUpdated ${istTime(now)} IST. No alerts does not guarantee that every device/location is working.`;
+            document.getElementById('healthRows').innerHTML=summary.events.slice(0,100).map(e=>{
+                const emp=allEmployeesData[e.employeeId];
+                const gps=Number.isFinite(e.latitude)&&Number.isFinite(e.longitude)&&Math.abs(e.latitude)<=90&&Math.abs(e.longitude)<=180;
+                return `<article class="p-3 border rounded-xl bg-white"><strong class="text-sm">${punchHtml(emp?.name||e.employeeId)} · ${punchHtml(e.employeeId)}</strong><p class="text-xs text-gray-500">${istTime(e.at)} IST · ${punchHtml(e.code)} · ${punchHtml(e.outcome)}</p><p class="text-sm mt-1">${punchHtml(e.message||'Location verification issue')}</p>${e.returnedAddress?`<p class="text-xs mt-1">Returned address: ${punchHtml(e.returnedAddress)}</p>`:''}${gps?`<a class="text-xs text-blue-700 font-bold" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=${e.latitude},${e.longitude}">View submitted GPS ↗</a>`:''}</article>`;
+            }).join('')||'<p class="text-sm text-gray-500">No location error records for today. Historical incidents before this update are not available.</p>';
+        }
+        async function loadLocationHealth(force=false) {
+            const allowed=()=>isAdmin&&['admin-dashboard','admin-location-health-view'].includes(activeView)&&!document.hidden;
+            if(!allowed())return;
+            clearTimeout(healthTimer);const actor=currentEmployee;
+            if(healthBusy){healthTimer=setTimeout(()=>loadLocationHealth(),2000);return;}
+            healthBusy=true;document.getElementById('healthRefresh').disabled=true;
+            try {
+                const now=await ensureAppTime(),date=istDate(now);
+                if(force||actor!==healthSession||!healthLoadedAt||now-healthLoadedAt>45000||healthData?.date!==date){
+                    const data=await databaseRequest(`locationHealth/${date}`);
+                    if(!allowed()||currentEmployee!==actor)return;
+                    healthData={date,data};healthLoadedAt=now;healthSession=actor;
+                }
+                if(allowed()&&currentEmployee===actor)renderLocationHealth(healthData?.data,now);
+            }catch(error){if(allowed()&&currentEmployee===actor){document.getElementById('locationHealthBadge').textContent='Health status unavailable';document.getElementById('healthSummary').textContent='Unable to check location health. Refresh to retry. '+error.message;}}
+            finally{healthBusy=false;document.getElementById('healthRefresh').disabled=false;if(allowed())healthTimer=setTimeout(()=>loadLocationHealth(),60000);}
+        }
+        document.getElementById('adminTeamStatusBtn').addEventListener('click',()=>{if(!isAdmin)return;teamRowsData=[];['teamDept','teamLoc','teamState'].forEach(id=>document.getElementById(id).value='all');document.getElementById('teamSearch').value='';document.getElementById('teamAuto').checked=false;showView('admin-team-status-view','Today’s Team Status');renderTeamStatus();loadTeamStatus();});
+        document.getElementById('teamRefresh').addEventListener('click',loadTeamStatus);
+        ['teamDept','teamLoc','teamSearch','teamState'].forEach(id=>document.getElementById(id).addEventListener('input',renderTeamStatus));
+        document.getElementById('teamCards').addEventListener('click',e=>{const b=e.target.closest('[data-team-filter]');if(b){document.getElementById('teamState').value=b.dataset.teamFilter;renderTeamStatus();}});
+        document.getElementById('teamAuto').addEventListener('change',()=>{clearTimeout(teamTimer);if(document.getElementById('teamAuto').checked)loadTeamStatus();});
+        document.getElementById('adminLocationHealthBtn').addEventListener('click',()=>{if(isAdmin)showView('admin-location-health-view','Location Service Health');});
+        document.getElementById('healthRefresh').addEventListener('click',()=>loadLocationHealth(true));
+        document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(teamTimer);clearTimeout(healthTimer);}else{if(isAdmin&&activeView==='admin-team-status-view'&&document.getElementById('teamAuto').checked)loadTeamStatus();loadLocationHealth();}});
+
         document.getElementById('adminFraudApprovalsBtn').addEventListener('click',()=>openFraudApprovals());
         document.getElementById('fraudApprovalRefresh').addEventListener('click',loadFraudApprovals);
         ['fraudApprovalStart','fraudApprovalEnd','fraudApprovalStatus','fraudApprovalDept','fraudApprovalLoc','fraudApprovalSearch'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{fraudApprovalLimit=40;renderFraudApprovals();}));
@@ -3472,7 +3691,7 @@
                 row.hidden = status !== 'all' && cell.dataset.status !== status;
                 if (!row.hidden) visible++;
             });
-            if (!visible) tbody.insertAdjacentHTML('beforeend', '<tr data-daywise-empty><td colspan="9" class="text-center py-4 text-gray-500 font-bold">No records found for selected filters.</td></tr>');
+            if (!visible) tbody.insertAdjacentHTML('beforeend', '<tr data-daywise-empty><td colspan="10" class="text-center py-4 text-gray-500 font-bold">No records found for selected filters.</td></tr>');
             document.getElementById('exportDaywiseBtn').classList.toggle('hidden', visible === 0);
         }
 
@@ -3587,6 +3806,7 @@
                         <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${infoText ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
                         ${daywisePhotoCell(dayPunch?.In)}
                         ${daywisePhotoCell(dayPunch?.Out)}
+                        <td>${punchHtml(designationName(emp))}</td>
                     </tr>`;
 
                 });
@@ -3908,6 +4128,7 @@
         function supportStart() {
             supportStop();
             if (!currentEmployee) return;
+            supportEl('supportConnection').textContent = 'Connecting…';
             support.userId = currentEmployee.id; support.admin = isAdmin;
             const epoch = support.epoch;
             support.presenceRef = support.admin ? ref(database, `supportPresence/admins/${support.userId}/${crypto.randomUUID()}`) : null;
