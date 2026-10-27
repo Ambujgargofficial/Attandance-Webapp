@@ -430,6 +430,8 @@
         .support-thread-actions[hidden] {display:none!important;}
         .support-thread-actions {position:relative;}.support-thread-actions summary {cursor:pointer;list-style:none;font-size:24px;padding:0 12px;}.support-thread-actions>div {position:absolute;right:0;top:100%;z-index:20;min-width:175px;background:white;padding:6px;border-radius:12px;box-shadow:0 4px 18px #0002;}.support-thread-actions button {display:block;padding:10px;width:100%;text-align:left;color:#b91c1c;font-size:12px;}
         .read-report-filters {display:flex;flex-wrap:wrap;gap:8px;}.read-report-filters>* {flex:1 1 130px;min-width:0;}
+        .fraud-time {position:relative;display:inline-block;padding-top:9px;color:#dc2626;white-space:nowrap;}
+        .fraud-time-caution {position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:10px;height:10px;pointer-events:none;}
     </style>
 </head>
 <body data-view="login-section" class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -714,6 +716,8 @@
                 <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
+                <button id="adminPhotoCleanupBtn" type="button" class="bg-orange-50 p-5 rounded-3xl border border-orange-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">🗑️</span><span class="font-bold text-[15px] text-orange-800">Delete Old Photos</span></button>
+                <button id="adminFraudApprovalsBtn" type="button" class="bg-red-50 p-5 rounded-3xl border border-red-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">🛡️</span><span class="font-bold text-[15px] text-red-800">Fraud Approval</span></button>
                 <button id="adminMessageReadsBtn" type="button" class="bg-indigo-50 p-5 rounded-3xl shadow-sm border border-indigo-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">✓✓</span><span class="font-bold text-[15px] text-indigo-800">Message Read Reports</span></button>
                 <button id="supportAdminBtn" type="button" class="bg-teal-50 p-5 rounded-3xl shadow-sm border border-teal-200 hover:shadow-md flex flex-col items-center text-center"><span class="text-3xl mb-3">💬</span><span class="font-bold text-[15px] text-teal-800">Employee Chats</span><span id="supportAdminUnread" class="support-unread-badge mt-2" hidden>0</span></button>
                 <button id="admin-btn-delete" type="button" class="bg-red-50 p-5 rounded-3xl shadow-sm border border-red-200 hover:shadow-md flex flex-col items-center text-center">
@@ -744,6 +748,44 @@
             </div>
             <p id="messageReadSummary" class="text-sm font-bold" role="status"></p>
             <div class="report-table-wrapper"><table class="report-table"><thead><tr><th>Employee</th><th>ID</th><th>Department</th><th>Location</th><th>Status</th><th>Read at (IST)</th><th>Message</th></tr></thead><tbody id="messageReadBody"></tbody></table></div>
+        </div>
+
+        <div id="admin-photo-cleanup-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center gap-3"><h2 class="text-xl font-bold text-orange-800">Delete Old Photos</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button></div>
+            <p class="text-xs text-gray-600">Remove old attendance selfies from Drive. Punch times, GPS and attendance records stay unchanged. Deleted photos will no longer open.</p>
+            <div class="space-y-3 rounded-2xl border p-4 bg-orange-50">
+                <label class="block text-sm font-bold">Before Date (IST)<input id="photoCleanupDate" type="date" class="block w-full border rounded-xl p-3 mt-1"></label>
+                <label class="block text-sm font-bold">Cleanup Password<input id="photoCleanupKey" type="password" autocomplete="off" placeholder="Admin cleanup password" class="block w-full border rounded-xl p-3 mt-1"></label>
+                <div class="flex flex-wrap gap-2"><button id="photoCleanupScan" type="button" class="support-send">Scan Photos</button><button id="photoCleanupLoad" type="button" class="support-attach-btn">Load Current Job</button></div>
+            </div>
+            <p id="photoCleanupSummary" class="text-sm font-bold whitespace-pre-line p-3 bg-indigo-50 rounded-xl" role="status"></p>
+            <p class="text-xs text-red-700">Permanent deletion cannot be undone. Size shown is an estimate based on Drive file storage. Only owned attendance selfies matching the selected date are eligible.</p>
+            <div class="flex flex-wrap gap-2"><button id="photoCleanupDelete" type="button" class="px-3 py-2 bg-red-600 text-white font-bold rounded-xl disabled:opacity-40" disabled>Delete Photos Permanently</button><button id="photoCleanupResume" type="button" class="support-attach-btn" disabled>Resume Scan</button><button id="photoCleanupPause" type="button" class="support-attach-btn" disabled>Pause</button></div>
+            <p id="photoCleanupStatus" class="text-sm" role="status" aria-live="polite"></p>
+            <a id="photoCleanupAudit" class="hidden text-sm text-indigo-700 font-bold" target="_blank" rel="noopener noreferrer">View Cleanup Audit ↗</a>
+        </div>
+
+        <div id="admin-fraud-approvals-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center gap-3"><h2 class="text-xl font-bold text-red-800">Fraud Approval</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button></div>
+            <p class="text-xs text-gray-600">Flagged punches appear automatically. F = not counted until approved. One valid punch = Half Day. Approval restores normal attendance rules.</p>
+            <div class="read-report-filters">
+                <label class="text-xs font-bold text-gray-600">Start Date<input id="fraudApprovalStart" type="date" class="w-full" aria-label="Start date"></label>
+                <label class="text-xs font-bold text-gray-600">End Date<input id="fraudApprovalEnd" type="date" class="w-full" aria-label="End date"></label>
+                <select id="fraudApprovalStatus" aria-label="Review status"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="all">All</option></select>
+                <select id="fraudApprovalDept" aria-label="Department"><option value="all">All Departments</option></select>
+                <select id="fraudApprovalLoc" aria-label="Location"><option value="all">All Locations</option></select>
+                <input id="fraudApprovalSearch" type="search" placeholder="Name / employee ID" aria-label="Find employee">
+                <button id="fraudApprovalRefresh" type="button" class="support-send">Refresh</button>
+            </div>
+            <div class="rounded-2xl border border-green-200 bg-green-50 p-3 space-y-2">
+                <p class="text-xs text-gray-600">Bulk approval applies to pending IN / OUT punches in the selected date range and filters, including results beyond Show more.</p>
+                <input id="fraudBulkNote" type="text" maxlength="500" placeholder="Approval reason (optional), e.g. branch transfer" aria-label="Bulk approval note" class="w-full p-2 border rounded-lg text-sm">
+                <button id="fraudBulkApprove" type="button" class="support-send" disabled>Approve All Pending</button>
+                <p id="fraudBulkProgress" class="text-xs font-bold" role="status" aria-live="polite"></p>
+            </div>
+            <p id="fraudApprovalSummary" role="status" class="text-sm font-bold"></p>
+            <div id="fraudApprovalRows" class="space-y-3"></div>
+            <button id="fraudApprovalMore" type="button" class="hidden support-attach-btn">Show more</button>
         </div>
 
         <!-- Admin Sub View: Special Days -->
@@ -830,7 +872,7 @@
                     <select id="daywiseStatusFilter" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-gray-50">
                         <option value="all">All Statuses</option>
                         <option value="P">Present (P)</option>
-                        <option value="P/A">Half Day (P/A)</option>
+                        <option value="P/A">Half Day (P/A)</option><option value="F">Fraud / Awaiting Approval (F)</option>
                         <option value="A">Absent (A)</option>
                         <option value="L">Late (L)</option>
                         <option value="E">Early (E)</option>
@@ -1162,7 +1204,7 @@
         </div>
 
         <div id="msg-modal" class="fixed inset-0 bg-black/60 hidden flex-col items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-extrabold text-blue-800 border-b pb-2 mb-3">✉️ Important Message</h3>
                 <div class="modal-scroll"><button id="msg-modal-photo-btn" type="button" class="hidden w-full mb-3" aria-label="View message photo full size"><img id="msg-modal-photo" alt="Photo shared by Admin" class="w-full rounded-xl object-contain" style="max-height:360px;"></button><p id="msg-modal-text" class="text-gray-800 text-sm leading-relaxed mb-2 font-medium whitespace-pre-wrap"></p></div>
                 <p id="msg-modal-time" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-right mb-4"></p>
@@ -1171,8 +1213,10 @@
         </div>
 
         <div id="remark-modal" class="fixed inset-0 bg-black/60 hidden flex-col items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
-                <h3 class="text-lg font-extrabold text-gray-800 border-b pb-2 mb-3">Admin Remark</h3>
+            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+                <h3 class="text-lg font-extrabold text-gray-800 border-b pb-2 mb-3">Attendance Details</h3>
+                <div id="fraudRequestActions" class="space-y-2 mb-3"></div>
+                <div id="attendancePunchDetails" class="space-y-3 mb-3"></div>
                 <p id="remark-modal-text" class="text-gray-700 text-sm leading-relaxed mb-4 whitespace-pre-wrap"></p>
                 <button class="close-modal-btn w-full bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl hover:bg-gray-300">Close</button>
             </div>
@@ -1498,11 +1542,12 @@
             if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportLeaveView();
             if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
             if (activeView === 'admin-message-reads-view' && viewId !== activeView) ++messageReadVersion;
+            if (activeView === 'admin-photo-cleanup-view' && viewId !== activeView) { cleanupStop=true; document.getElementById('photoCleanupKey').value=''; }
             activeView = viewId;
             document.body.dataset.view = viewId;
             if (viewId !== 'employee-dashboard') hideWelcomeClock();
             renderAppClock();
-            const viewsList = ['admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
+            const viewsList = ['admin-photo-cleanup-view', 'admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -1541,7 +1586,9 @@
             document.getElementById('emp-modal').classList.replace('flex', 'hidden');
         };
 
-        window.showRemark = (txt) => { 
+        window.showRemark = (txt) => {
+            document.getElementById('fraudRequestActions').replaceChildren();
+            document.getElementById('attendancePunchDetails').replaceChildren(); 
             document.getElementById('remark-modal-text').innerText = txt; 
             document.getElementById('remark-modal').classList.remove('hidden'); 
             document.getElementById('remark-modal').classList.add('flex'); 
@@ -1719,6 +1766,15 @@
                 if (p['In'] && p['Out']) status = "PunchedOut";
             }
             renderDashButtons(status);
+            const savedPunches = punchSnap.val() || {};
+            const heldTypes = ['In', 'Out'].filter(type => fraudPunchState(savedPunches[type], currentEmployee.department).held);
+            if (heldTypes.length) {
+                const validCount = ['In', 'Out'].filter(type => savedPunches[type] && !heldTypes.includes(type)).length;
+                const badge = document.getElementById('emp-status-badge');
+                badge.textContent = validCount ? 'Half Day · F pending' : 'F · Approval pending';
+                badge.className = 'bg-red-50 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full';
+                badge.title = 'Fraud punch detected. Open View My Report and tap ⓘ to request admin approval.';
+            }
             if (activeView === 'attendance-section') showView('employee-dashboard', 'Emp. Dashboard');
             renderAppClock();
 
@@ -1945,6 +2001,18 @@
             return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
+        function verifiedPunchResponse(geo,fix,requestId,employeeId,timestamp) {
+            if (!geo || geo.version!==1 || geo.country!=='IN' || geo.requestId!==requestId ||
+                geo.employeeId!==String(employeeId) || geo.timestamp!==timestamp ||
+                !Number.isFinite(geo.latitude) || !Number.isFinite(geo.longitude) ||
+                Math.abs(geo.latitude-fix.latitude)>1e-7 || Math.abs(geo.longitude-fix.longitude)>1e-7 ||
+                !Number.isFinite(geo.addressLatitude) || !Number.isFinite(geo.addressLongitude) ||
+                geo.addressLatitude<6 || geo.addressLatitude>38 || geo.addressLongitude<68 || geo.addressLongitude>98)return false;
+            const rad=Math.PI/180,a=(geo.addressLatitude-fix.latitude)*rad,b=(geo.addressLongitude-fix.longitude)*rad;
+            const h=Math.sin(a/2)**2+Math.cos(fix.latitude*rad)*Math.cos(geo.addressLatitude*rad)*Math.sin(b/2)**2;
+            return 6371000*2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,h))))<=2000;
+        }
+
         async function handlePunch() {
             if (punchInFlight || !currentEmployee || !locationActive) return;
             punchInFlight = true;
@@ -1982,18 +2050,24 @@
                 ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
                 const photoData = cvs.toDataURL('image/jpeg', 0.5);
                 if (!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photoData) || photoData.length < 100) throw new Error('Photo capture fail hua. Dobara photo lein.');
+                const requestId=crypto.randomUUID();
                 const fd = new FormData();
+                fd.append('requestId',requestId);
                 fd.append('action', 'uploadPhoto'); fd.append('employeeId', employee.id);
                 fd.append('timestamp', timeIso); fd.append('photo', photoData.split(',')[1]);
                 fd.append('lat', fix.latitude); fd.append('lng', fix.longitude);
                 showLoader('Attendance mark ho rahi hai…');
-                let pUrl, tAdd;
+                let pUrl, tAdd, geoVerification;
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 18000);
                 try {
                     const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, signal: controller.signal });
                     if (!response.ok) throw new Error('Upload server unavailable.');
                     const res = await response.json();
+                    if (res.status !== 'success') throw new Error(res.message || 'Location verification failed. Please retry.');
+                    geoVerification=res.geoVerification;
+                    if (!verifiedPunchResponse(geoVerification,fix,requestId,employee.id,timeIso))
+                        throw new Error('GPS/address response match nahi hua. Refresh Location karein. Admin updated Code.gs deployment check karein.');
                     pUrl = validPunchPhoto(res.photoUrl);
                     if (res.status !== 'success' || !pUrl) throw new Error('Photo upload confirm nahi hua. Internet check karke dobara try karein.');
                     if (!validPunchAddress(res.address)) throw new Error('Location ka address nahi mila. Refresh Location karke dobara try karein.');
@@ -2005,16 +2079,18 @@
                 assertFresh();
                 showLoader('Attendance mark ho rahi hai…');
                 // Conditional online-only write: no queued offline writes or overwrite on retries.
+                const punchRecord = { timestamp: timeIso, timeSource: 'firebase-synced-app-clock',
+                    receivedAt: { '.sv': 'timestamp' }, latitude: fix.latitude, longitude: fix.longitude,
+                    accuracy: fix.accuracy, locationAgeMs: Math.round(performance.now() - fix.receivedAt),
+                    address: tAdd, photoUrl: pUrl, geoVerification, location: employee.location || 'N/A', department: employee.department || 'N/A' };
+                const flagReason = daywisePunchWarning(punchRecord, employee.department);
+                if (flagReason) punchRecord.fraudFlagReason = flagReason;
                 attendanceWriteStarted = true;
                 await databaseRequest(`attendance/${encodeURIComponent(employee.id)}/${today}/${punchType}`, {
-                    method: 'PUT', headers: { 'if-match': 'null_etag' },
-                    body: JSON.stringify({ timestamp: timeIso, timeSource: 'firebase-synced-app-clock',
-                        receivedAt: { '.sv': 'timestamp' }, latitude: fix.latitude, longitude: fix.longitude,
-                        accuracy: fix.accuracy, locationAgeMs: Math.round(performance.now() - fix.receivedAt),
-                        address: tAdd, photoUrl: pUrl, location: employee.location || 'N/A', department: employee.department || 'N/A' })
+                    method: 'PUT', headers: { 'if-match': 'null_etag' }, body: JSON.stringify(punchRecord)
                 });
                 stopCamera();
-                showMessage(`${punchType} Marked!`, 'success');
+                showMessage(flagReason ? `${punchType} saved as F. Admin approval required.` : `${punchType} Marked!`, flagReason ? 'info' : 'success');
                 await setupEmployeeDashboard();
             } catch (err) {
                 showMessage(`${err.message || 'Network error.'} ${attendanceWriteStarted ? 'Success confirm nahi hua; retry se pehle dashboard check karein.' : 'Attendance save nahi hui.'}`, 'error');
@@ -2048,7 +2124,7 @@
             let start = new Date(`${startStr}T00:00:00`);
             let end = new Date(`${endStr}T00:00:00`);
             let todayStr = getLocalDateStr(new Date());
-            let statuses = [], sum = {P:0, PA:0, A:0, L:0, E:0, WO:0, Tot:0, Net:0};
+            let statuses = [], sum = {P:0, PA:0, A:0, F:0, L:0, E:0, WO:0, Tot:0, Net:0};
 
             let woDay = 6; 
             if(globalSettings?.deptWeekOffs?.[emp.department] !== undefined) {
@@ -2062,8 +2138,9 @@
             for(let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
                 let dKey = getLocalDateStr(dt);
                 let isFuture = dKey > todayStr;
-                let s = { date: dKey, st: isFuture ? '' : 'A', in: '-', out: '-', rem: '' };
+                let s = { date: dKey, st: isFuture ? '' : 'A', in: '-', out: '-', rem: '', fraudTypes: [] };
                 let p = punches ? punches[dKey] : null;
+                s.punchDetails = ['In','Out'].filter(type=>p?.[type]).map(type=>({type, punch:p[type], review:fraudPunchState(p[type],emp.department).review, approved:fraudPunchState(p[type],emp.department).status==='approved'}));
                 let isWODay = (dt.getDay() === woDay);
                 let dayRems = [];
 
@@ -2112,6 +2189,16 @@
                             s.rem = dayRems.join("\n");
                         }
 
+                        const held = ['In', 'Out'].filter(type => fraudPunchState(p[type], emp.department).held);
+                        s.fraudTypes = held;
+                        if (held.length) {
+                            const details = held.map(type => type.toUpperCase() + ': ' + fraudPunchState(p[type], emp.department).reason);
+                            s.rem = [s.rem, 'Fraud punch detected. Please ask admin to approve.\n' + details.join('\n')].filter(Boolean).join('\n\n');
+                            p = { ...p, In: held.includes('In') ? null : p.In, Out: held.includes('Out') ? null : p.Out };
+                            if (!p.In && !p.Out) s.st = 'F';
+                            // Held punches must not earn an automatic weekly-off credit.
+                            if (isWODay) totalWODays--;
+                        }
                         if(p.In && p.Out) {
                             let iT = new Date(p.In.timestamp), oT = new Date(p.Out.timestamp);
                             iT.setSeconds(0, 0); oT.setSeconds(0, 0);
@@ -2184,6 +2271,7 @@
                     if(s.st === 'P') { sum.P++; physicalDaysPresent++; }
                     else if(s.st === 'P/A') { sum.PA++; physicalDaysPresent++; }
                     else if(s.st === 'A') sum.A++;
+                    else if(s.st === 'F') sum.F++;
                     else if(s.st === 'L') { sum.L++; physicalDaysPresent++; }
                     else if(s.st === 'E') { sum.E++; physicalDaysPresent++; }
                     else if(s.st === 'W/O') sum.WO++;
@@ -2198,7 +2286,7 @@
             let totalDed = lateDed + earlyDed;
             
             if (diffDays >= 20) {
-                let absents = sum.A;
+                let absents = sum.A + sum.F;
                 if (physicalDaysPresent <= 5) sum.WO = 0;
                 else if (absents >= 20) sum.WO = 1;
                 else if (absents >= 14) sum.WO = 2;
@@ -2208,13 +2296,22 @@
                 sum.WO = totalWODays; 
             }
 
+            sum.WO = Math.min(sum.WO, totalWODays);
             sum.Tot = sum.P + (sum.PA * 0.5) + sum.L + sum.E + sum.WO;
             sum.Net = sum.Tot - totalDed;
             
             return { statuses, sum, emp, lateDed, earlyDed, totalDed };
         }
 
+        function renderPunchTime(time, flagged) {
+            const text = punchHtml(time);
+            if (!flagged) return text;
+            return `<span class="fraud-time" title="Fraud punch detected. Please ask admin to approve." aria-label="${text} — Fraud approval required"><svg class="fraud-time-caution" aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.8 1.9 18.3a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></svg>${text}</span>`;
+        }
+
+        let reportPunchDetails = new Map();
         function renderReportUI(data, headId, contId, isAdminMode) {
+            reportPunchDetails = new Map(data.statuses.map(d=>[d.date,d.punchDetails || []]));
             document.getElementById(headId).innerHTML = `<strong>${data.emp.name || 'N/A'}</strong> | Shift: ${data.emp.startTime||'00:00'} to ${data.emp.endTime||'00:00'}`;
             document.getElementById(headId).classList.remove('hidden');
             
@@ -2229,14 +2326,18 @@
             document.getElementById('sum-net').innerText = data.sum.Net;
             document.getElementById('report-summary-box').classList.remove('hidden');
 
-            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th></tr></thead><tbody>`;
+            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th>${isAdminMode ? '<th>IN Photo</th><th>OUT Photo</th>' : ''}</tr></thead><tbody>`;
             data.statuses.forEach(d => {
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 
-                let escapedRem = d.rem ? d.rem.replace(/'/g,"\\'") : '';
-                let inf = d.rem ? `<button onclick="window.showRemark('${escapedRem.replace(/\n/g, '\\n')}')" class="bg-gray-200 text-gray-800 rounded-full w-6 h-6 font-bold text-xs hover:bg-gray-300">i</button>` : '-';
-                
-                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${d.in}</td><td class="font-mono text-xs">${d.out}</td><td class="${cls}">${d.st}</td><td>${inf}</td></tr>`;
+                if (d.st === 'F') cls = 'status-A';
+                const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: d.rem || '' }));
+                const inf = (d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
+                const photoCells = isAdminMode ? ['In','Out'].map(type => {
+                    const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
+                    return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
+                }).join('') : '';
+                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}</tr>`;
             });
             h+= `</tbody></table>`;
             document.getElementById(contId).innerHTML = h;
@@ -2275,7 +2376,7 @@
             try {
                 const snap = await get(query(ref(database, `attendance/${empId}`), orderByKey(), startAt(sd), endAt(ed)));
                 if (version !== reportVersion || currentEmployee?.id !== sessionEmployee || activeView !== 'report-section') return;
-                const data = calculateReport(empDat, snap.exists() ? snap.val() : {}, sd, ed);
+                const data = calculateReport({ ...empDat, id: empId }, snap.exists() ? snap.val() : {}, sd, ed);
                 renderReportUI(data, 'duty-timings', 'report-container', isAdmin);
             } catch (err) {
                 if (version === reportVersion) showMessage('Report load nahi hui. Dobara Fetch karein.', 'error');
@@ -2340,6 +2441,7 @@
                     report.statuses.forEach(day => {
                         let cellClass = 'font-bold ';
                         if(day.st === 'P') cellClass += 'bg-green-100 text-green-800';
+                        else if(day.st === 'F') cellClass = 'bg-red-200 text-red-900';
                         else if(day.st === 'A') cellClass += 'bg-red-100 text-red-800';
                         else if(day.st === 'L') cellClass += 'bg-yellow-100 text-yellow-800';
                         else if(day.st === 'E') cellClass += 'bg-orange-100 text-orange-800';
@@ -2622,7 +2724,9 @@
                                 if (!photoLink) missing.push('Photo unavailable');
                                 if (!manualOrImported && missing.length) { isSafe = false; fraudReason = missing.join(' · '); }
 
-                                if (!isSafe || isStrictlyBanned) {
+                                const approvalState = fraudPunchState(p, empDept);
+                                if (approvalState.held) {
+                                    fraudReason = approvalState.reason;
                                     susCount++;
                                     let timeStr = new Date(p.timestamp).toLocaleTimeString();
                                     let highlightClass = isStrictlyBanned ? "bg-red-50" : "";
@@ -3071,6 +3175,292 @@
             return reasons.join(' · ');
         }
 
+        function fraudPunchFingerprint(punch) {
+            return JSON.stringify(['timestamp','latitude','longitude','accuracy','address','photoUrl','remark','department','location'].map(key => punch?.[key] ?? null));
+        }
+        function fraudPunchState(punch, department) {
+            if (!punch) return { held: false, reason: '', status: 'none' };
+            const reason = punch.fraudFlagReason || daywisePunchWarning(punch, department);
+            const review = punch.fraudReview?.fingerprint === fraudPunchFingerprint(punch) ? punch.fraudReview : null;
+            const approved = review?.status === 'approved';
+            return { held: !!reason && !approved, reason, status: !reason ? 'clear' : approved ? 'approved' : review?.status === 'rejected' ? 'rejected' : 'pending', review };
+        }
+        let fraudApprovalData = [], fraudApprovalVersion = 0, fraudApprovalLimit = 40;
+        const fraudBusy = new Set();
+        let fraudBulkRunning = false;
+        async function updateFraudPunch(id, date, type, action, note = '', expectedFingerprint = null, pendingOnly = false) {
+            const actor = currentEmployee, admin = isAdmin;
+            if (!actor || !['In','Out'].includes(type) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Invalid punch selection.');
+            if (action === 'request' ? admin || actor.id !== id : !admin || !['approved','rejected'].includes(action)) throw new Error('Action not permitted.');
+            if (!navigator.onLine) throw new Error('Internet connect karein.');
+            const path = `attendance/${encodeURIComponent(id)}/${date}/${type}`;
+            const snapshot = await databaseRequest(path, { headers: { 'X-Firebase-ETag': 'true' } }, true);
+            if (currentEmployee !== actor || isAdmin !== admin) throw new Error('Session changed.');
+            const punch = snapshot.data;
+            if (!punch || !snapshot.etag) throw new Error('Punch unavailable. Refresh report.');
+            const department = admin ? allEmployeesData[id]?.department || punch.department : actor.department;
+            const state = fraudPunchState(punch, department), fingerprint = fraudPunchFingerprint(punch);
+            if (expectedFingerprint && expectedFingerprint !== fingerprint) throw new Error('Punch changed. Refresh and review the new details before approval.');
+            if (!state.reason) throw new Error('This punch is not flagged. Refresh report.');
+            if (action === 'request' && state.status === 'approved') throw new Error('Admin already approved this punch. Refresh report.');
+            if (pendingOnly && state.status !== 'pending') throw new Error('Punch already reviewed. Refresh to see the latest decision.');
+            const review = { ...(state.review || {}), fingerprint, reason: state.reason };
+            if (action === 'request') {
+                review.requestedAt = { '.sv': 'timestamp' }; review.requestedBy = actor.id;
+                review.status = 'pending';
+            } else {
+                review.status = action; review.reviewedAt = { '.sv': 'timestamp' };
+                review.reviewedBy = actor.id; review.reviewedByName = actor.name || actor.id; review.note = String(note).trim().slice(0,500);
+            }
+            return databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify({ ...punch, fraudFlagReason: state.reason, fraudReview: review }) });
+        }
+        document.getElementById('report-container').addEventListener('click', event => {
+            const button = event.target.closest('[data-report-info]'); if (!button) return;
+            const details = JSON.parse(button.dataset.reportInfo);
+            window.showRemark(details.text);
+            const punchBox=document.getElementById('attendancePunchDetails');
+            const dayPunchDetails = reportPunchDetails.get(details.date) || [];
+            const hasFraudDetails = details.types?.length || dayPunchDetails.some(detail => detail.approved);
+            const visiblePunchDetails = hasFraudDetails
+                ? dayPunchDetails.filter(detail => details.types?.includes(detail.type) || detail.approved)
+                : dayPunchDetails;
+            visiblePunchDetails.forEach(({type,punch,review,approved})=>{
+                const card=document.createElement('section');card.className='border border-indigo-100 rounded-xl p-3 space-y-2';
+                const line=(text,cls)=>{const el=document.createElement('p');el.className=cls||'text-xs text-gray-600 break-words';el.textContent=text;card.append(el);};
+                line(type.toUpperCase()+' · '+new Date(punch.timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}),'text-sm font-bold text-indigo-800');
+                if(approved) line(String(review?.note||'').trim() || 'Approved by Admin','text-sm font-bold text-green-700');
+                line('Location: '+(punch.address||'Unavailable'));
+                const photo=validPunchPhoto(punch.photoUrl);
+                if(photo) {
+                    const link=document.createElement('a');link.href=photo;link.target='_blank';link.rel='noopener noreferrer';link.className='block text-xs font-bold text-indigo-700';link.textContent='View Photo ↗';
+                    const img=document.createElement('img');img.src=photo;img.alt=type.toUpperCase()+' punch photo';img.loading='lazy';img.className='w-full rounded-lg mt-2';img.style.maxHeight='180px';img.style.objectFit='contain';
+                    img.onerror=()=>{img.remove();link.textContent='Photo preview unavailable · Open photo ↗';};link.append(img);card.append(link);
+                } else line('Photo unavailable');
+                const valid=(v,max)=>(typeof v==='number'||typeof v==='string'&&v.trim()!=='')&&Number.isFinite(Number(v))&&Math.abs(Number(v))<=max;
+                if(valid(punch.latitude,90)&&valid(punch.longitude,180)) {
+                    const map=document.createElement('a');map.href=`https://www.google.com/maps?q=${Number(punch.latitude)},${Number(punch.longitude)}`;map.target='_blank';map.rel='noopener noreferrer';map.className='inline-block px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold';map.textContent='📍 View GPS Map';card.append(map);
+                } else line('GPS location unavailable');
+                punchBox.append(card);
+            });
+            const box = document.getElementById('fraudRequestActions');
+            if (!details.types?.length) return;
+            if (isAdmin) {
+                const link = document.createElement('button'); link.type = 'button'; link.className = 'support-send'; link.textContent = 'Open Fraud Approval';
+                link.onclick = () => { window.closeModals(); openFraudApprovals(details.date, details.id); }; box.append(link); return;
+            }
+            if (currentEmployee?.id !== details.id) return;
+            details.types.forEach(type => {
+                const request = document.createElement('button'); request.type = 'button'; request.className = 'w-full bg-red-50 border border-red-200 rounded-xl p-2 text-sm font-bold text-red-700'; request.textContent = `Request to Admin · ${type.toUpperCase()}`;
+                request.onclick = async () => {
+                    const key = `${details.id}/${details.date}/${type}`;
+                    if (fraudBusy.has(key)) return; fraudBusy.add(key); request.disabled = true; request.textContent = 'Sending request…';
+                    try { await updateFraudPunch(details.id, details.date, type, 'request'); request.textContent = '✓ Request sent to Admin'; }
+                    catch (error) { request.disabled = false; request.textContent = `Request to Admin · ${type.toUpperCase()}`; showMessage(error.message, 'error'); }
+                    finally { fraudBusy.delete(key); }
+                }; box.append(request);
+            });
+        });
+        function openFraudApprovals(date = '', employeeId = '') {
+            if (!isAdmin) return;
+            fraudApprovalData = []; fraudApprovalLimit = 40;
+            document.getElementById('fraudApprovalStart').value = date;
+            document.getElementById('fraudApprovalEnd').value = date;
+            if (!fraudBulkRunning) { document.getElementById('fraudBulkProgress').textContent = ''; document.getElementById('fraudBulkNote').value = ''; }
+            document.getElementById('fraudApprovalSearch').value = employeeId;
+            document.getElementById('fraudApprovalStatus').value = 'pending';
+            document.getElementById('fraudApprovalDept').value = 'all'; document.getElementById('fraudApprovalLoc').value = 'all';
+            document.getElementById('fraudApprovalRows').replaceChildren();
+            showView('admin-fraud-approvals-view', 'Fraud Approval'); loadFraudApprovals();
+        }
+        async function loadFraudApprovals() {
+            if (!isAdmin) return;
+            const actor = currentEmployee, version = ++fraudApprovalVersion;
+            const button = document.getElementById('fraudApprovalRefresh'); button.disabled = true;
+            document.getElementById('fraudApprovalSummary').textContent = 'Loading flagged punches…';
+            try {
+                // Queue is derived from saved punches, so it cannot be lost by a failed extra queue write.
+                const [attendance, employees] = await Promise.all([databaseRequest('attendance'), databaseRequest('employees')]);
+                if (!isAdmin || currentEmployee !== actor || version !== fraudApprovalVersion || activeView !== 'admin-fraud-approvals-view') return;
+                allEmployeesData = employees || {}; const rows = [];
+                for (const [id, emp] of activeEmployeeEntries()) {
+                    for (const [date, day] of Object.entries(attendance?.[id] || {})) {
+                        for (const type of ['In','Out']) {
+                            const punch = day?.[type], state = fraudPunchState(punch, emp.department);
+                            if (state.reason) rows.push({ id, emp, date, type, punch, state });
+                        }
+                    }
+                }
+                fraudApprovalData = rows.sort((a,b) => b.date.localeCompare(a.date) || String(a.emp.name || a.id).localeCompare(String(b.emp.name || b.id)) || a.type.localeCompare(b.type));
+                for (const [id,key,label] of [['fraudApprovalDept','department','All Departments'],['fraudApprovalLoc','location','All Locations']]) {
+                    const select = document.getElementById(id), before = select.value; select.replaceChildren(new Option(label,'all'));
+                    [...new Set(rows.map(r=>r.emp[key]).filter(Boolean))].sort().forEach(value=>select.add(new Option(value,value)));
+                    select.value = [...select.options].some(o=>o.value===before) ? before : 'all';
+                }
+                renderFraudApprovals();
+            } catch(error) { if (currentEmployee === actor && version === fraudApprovalVersion) document.getElementById('fraudApprovalSummary').textContent = 'Unable to load approvals. Check connection and Refresh.'; }
+            finally { if (version === fraudApprovalVersion) button.disabled = false; }
+        }
+        function filteredFraudApprovals() {
+            const val=id=>document.getElementById(id).value, term=val('fraudApprovalSearch').trim().toLowerCase();
+            return fraudApprovalData.filter(r => (!val('fraudApprovalStart') || r.date>=val('fraudApprovalStart')) && (!val('fraudApprovalEnd') || r.date<=val('fraudApprovalEnd')) && (val('fraudApprovalStatus')==='all'||r.state.status===val('fraudApprovalStatus')) &&
+                (val('fraudApprovalDept')==='all'||r.emp.department===val('fraudApprovalDept')) && (val('fraudApprovalLoc')==='all'||r.emp.location===val('fraudApprovalLoc')) && `${r.emp.name} ${r.id}`.toLowerCase().includes(term));
+        }
+        function renderFraudApprovals() {
+            if (!isAdmin) return;
+            const rows = filteredFraudApprovals(), pending = rows.filter(r=>r.state.status==='pending');
+            const start=document.getElementById('fraudApprovalStart').value, end=document.getElementById('fraudApprovalEnd').value;
+            const bulk=document.getElementById('fraudBulkApprove');
+            bulk.disabled=fraudBulkRunning || fraudBusy.size>0 || !start || !end || start>end || !pending.length;
+            bulk.textContent=`Approve All Pending (${pending.length})`;
+            document.getElementById('fraudApprovalSummary').textContent = `${rows.length} flagged punches · ${fraudApprovalData.filter(r=>r.state.status==='pending').length} pending overall`;
+            const parent=document.getElementById('fraudApprovalRows'); parent.replaceChildren();
+            if (!rows.length) { const p=document.createElement('p'); p.textContent='No flagged punches match these filters.'; parent.append(p); }
+            rows.slice(0,fraudApprovalLimit).forEach(row => {
+                const card=document.createElement('article'); card.className='bg-white border border-red-100 rounded-2xl p-4 space-y-2';
+                const add=(text,cls='text-xs text-gray-600')=>{const p=document.createElement('p');p.className=cls;p.textContent=text;card.append(p);};
+                add(`${row.emp.name || row.id} · ${row.id}`, 'font-bold text-gray-900');
+                add(`${row.date} · ${row.type.toUpperCase()} · ${new Date(row.punch.timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})} · ${row.state.status.toUpperCase()}`, 'text-sm font-bold text-red-700');
+                add(`${row.emp.department || '—'} · ${row.emp.location || '—'}`);
+                add('Reason: '+row.state.reason);add('Address: '+(row.punch.address||'Unavailable'));
+                add('GPS accuracy: '+(row.punch.accuracy ?? 'Unavailable')+(row.punch.accuracy!=null?' m':''));
+                const review=row.state.review;
+                if(review?.requestedAt) add('Requested by employee: '+supportDate(review.requestedAt));
+                if(review?.reviewedAt) add(`${review.status==='pending'?'Previous review':'Reviewed'}: ${review.reviewedByName||review.reviewedBy} · ${supportDate(review.reviewedAt)}${review.note?' · '+review.note:''}`);
+                const links=document.createElement('div');links.className='flex gap-3 text-sm font-bold text-blue-700';
+                const photo=validPunchPhoto(row.punch.photoUrl);
+                const link=(text,url)=>{const a=document.createElement('a');a.textContent=text;a.href=url;a.target='_blank';a.rel='noopener noreferrer';links.append(a);};
+                if(photo)link('View Photo',photo);else add('Photo unavailable','text-xs font-bold text-red-600');
+                const lat=row.punch.latitude,lng=row.punch.longitude;
+                const number=(x,n)=>(typeof x==='number'||typeof x==='string'&&x.trim()!=='')&&Number.isFinite(Number(x))&&Math.abs(Number(x))<=n;
+                if(number(lat,90)&&number(lng,180))link('View GPS',`https://www.google.com/maps?q=${Number(lat)},${Number(lng)}`);card.append(links);
+                const note=document.createElement('input');note.type='text';note.maxLength=500;note.placeholder='Admin note (optional)';note.className='w-full p-2 border rounded-lg text-sm';note.setAttribute('aria-label','Approval note');card.append(note);
+                const actions=document.createElement('div');actions.className='flex gap-2';
+                ['approved','rejected'].forEach(action=>{
+                    if(row.state.status===action)return;
+                    const btn=document.createElement('button');btn.type='button';btn.textContent=action==='approved'?'Approve punch':'Reject punch';btn.className=action==='approved'?'support-send':'support-attach-btn';
+                    btn.disabled=fraudBulkRunning;
+                    btn.onclick=async()=>{
+                        const key=`${row.id}/${row.date}/${row.type}`;
+                        if(!isAdmin||fraudBulkRunning||fraudBusy.has(key))return;
+                        if(!confirm(`${action==='approved'?'Approve':'Reject'} ${row.type.toUpperCase()} for ${row.emp.name||row.id} on ${row.date}?`))return;
+                        const actor=currentEmployee;fraudBusy.add(key);Array.from(actions.children).forEach(b=>b.disabled=true);
+                        try {
+                            const saved=await updateFraudPunch(row.id,row.date,row.type,action,note.value,fraudPunchFingerprint(row.punch));
+                            if(currentEmployee!==actor||!isAdmin)return;
+                            row.punch=saved;row.state=fraudPunchState(saved,row.emp.department);renderFraudApprovals();showMessage(action==='approved'?'Approved. Reports will count this punch using normal rules.':'Rejected. This punch remains excluded.','success');
+                        }catch(err){showMessage(err.message,'error');Array.from(actions.children).forEach(b=>b.disabled=false);}
+                        finally{fraudBusy.delete(key);renderFraudApprovals();}
+                    };actions.append(btn);
+                });card.append(actions);parent.append(card);
+            });
+            document.getElementById('fraudApprovalMore').classList.toggle('hidden',rows.length<=fraudApprovalLimit);
+        }
+        document.getElementById('fraudBulkApprove').addEventListener('click', async()=>{
+            if (!isAdmin || fraudBulkRunning || fraudBusy.size) return;
+            const start=document.getElementById('fraudApprovalStart').value, end=document.getElementById('fraudApprovalEnd').value;
+            if (!start || !end || start>end) { showMessage('Select a valid Start and End Date.','error'); return; }
+            const rows=filteredFraudApprovals().filter(r=>r.state.status==='pending').map(r=>({...r, fingerprint:fraudPunchFingerprint(r.punch)}));
+            if (!rows.length) return;
+            const employees=new Set(rows.map(r=>r.id)).size;
+            if (!confirm(`Approve ${rows.length} pending punches for ${employees} employees from ${start} to ${end}?\nCurrent department, location and search filters apply. Attendance will be recalculated using normal rules.`)) return;
+            const actor=currentEmployee, note=document.getElementById('fraudBulkNote').value;
+            const progress=document.getElementById('fraudBulkProgress');
+            let completed=0, approved=0, failed=0, next=0;
+            const errors=[];
+            fraudBulkRunning=true;
+            const controls=Array.from(document.querySelectorAll('#admin-fraud-approvals-view .read-report-filters input, #admin-fraud-approvals-view .read-report-filters select, #fraudApprovalRefresh, #fraudBulkNote'));
+            controls.forEach(el=>el.disabled=true);renderFraudApprovals();
+            progress.textContent=`Approving 0 / ${rows.length}…`;
+            try {
+                await Promise.all(Array.from({length:Math.min(3,rows.length)},async()=>{
+                    while (next<rows.length && currentEmployee===actor && isAdmin) {
+                        const row=rows[next++];
+                        try {
+                            const saved=await updateFraudPunch(row.id,row.date,row.type,'approved',note,row.fingerprint,true);
+                            approved++;
+                            const cached=fraudApprovalData.find(r=>r.id===row.id&&r.date===row.date&&r.type===row.type);
+                            if(cached) { cached.punch=saved;cached.state=fraudPunchState(saved,cached.emp.department); }
+                        } catch(error) { failed++;errors.push(`${row.id} · ${row.date} · ${row.type}: ${error.message}`); }
+                        completed++;
+                        if(currentEmployee===actor&&isAdmin) progress.textContent=`Processed ${completed} / ${rows.length} · Approved ${approved} · Unsuccessful ${failed}`;
+                    }
+                }));
+            } finally {
+                fraudBulkRunning=false;controls.forEach(el=>el.disabled=false);
+                if(currentEmployee===actor&&isAdmin) {
+                    renderFraudApprovals();
+                    progress.textContent=`Approved ${approved} / ${rows.length} punches. ${failed ? `${failed} unsuccessful — Refresh and review before retrying. ` : ''}${rows.length-completed ? `${rows.length-completed} not processed. ` : ''}${errors.slice(0,3).join(' | ')}`;
+                }
+            }
+        });
+        var cleanupStop = true, cleanupRunning = false, cleanupJob = null;
+        const cleanupSize = bytes => bytes >= 1e9 ? (bytes/1e9).toFixed(2)+' GB' : (bytes/1e6).toFixed(2)+' MB';
+        function renderPhotoCleanup() {
+            const j=cleanupJob, el=id=>document.getElementById(id);
+            el('photoCleanupScan').disabled=cleanupRunning;
+            el('photoCleanupLoad').disabled=cleanupRunning;
+            el('photoCleanupDate').disabled=cleanupRunning;
+            el('photoCleanupKey').disabled=cleanupRunning;
+            el('photoCleanupDelete').disabled=cleanupRunning || !j || !['ready','deleting'].includes(j.phase) || !j.count;
+            el('photoCleanupResume').disabled=cleanupRunning || !j || j.phase!=='scanning';
+            el('photoCleanupPause').disabled=!cleanupRunning;
+            el('photoCleanupDelete').textContent=j?.phase==='deleting'?'Resume Deletion':'Delete Photos Permanently';
+            el('photoCleanupSummary').textContent=j ? `Before ${j.cutoff} (IST) · ${j.phase.toUpperCase()}\nPhotos: ${j.count.toLocaleString()} · ${j.phase==='scanning'?'Size so far':'Estimated space to free'}: ${cleanupSize(j.bytes)}\nScanned: ${j.scanned.toLocaleString()} · Processed: ${j.processed} / ${j.count}\nDeleted: ${j.deleted} · Failed: ${j.failed} · Skipped / missing: ${j.skipped}\nDeleted file storage: ${cleanupSize(j.freedBytes)}` : 'Choose a date and Scan Photos. Selected date itself is excluded.';
+            const link=el('photoCleanupAudit');link.classList.toggle('hidden',!j);
+            if(j) link.href=j.auditUrl;
+        }
+        async function photoCleanupCall(action, extra={}) {
+            if(!isAdmin || !currentEmployee) throw new Error('Admin login required.');
+            const key=document.getElementById('photoCleanupKey').value;
+            if(key.length<16) throw new Error('Enter your cleanup password (16+ characters).');
+            const body=new URLSearchParams({action,cleanupKey:key,...extra});
+            const response=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',body});
+            if(!response.ok)throw new Error('Server unavailable. Use Load / Resume to check progress.');
+            let result;try{result=await response.json();}catch{throw new Error('Deploy the updated Code.gs web app version first.');}
+            if(result.status!=='success')throw new Error(result.message||'Cleanup request failed.');
+            return result.job;
+        }
+        async function runPhotoCleanup(mode) {
+            if(cleanupRunning || !isAdmin)return;
+            const actor=currentEmployee, status=document.getElementById('photoCleanupStatus');
+            if(mode==='start' && !document.getElementById('photoCleanupDate').value){status.textContent='Select Before Date.';return;}
+            if(mode==='delete' && (!cleanupJob || !confirm(`PERMANENTLY delete ${cleanupJob.count-cleanupJob.processed} remaining attendance photos before ${cleanupJob.cutoff} (IST)?\nPreview total: ${cleanupSize(cleanupJob.bytes)}. Photos cannot be restored. Attendance records remain unchanged.`)))return;
+            cleanupRunning=true;cleanupStop=false;renderPhotoCleanup();status.textContent='Connecting…';
+            const stillHere=()=>isAdmin&&currentEmployee===actor&&activeView==='admin-photo-cleanup-view';
+            try {
+                let job;
+                if(mode==='start')job=await photoCleanupCall('photoCleanupStart',{cutoff:document.getElementById('photoCleanupDate').value});
+                else if(mode==='load')job=await photoCleanupCall('photoCleanupStatus');
+                else job=cleanupJob;
+                if(!stillHere())return;
+                cleanupJob=job;renderPhotoCleanup();
+                if(mode==='load'){status.textContent=job?'Current job loaded. Resume scanning or deletion below.':'No cleanup job found.';return;}
+                while(!cleanupStop && stillHere() && cleanupJob && (mode==='delete'?['ready','deleting'].includes(cleanupJob.phase):cleanupJob.phase==='scanning')) {
+                    status.textContent=mode==='delete'?'Deleting selected photos…':'Scanning photo sizes…';
+                    job=await photoCleanupCall(mode==='delete'?'photoCleanupDelete':'photoCleanupScan',{jobId:cleanupJob.id,...(mode==='delete'?{confirm:'DELETE'}:{})});
+                    if(!stillHere())return;
+                    cleanupJob=job;renderPhotoCleanup();
+                }
+                status.textContent=cleanupStop?'Paused after current batch. You can resume.':cleanupJob?.phase==='ready'?'Scan complete. Review count and size before deleting.':cleanupJob?.phase==='done'?'Completed. Review failed/skipped entries in the audit; a new scan can retry remaining photos. Drive storage display may take time to update.':'Stopped.';
+            } catch(error){if(stillHere())status.textContent=error.message+' Use Load Current Job before retrying.';}
+            finally{cleanupRunning=false;cleanupStop=true;renderPhotoCleanup();}
+        }
+        document.getElementById('adminPhotoCleanupBtn').addEventListener('click',()=>{
+            if(!isAdmin)return;
+            cleanupJob=null;document.getElementById('photoCleanupKey').value='';document.getElementById('photoCleanupStatus').textContent='';
+            showView('admin-photo-cleanup-view','Delete Old Photos');renderPhotoCleanup();
+        });
+        document.getElementById('photoCleanupScan').addEventListener('click',()=>runPhotoCleanup('start'));
+        document.getElementById('photoCleanupLoad').addEventListener('click',()=>runPhotoCleanup('load'));
+        document.getElementById('photoCleanupResume').addEventListener('click',()=>runPhotoCleanup('resume'));
+        document.getElementById('photoCleanupDelete').addEventListener('click',()=>runPhotoCleanup('delete'));
+        document.getElementById('photoCleanupPause').addEventListener('click',()=>{cleanupStop=true;document.getElementById('photoCleanupStatus').textContent='Pausing after current batch…';});
+
+        document.getElementById('adminFraudApprovalsBtn').addEventListener('click',()=>openFraudApprovals());
+        document.getElementById('fraudApprovalRefresh').addEventListener('click',loadFraudApprovals);
+        ['fraudApprovalStart','fraudApprovalEnd','fraudApprovalStatus','fraudApprovalDept','fraudApprovalLoc','fraudApprovalSearch'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{fraudApprovalLimit=40;renderFraudApprovals();}));
+        document.getElementById('fraudApprovalMore').addEventListener('click',()=>{fraudApprovalLimit+=40;renderFraudApprovals();});
+
         function applyDaywiseStatusFilter() {
             const tbody = document.getElementById('daywiseBody');
             const status = document.getElementById('daywiseStatusFilter').value;
@@ -3171,6 +3561,7 @@
                     let stBadge = '';
                     if(st === 'P') stBadge = '<span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">P</span>';
                     else if(st === 'P/A') stBadge = '<span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">P/A</span>';
+                    else if(st === 'F') stBadge = '<span class="bg-red-200 text-red-900 font-bold px-2 py-0.5 text-[10px] rounded">F</span>';
                     else if(st === 'A') stBadge = '<span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">A</span>';
                     else if(st === 'L') stBadge = '<span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">L</span>';
                     else if(st === 'E') stBadge = '<span class="bg-orange-100 text-orange-800 font-bold px-2 py-0.5 text-[10px] rounded uppercase">E</span>';
@@ -3179,19 +3570,19 @@
                     let shift = `${emp.startTime || '00:00'} - ${emp.endTime || '00:00'}`;
 
                     const warnings = ['In', 'Out'].map(type => {
-                        const reason = daywisePunchWarning(dayPunch?.[type], emp.department);
-                        return reason ? type.toUpperCase() + ' — Suspicious: ' + reason : '';
+                        const state = fraudPunchState(dayPunch?.[type], emp.department);
+                        return state.reason ? type.toUpperCase() + ' — ' + (state.held ? 'F: Fraud punch detected. Please ask admin to approve. ' : 'Approved by Admin. ') + state.reason : '';
                     }).filter(Boolean);
                     const infoText = [warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, sRule)].filter(Boolean).join('\n\n');
-                    const infoStyle = warnings.length ? 'bg-red-50 border-red-300 text-red-600' : 'bg-indigo-50 border-indigo-200 text-indigo-700';
+                    const infoStyle = report.statuses[0].fraudTypes?.length ? 'bg-red-50 border-red-300 text-red-600' : 'bg-indigo-50 border-indigo-200 text-indigo-700';
                     const infoLabel = warnings.length ? 'Suspicious punch — view reasons, remark and address' : 'View remark / address';
 
                     html += `<tr>
                         <td class="sticky-col-1 font-bold text-gray-700">${id}</td>
                         <td class="sticky-col-2 text-left font-medium">${emp.name || 'Unknown'}</td>
                         <td class="font-mono text-xs text-gray-600">${shift}</td>
-                        <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${inTime}</td>
-                        <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${outTime}</td>
+                        <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${renderPunchTime(inTime, report.statuses[0].fraudTypes?.includes('In'))}</td>
+                        <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${renderPunchTime(outTime, report.statuses[0].fraudTypes?.includes('Out'))}</td>
                         <td class="text-center" data-status="${st}">${stBadge}</td>
                         <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${infoText ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
                         ${daywisePhotoCell(dayPunch?.In)}
