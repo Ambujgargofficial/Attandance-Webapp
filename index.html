@@ -1853,7 +1853,7 @@
 
         let cancelGpsAcquisition = null;
         let locationRequest = null;
-        const PUNCH_REUSE_GPS_MS = 5000;
+        const PUNCH_REUSE_GPS_MS = 10000;
 
         function acquireFreshGps(generation) {
             // Keep one high-accuracy acquisition alive while coarse fixes improve.
@@ -1877,7 +1877,7 @@
                     error.weakGps = sawWeakFix;
                     finish(error);
                 };
-                deadlineTimer = setTimeout(exhausted, 22000);
+                deadlineTimer = setTimeout(exhausted, 15000);
                 try {
                     watchId = navigator.geolocation.watchPosition(position => {
                         if (finished) return;
@@ -1885,7 +1885,7 @@
                         if (validPunchGps(position.coords)) finish(null, position);
                         else {
                             sawWeakFix = true;
-                            document.getElementById('location-info').textContent = 'GPS accuracy improve ho rahi hai…';
+                            document.getElementById('location-info').textContent = `GPS accuracy ${Math.round(position.coords.accuracy)}m — 50m ya better location ka wait…`;
                         }
                     }, error => {
                         if (finished) return;
@@ -1895,7 +1895,7 @@
                             denied.permissionDenied = true; finish(denied);
                         }
                         // Transient unavailable/timeout errors do not restart GPS warm-up.
-                    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+                    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
                     if (finished && watchId !== null) navigator.geolocation.clearWatch(watchId);
                 } catch (error) { finish(error); }
             });
@@ -1922,7 +1922,7 @@
             const warn = document.getElementById('accuracy-warning');
             icon.classList.add('spin-anim');
             warn.classList.add('hidden');
-            let permissionDenied = false;
+            let permissionDenied = false, acquired = false;
             try {
                 if (!navigator.geolocation || document.hidden) throw new Error('GPS available nahi hai. Refresh Location dabayein.');
                 const pos = await acquireFreshGps(generation);
@@ -1931,6 +1931,7 @@
                 if (!validPunchGps(c)) throw new Error('Valid GPS nahi mila. Refresh Location dabayein.');
                 currentCoordinates = { latitude: c.latitude, longitude: c.longitude, accuracy: c.accuracy };
                 locationReceivedAt = performance.now();
+                acquired = true;
                 document.getElementById('location-info').textContent = `Loc: ${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} | Accuracy: ${Math.round(c.accuracy)}m. Auto-refresh: 20 sec.`;
                 return { ...currentCoordinates, receivedAt: locationReceivedAt };
             } catch (err) {
@@ -1944,8 +1945,9 @@
                 if (generation === locationGeneration) {
                     icon.classList.remove('spin-anim');
                     updateCaptureButton();
-                    if (locationActive && !document.hidden && !permissionDenied && !punchInFlight)
-                        locationTimer = setTimeout(startLocationTracking, locationIsFresh() ? LOCATION_REFRESH_MS : 3000);
+                    if (acquired && locationActive && !document.hidden && !permissionDenied && !punchInFlight)
+                        locationTimer = setTimeout(startLocationTracking, LOCATION_REFRESH_MS);
+                    // Failed acquisition stops here. The user can retry without an endless spin loop.
                 }
             }
         }
@@ -1980,6 +1982,7 @@
             ++locationGeneration;
             if (cancelGpsAcquisition) cancelGpsAcquisition();
             clearTimeout(locationTimer);
+            document.getElementById('refresh-icon').classList.remove('spin-anim');
             invalidateLocation('Location expired. Refresh Location.');
             if (!document.hidden) startLocationTracking();
         });
