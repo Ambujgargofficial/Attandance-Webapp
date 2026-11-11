@@ -10,8 +10,8 @@
     database rules publicly. Missing permission blocks punching safely.
   - timestamp remains ISO UTC for existing consumers; receivedAt is Firebase
     server milliseconds. The attendance date key uses Asia/Kolkata.
-  - GPS refreshes after 20 seconds and expires at 25 seconds. Capture reuses
-    a <=5-second accurate fix or awaits one shared fresh acquisition. Backgrounding,
+  - GPS refreshes after 5 seconds and expires at 25 seconds. Capture reuses
+    a <=10-second accurate fix; browser cached fixes must be <=5 seconds old or awaits one shared fresh acquisition. Backgrounding,
     missing/expired GPS and accuracy >50m block capture.
   - Old offlineP records are retained for admin review, never auto-synced.
   - Frontend-only checks cannot prevent modified-client or mock-GPS attacks.
@@ -638,7 +638,7 @@
                 <p id="accuracy-warning" class="text-[10px] text-red-600 font-bold mt-1 hidden">GPS weak hai. Kripya open area me aayein.</p>
             </div>
 
-            <p class="text-xs text-gray-600">Location har 20 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein</p>
+            <p class="text-xs text-gray-600">Location har 5 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein</p>
             <button id="captureSubmitBtn" class="w-full bg-blue-600 text-white py-4 px-4 rounded-2xl hover:bg-blue-700 font-extrabold text-lg shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2">
                 📸 Capture & Submit
             </button>
@@ -1323,7 +1323,7 @@
         let currentStream, currentCoordinates, currentPunchTarget;
         let locationTimer = null, locationGeneration = 0, locationActive = false;
         let locationReceivedAt = null, punchInFlight = false;
-        const LOCATION_REFRESH_MS = 20000, LOCATION_MAX_AGE_MS = 25000;
+        const LOCATION_REFRESH_MS = 5000, LOCATION_MAX_AGE_MS = 25000;
         const clockSession = crypto.randomUUID();
 
         // REST responses come from Firebase, never from the SDK offline cache or device clock.
@@ -1866,6 +1866,14 @@
         let locationRequest = null;
         const PUNCH_REUSE_GPS_MS = 10000;
 
+        // Browser timestamp measures fix age only; attendance time still uses server time.
+        const GPS_CACHE_MAX_AGE_MS = 5000;
+        function gpsPositionAge(position) {
+            if (!position || !Number.isFinite(position.timestamp)) return Infinity;
+            const age = Date.now() - position.timestamp;
+            return age >= 0 ? age : Infinity;
+        }
+
         function acquireFreshGps(generation) {
             // Keep one high-accuracy acquisition alive while coarse fixes improve.
             return new Promise((resolve, reject) => {
@@ -1893,6 +1901,7 @@
                     watchId = navigator.geolocation.watchPosition(position => {
                         if (finished) return;
                         if (!isCurrent()) return cancel();
+                        if (gpsPositionAge(position) > GPS_CACHE_MAX_AGE_MS) return;
                         if (validPunchGps(position.coords)) finish(null, position);
                         else {
                             sawWeakFix = true;
@@ -1906,7 +1915,7 @@
                             denied.permissionDenied = true; finish(denied);
                         }
                         // Transient unavailable/timeout errors do not restart GPS warm-up.
-                    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
+                    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: GPS_CACHE_MAX_AGE_MS });
                     if (finished && watchId !== null) navigator.geolocation.clearWatch(watchId);
                 } catch (error) { finish(error); }
             });
@@ -1939,11 +1948,11 @@
                 const pos = await acquireFreshGps(generation);
                 if (generation !== locationGeneration || !locationActive || document.hidden) throw new Error('Location request cancelled.');
                 const c = pos.coords;
-                if (!validPunchGps(c)) throw new Error('Valid GPS nahi mila. Refresh Location dabayein.');
+                if (!validPunchGps(c) || gpsPositionAge(pos) > GPS_CACHE_MAX_AGE_MS) throw new Error('Valid fresh GPS nahi mila. Refresh Location dabayein.');
                 currentCoordinates = { latitude: c.latitude, longitude: c.longitude, accuracy: c.accuracy };
-                locationReceivedAt = performance.now();
+                locationReceivedAt = performance.now() - gpsPositionAge(pos);
                 acquired = true;
-                document.getElementById('location-info').textContent = `Loc: ${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} | Accuracy: ${Math.round(c.accuracy)}m. Auto-refresh: 20 sec.`;
+                document.getElementById('location-info').textContent = `Loc: ${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} | Accuracy: ${Math.round(c.accuracy)}m. Auto-refresh: 5 sec.`;
                 return { ...currentCoordinates, receivedAt: locationReceivedAt };
             } catch (err) {
                 if (generation === locationGeneration) {
@@ -2022,7 +2031,7 @@
         }
 
         function verifiedPunchResponse(geo,fix,requestId,employeeId,timestamp) {
-            if (!geo || geo.version!==1 || geo.country!=='IN' || geo.requestId!==requestId ||
+            if (!geo || geo.version!==2 || geo.country!=='IN' || geo.requestId!==requestId ||
                 geo.employeeId!==String(employeeId) || geo.timestamp!==timestamp ||
                 !Number.isFinite(geo.latitude) || !Number.isFinite(geo.longitude) ||
                 Math.abs(geo.latitude-fix.latitude)>1e-7 || Math.abs(geo.longitude-fix.longitude)>1e-7 ||
@@ -2030,7 +2039,7 @@
                 geo.addressLatitude<6 || geo.addressLatitude>38 || geo.addressLongitude<68 || geo.addressLongitude>98)return false;
             const rad=Math.PI/180,a=(geo.addressLatitude-fix.latitude)*rad,b=(geo.addressLongitude-fix.longitude)*rad;
             const h=Math.sin(a/2)**2+Math.cos(fix.latitude*rad)*Math.cos(geo.addressLatitude*rad)*Math.sin(b/2)**2;
-            return 6371000*2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,h))))<=2000;
+            return 6371000*2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,h))))<=150;
         }
 
         let lastLocationSignalAt=-Infinity;
@@ -2089,7 +2098,7 @@
                 fd.append('timestamp', timeIso); fd.append('photo', photoData.split(',')[1]);
                 fd.append('lat', fix.latitude); fd.append('lng', fix.longitude);
                 showLoader('Attendance mark ho rahi hai…');
-                let pUrl, tAdd, geoVerification;
+                let pUrl, tAdd, geoVerification, locationTimings;
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 18000);
                 try {
@@ -2098,6 +2107,7 @@
                     const res = await response.json();
                     if (res.status !== 'success') throw new Error(res.message || 'Location verification failed. Please retry.');
                     geoVerification=res.geoVerification;
+                    locationTimings = {geocodeMs: Number(res.locationTimings?.geocodeMs)||0,totalMs:Number(res.locationTimings?.totalMs)||0};
                     if (!verifiedPunchResponse(geoVerification,fix,requestId,employee.id,timeIso))
                         throw new Error('GPS/address response match nahi hua. Refresh Location karein. Admin updated Code.gs deployment check karein.');
                     pUrl = validPunchPhoto(res.photoUrl);
@@ -2114,7 +2124,7 @@
                 const punchRecord = { timestamp: timeIso, timeSource: 'firebase-synced-app-clock',
                     receivedAt: { '.sv': 'timestamp' }, latitude: fix.latitude, longitude: fix.longitude,
                     accuracy: fix.accuracy, locationAgeMs: Math.round(performance.now() - fix.receivedAt),
-                    address: tAdd, photoUrl: pUrl, geoVerification, location: employee.location || 'N/A', department: employee.department || 'N/A' };
+                    address: tAdd, photoUrl: pUrl, geoVerification, locationTimings, location: employee.location || 'N/A', department: employee.department || 'N/A' };
                 const flagReason = daywisePunchWarning(punchRecord, employee.department);
                 if (flagReason) punchRecord.fraudFlagReason = flagReason;
                 attendanceWriteStarted = true;
@@ -3823,7 +3833,15 @@
                 const punch = dayPunch?.[type]; if (!punch) return;
                 const details = [];
                 if (punch.remark) details.push('Remark: ' + String(punch.remark));
-                if (punch.address) details.push('Address: ' + String(punch.address));
+                if (punch.address) details.push('Address (map service): ' + String(punch.address));
+                const hasGps = value => value !== null && value !== undefined && String(value).trim() !== '' && Number.isFinite(Number(value));
+                if (hasGps(punch.latitude) && hasGps(punch.longitude) && Math.abs(Number(punch.latitude)) <= 90 && Math.abs(Number(punch.longitude)) <= 180) {
+                    details.push('Recorded GPS: ' + Number(punch.latitude).toFixed(6) + ', ' + Number(punch.longitude).toFixed(6));
+                    if (punch.locationTimings) details.push('Server location lookup: ' + (Number(punch.locationTimings.geocodeMs)/1000).toFixed(1) + ' sec');
+                    if (hasGps(punch.accuracy)) details.push('GPS accuracy: ±' + Math.round(Number(punch.accuracy)) + ' m');
+                    details.push('https://www.google.com/maps?q=' + Number(punch.latitude) + ',' + Number(punch.longitude));
+                    details.push('Address galat lage to recorded GPS map se verify karein.');
+                } else details.push('Recorded GPS unavailable; address independently verify karein.');
                 if (details.length) lines.push(type.toUpperCase() + '\n' + details.join('\n'));
             });
             return lines.join('\n\n');
@@ -4070,7 +4088,17 @@
         document.getElementById('adminPrevMtdBtn').addEventListener('click', () => applyAdminReportPreset('PREVIOUS'));
         document.getElementById('daywiseBody').addEventListener('click', event => {
             const button = event.target.closest('[data-daywise-info]');
-            if (button) window.showRemark(button.dataset.daywiseInfo);
+            if (button) {
+                window.showRemark(button.dataset.daywiseInfo);
+                const container = document.getElementById('remark-modal-text');
+                for (const match of button.dataset.daywiseInfo.matchAll(/https:\/\/www\.google\.com\/maps\?q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g)) {
+                    const link = document.createElement('a');
+                    link.href = match[0]; link.target = '_blank'; link.rel = 'noopener noreferrer';
+                    link.textContent = 'Open recorded GPS map ↗';
+                    link.className = 'block text-blue-600 underline mt-2';
+                    container.append(link);
+                }
+            }
         });
         document.getElementById('fetchAdminReportBtn').addEventListener('click', fetchAdminReport);
         document.getElementById('daywiseStatusFilter').addEventListener('change', applyDaywiseStatusFilter);
