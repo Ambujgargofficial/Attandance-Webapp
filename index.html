@@ -756,7 +756,7 @@
 
         <div id="admin-team-status-view" class="hidden w-full flex-col space-y-3">
             <div class="flex justify-between items-center gap-2"><h2 class="font-bold text-xl text-blue-900">Today’s Team Status</h2><button type="button" class="admin-back-btn text-red-600 font-bold">← Back</button></div>
-            <div class="read-report-filters"><select id="teamDept" aria-label="Department"><option value="all">All Departments</option></select><select id="teamLoc" aria-label="Location"><option value="all">All Locations</option></select><input id="teamSearch" type="search" placeholder="Name / employee ID" aria-label="Employee search"><select id="teamState" aria-label="Team status"><option value="all">All Statuses</option><option>On Duty</option><option>Punched Out</option><option>Not Arrived</option><option>Shift Not Started</option><option>Weekly Off</option><option>Approval Pending</option><option>Unavailable</option><option>Manual Present</option><option>Manual Half</option><option>Manual Absent</option><option>Manual Not Marked</option><option value="late">Late</option><option value="held">Approval Issue</option></select></div>
+            <div class="read-report-filters"><select id="teamDept" aria-label="Department"><option value="all">All Departments</option></select><select id="teamLoc" aria-label="Location"><option value="all">All Locations</option></select><input id="teamSearch" type="search" placeholder="Name / employee ID" aria-label="Employee search"><select id="teamState" aria-label="Team status"><option value="all">All Statuses</option><option>On Duty</option><option>Punched Out</option><option>Not Arrived</option><option>Shift Not Started</option><option>Weekly Off</option><option>Approval Pending</option><option>Unavailable</option><option>Holiday · P</option><option>Manual Present</option><option>Manual Half</option><option>Manual Absent</option><option>Manual Not Marked</option><option value="late">Late</option><option value="held">Approval Issue</option></select></div>
             <div class="flex items-center justify-between gap-2"><label class="text-xs"><input id="teamAuto" type="checkbox"> Auto-refresh every 60s</label><button id="teamRefresh" type="button" class="support-send">Refresh</button></div>
             <p id="teamProgress" class="text-xs text-gray-600" role="status"></p><div id="teamCards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
             <p class="text-xs text-gray-500">Today (IST) · Active employees only. Live presence based on accepted punches; this is not a final payroll report. “Late” and “Approval Issue” can overlap other statuses.</p>
@@ -849,6 +849,7 @@
                         <input type="text" id="spRemark" placeholder="e.g. Rakshabandhan Early Leave" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50">
                     </div>
                 </div>
+                <label class="flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm"><input id="spFullDayPresent" type="checkbox" class="mt-1"><span><strong>Full-day credit (P) — punch not required</strong><small class="block text-gray-600">Holiday / paid off: bina IN–OUT ke bhi 1 day credit. Explicit Manual attendance and fraud holds keep their existing priority.</small></span></label>
                 <button id="saveSpecialDayBtn" class="w-full md:w-auto bg-indigo-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-indigo-700 shadow-md">Save Rule</button>
             </div>
 
@@ -2342,15 +2343,18 @@
                 if(!row){miniEl('miniReportHead').innerHTML='';miniEl('miniReportBody').innerHTML='<tr><td>Select an employee above.</td></tr>';return;}
                 const report=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to);
                 miniEl('miniSummary').textContent=`${row.emp.name} · P ${report.sum.P} · P/A ${report.sum.PA} · A ${report.sum.A} · Net ${report.sum.Net}`;
-                miniCsv=[['Date','IN','OUT','Status','Remark'],...report.statuses.map(d=>[d.date,d.in,d.out,d.st,[d.explanation,d.rem].filter(Boolean).join('\n')])];
+                miniCsv=[['Date','IN','OUT','Status','Remark'],...report.statuses.map(d=>[d.date,d.in,d.out,d.st,[d.eventInfo,d.explanation,d.rem].filter(Boolean).join('\n')])];
             } else if(miniMode==='daily'){
-                miniCsv=[['ID','Name','Location','Shift','IN','OUT','Status','Remark'],...visible.map(row=>{const d=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to).statuses[0];return[row.id,row.emp.name,row.emp.location,`${row.emp.startTime||''}–${row.emp.endTime||''}`,d.in,d.out,d.st,[d.explanation,d.rem].filter(Boolean).join('\n')];})];
+                miniCsv=[['ID','Name','Location','Shift','IN','OUT','Status','Remark'],...visible.map(row=>{const d=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to).statuses[0];return[row.id,row.emp.name,row.emp.location,`${row.emp.startTime||''}–${row.emp.endTime||''}`,d.in,d.out,d.st,[d.eventInfo,d.explanation,d.rem].filter(Boolean).join('\n')];})];
             } else {
                 const end=range.displayTo||range.to,first=visible[0],dates=first?calculateReport(first.emp,{},range.from,end).statuses.map(d=>d.date):[];
                 miniCsv=[['ID','Name','Location',...dates.map(d=>d.slice(8)),'P','P/A','A','L','E','W/O','Deduction','Net'],...visible.map(row=>{const report=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,end),s=report.sum;return[row.id,row.emp.name,row.emp.location,...report.statuses.map(d=>d.st||'—'),s.P,s.PA,s.A,s.L,s.E,s.WO,report.totalDed,s.Net];})];
             }
             miniEl('miniReportHead').innerHTML='<tr>'+miniCsv[0].map(v=>'<th>'+punchHtml(v)+'</th>').join('')+'</tr>';
-            miniEl('miniReportBody').innerHTML=miniCsv.slice(1).map(row=>'<tr>'+row.map(v=>'<td class="whitespace-pre-wrap">'+punchHtml(v??'')+'</td>').join('')+'</tr>').join('')||'<tr><td>No matching employees.</td></tr>';
+            miniEl('miniReportBody').innerHTML=miniCsv.slice(1).map(row=>{
+                const days=miniMode==='monthly' ? calculateReport(miniData.employees[row[0]],miniData.attendance[row[0]]||{},range.from,range.displayTo||range.to).statuses : [];
+                return '<tr>'+row.map((v,i)=>'<td class="whitespace-pre-wrap">'+punchHtml(v??'')+(days[i-3]?.eventInfo ? ` <button type="button" data-event-info="${punchHtml(days[i-3].eventInfo)}" class="text-indigo-700 font-bold" aria-label="Special Event and Admin Remark">ⓘ</button>` : '')+'</td>').join('')+'</tr>';
+            }).join('')||'<tr><td>No matching employees.</td></tr>';
             miniEl('miniExport').classList.toggle('hidden',miniCsv.length<2);
         }
         async function loadMiniPortal() {
@@ -2522,6 +2526,15 @@
             const r=markStatusRows.find(r=>r.id===e.target.closest('[data-mark-id]')?.dataset.markId);if(r)saveMarkStatus([r]);
         });
 
+        function specialEventInfo(rule) {
+            if(!rule) return '';
+            const lines=['Special Event', 'Admin Remark: '+(String(rule.remark||'').trim() || 'Not provided')];
+            if(rule.fullDayPresent === true) lines.push('Paid Holiday: Full-day credit (P), punch not required.');
+            if(rule.inTime) lines.push('Allowed IN: '+rule.inTime);
+            if(rule.outTime) lines.push('Allowed OUT: '+rule.outTime);
+            if(rule.minHrs) lines.push('Minimum duty for Half Day: '+rule.minHrs+' hours');
+            return lines.join('\n');
+        }
         function calculateReport(emp, punches, startStr, endStr) {
             let start = new Date(`${startStr}T00:00:00`);
             let end = new Date(`${endStr}T00:00:00`);
@@ -2552,6 +2565,7 @@
                     else if (globalSettings.specialDays[dKey]['all']) sRule = globalSettings.specialDays[dKey]['all'];
                 }
 
+                s.eventInfo = !isFuture ? specialEventInfo(sRule) : '';
                 if(!isFuture) {
                     if(isWODay) totalWODays++;
 
@@ -2568,7 +2582,7 @@
                             if(sRule.inTime) timeInfo.push(`IN: ${sRule.inTime}`);
                             if(sRule.outTime) timeInfo.push(`OUT: ${sRule.outTime}`);
                             let timeStr = timeInfo.length > 0 ? ` (${timeInfo.join(', ')})` : '';
-                            dayRems.push(`[⭐ ${sRule.remark}${timeStr}]`);
+                            // Special-event details are shown separately in the info dialog.
                         }
 
                         if(p.In) { 
@@ -2681,6 +2695,12 @@
                         }
                     }
                     
+                    // A paid holiday is report credit, not a fabricated IN / OUT punch.
+                    if(sRule?.fullDayPresent === true && !manual && !s.fraudTypes.length) {
+                        s.st = 'P';
+                        s.explanation = `Paid Holiday · ${dKey}\n\nFull-day credit approved by Admin. IN / OUT punch is not required.\nAttendance credit: 1 day.`;
+                        if(isWODay) totalWODays--;
+                    }
                     if(isWODay && s.st === 'A' && !manual) s.st = 'W/O';
                     
                     if(s.st === 'P') { sum.P++; physicalDaysPresent++; }
@@ -2755,8 +2775,8 @@
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 
                 if (d.st === 'F') cls = 'status-A';
-                const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: [d.explanation, d.rem].filter(Boolean).join('\n\n'), explanationOnly: !!d.explanation && !d.rem && !d.punchDetails?.some(detail => detail.approved) }));
-                const inf = (d.explanation || d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
+                const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: [d.eventInfo, d.explanation, d.rem].filter(Boolean).join('\n\n'), explanationOnly: !!(d.eventInfo || d.explanation) && !d.rem && !d.punchDetails?.some(detail => detail.approved) }));
+                const inf = (d.eventInfo || d.explanation || d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
                 const photoCells = isAdminMode ? ['In','Out'].map(type => {
                     const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
                     return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
@@ -2885,7 +2905,7 @@
                         else if(day.st === 'E') cellClass += 'bg-orange-100 text-orange-800';
                         else if(day.st === 'P/A') cellClass += 'bg-blue-100 text-blue-800';
                         else if(day.st === 'W/O') cellClass += 'bg-gray-100 text-gray-400';
-                        rowHtml += `<td class="${cellClass}">${day.st === '' ? '-' : day.st}</td>`;
+                        rowHtml += `<td class="${cellClass}" data-export="${punchHtml(day.st || '-')}">${day.st === '' ? '-' : day.st}${day.eventInfo ? ` <button type="button" data-event-info="${punchHtml(day.eventInfo)}" class="text-indigo-700 text-xs font-bold" aria-label="Special Event and Admin Remark">ⓘ</button>` : ''}</td>`;
                     });
                     
                     rowHtml += `
@@ -2917,7 +2937,7 @@
                 let row = table.rows[i];
                 let rowData = [];
                 for (let j = 0; j < row.cells.length; j++) {
-                    let text = row.cells[j].innerText.replace(/\n/g, ' ').replace(/\t/g, ' ');
+                    let text = (row.cells[j].getAttribute('data-export') ?? row.cells[j].innerText).replace(/\n/g, ' ').replace(/\t/g, ' ');
                     rowData.push(text);
                 }
                 tsv += rowData.join("\t") + "\n";
@@ -3446,7 +3466,7 @@
                         <td class="font-mono text-xs text-green-700">${rule.inTime || '-'}</td>
                         <td class="font-mono text-xs text-blue-700">${rule.outTime || '-'}</td>
                         <td class="text-xs font-bold text-indigo-700">${rule.minHrs ? rule.minHrs + ' hrs' : '-'}</td>
-                        <td class="text-xs font-medium max-w-[150px] truncate" title="${rule.remark}">${rule.remark}</td>
+                        <td class="text-xs font-medium max-w-[150px] truncate" title="${punchHtml(rule.remark)}">${punchHtml(rule.remark)}${rule.fullDayPresent === true ? '<span class="block text-green-700 font-bold">P · Punch not required</span>' : ''}</td>
                         <td><button onclick="window.deleteSpecialDay('${date}', '${dept}')" class="text-red-500 hover:text-red-700 font-bold text-[10px] bg-red-50 border border-red-200 px-2 py-1 rounded transition-colors uppercase">Delete</button></td>
                     </tr>`;
                 });
@@ -3467,6 +3487,12 @@
             } catch(e) { showMessage("Error deleting rule", "error"); } finally { hideLoader(); }
         };
 
+        function loadSpecialRuleForm() {
+            const rule = globalSettings.specialDays?.[document.getElementById('spDate').value]?.[document.getElementById('spDept').value] || {};
+            for(const [id,key] of [['spIn','inTime'],['spOut','outTime'],['spHrs','minHrs'],['spRemark','remark']]) document.getElementById(id).value=rule[key] ?? '';
+            document.getElementById('spFullDayPresent').checked=rule.fullDayPresent === true;
+        }
+        ['spDate','spDept'].forEach(id=>document.getElementById(id).addEventListener('change',loadSpecialRuleForm));
         document.getElementById('saveSpecialDayBtn').addEventListener('click', async () => {
             const date = document.getElementById('spDate').value;
             const dept = document.getElementById('spDept').value;
@@ -3474,6 +3500,8 @@
             const outT = document.getElementById('spOut').value;
             const hrs = document.getElementById('spHrs').value;
             const rem = document.getElementById('spRemark').value.trim();
+            const fullDayPresent = document.getElementById('spFullDayPresent').checked;
+            if(!isAdmin) return;
 
             if(!date || !rem) return showMessage("Date aur Remark daalna zaroori hai!", "error");
 
@@ -3482,15 +3510,16 @@
                 if(!globalSettings.specialDays) globalSettings.specialDays = {};
                 if(!globalSettings.specialDays[date]) globalSettings.specialDays[date] = {};
                 
-                globalSettings.specialDays[date][dept] = { inTime: inT, outTime: outT, minHrs: hrs, remark: rem };
-                
-                await set(ref(database, 'settings/specialDays'), globalSettings.specialDays);
+                const rule = { inTime: inT, outTime: outT, minHrs: hrs, remark: rem, fullDayPresent };
+                await update(ref(database, `settings/specialDays/${date}/${dept}`), rule);
+                globalSettings.specialDays[date][dept] = {...globalSettings.specialDays[date][dept], ...rule};
                 showMessage("Special Day Rule Saved Successfully!", "success");
                 
                 document.getElementById('spIn').value = '';
                 document.getElementById('spOut').value = '';
                 document.getElementById('spHrs').value = '';
                 document.getElementById('spRemark').value = '';
+                document.getElementById('spFullDayPresent').checked = false;
                 window.renderSpecialDaysUI();
             } catch(e) { showMessage("Error saving rule", "error"); } finally { hideLoader(); }
         });
@@ -4031,6 +4060,8 @@
             day=day||{};
             const manual = manualStatusRecord(day);
             if(manual) return {id,emp,day,state:manual.status==='P'?'Manual Present':manual.status==='P/A'?'Manual Half':'Manual Absent',late:false,held:false};
+            const eventRule=globalSettings.specialDays?.[date]?.[emp.department] || globalSettings.specialDays?.[date]?.all;
+            if(eventRule?.fullDayPresent===true && !day.In && !day.Out) return {id,emp,day,state:'Holiday · P',late:false,held:false};
             if(punchCategory(emp)==='Manual' && !day.In && !day.Out) return {id,emp,day,state:'Manual Not Marked',late:false,held:false};
             const inHeld=fraudPunchState(day.In,emp.department).held, outHeld=fraudPunchState(day.Out,emp.department).held;
             const validIn=day.In&&!inHeld,validOut=day.Out&&!outHeld;
@@ -4046,7 +4077,7 @@
         function renderTeamStatus() {
             const val=id=>document.getElementById(id).value,term=val('teamSearch').trim().toLowerCase();
             const scope=teamRowsData.filter(r=>(val('teamDept')==='all'||r.emp.department===val('teamDept'))&&(val('teamLoc')==='all'||r.emp.location===val('teamLoc'))&&`${r.emp.name} ${r.id}`.toLowerCase().includes(term));
-            const options=['Manual Present','Manual Half','Manual Absent','Manual Not Marked','On Duty','Punched Out','Not Arrived','Shift Not Started','Weekly Off','Approval Pending','Unavailable'];
+            const options=['Holiday · P','Manual Present','Manual Half','Manual Absent','Manual Not Marked','On Duty','Punched Out','Not Arrived','Shift Not Started','Weekly Off','Approval Pending','Unavailable'];
             const card=(name,count,value)=>`<button type="button" data-team-filter="${punchHtml(value)}" class="p-3 border rounded-xl text-left ${val('teamState')===value?'bg-blue-100 border-blue-500':'bg-white border-blue-100'}"><span class="block text-xs text-gray-600">${name}</span><strong class="text-xl text-blue-900">${count}</strong></button>`;
             document.getElementById('teamCards').innerHTML=card('All Employees',scope.length,'all')+options.map(st=>card(st,scope.filter(r=>r.state===st).length,st)).join('')+card('Late',scope.filter(r=>r.late).length,'late')+card('Approval Issue',scope.filter(r=>r.held).length,'held');
             const list=scope.filter(r=>val('teamState')==='all'||(val('teamState')==='late'?r.late:val('teamState')==='held'?r.held:r.state===val('teamState')));
@@ -4149,9 +4180,7 @@
 
         function daywiseInfoText(dayPunch, specialRule) {
             const lines = [];
-            if (specialRule?.remark) lines.push('Special day: ' + specialRule.remark +
-                (specialRule.inTime ? ' | IN: ' + specialRule.inTime : '') +
-                (specialRule.outTime ? ' | OUT: ' + specialRule.outTime : ''));
+            if (specialRule) lines.push(specialEventInfo(specialRule));
             ['In', 'Out'].forEach(type => {
                 const punch = dayPunch?.[type]; if (!punch) return;
                 const details = [];
@@ -4484,6 +4513,7 @@
             };
             document.body.append(dialog); dialog.showModal();
         }
+        document.addEventListener('click', event => { const button=event.target.closest('[data-event-info]'); if(button) window.showRemark(button.dataset.eventInfo); });
         document.getElementById('daywiseBody').addEventListener('click', event => {
             const fraudButton = event.target.closest('[data-daywise-fraud]');
             if (fraudButton) { openDaywiseFraud(JSON.parse(fraudButton.dataset.daywiseFraud)); return; }
