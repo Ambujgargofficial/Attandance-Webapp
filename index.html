@@ -10,8 +10,8 @@
     database rules publicly. Missing permission blocks punching safely.
   - timestamp remains ISO UTC for existing consumers; receivedAt is Firebase
     server milliseconds. The attendance date key uses Asia/Kolkata.
-  - GPS refreshes after 5 seconds and expires at 25 seconds. Capture reuses
-    a <=10-second accurate fix; browser cached fixes must be <=5 seconds old or awaits one shared fresh acquisition. Backgrounding,
+  - GPS refreshes after 20 seconds and expires at 25 seconds. Capture reuses
+    a <=5-second accurate fix or awaits one shared fresh acquisition. Backgrounding,
     missing/expired GPS and accuracy >50m block capture.
   - Old offlineP records are retained for admin review, never auto-synced.
   - Frontend-only checks cannot prevent modified-client or mock-GPS attacks.
@@ -638,7 +638,7 @@
                 <p id="accuracy-warning" class="text-[10px] text-red-600 font-bold mt-1 hidden">GPS weak hai. Kripya open area me aayein.</p>
             </div>
 
-            <p class="text-xs text-gray-600">Location har 5 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein</p>
+            <p class="text-xs text-gray-600">Location har 20 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein</p>
             <button id="captureSubmitBtn" class="w-full bg-blue-600 text-white py-4 px-4 rounded-2xl hover:bg-blue-700 font-extrabold text-lg shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2">
                 📸 Capture & Submit
             </button>
@@ -754,7 +754,7 @@
 
         <div id="admin-team-status-view" class="hidden w-full flex-col space-y-3">
             <div class="flex justify-between items-center gap-2"><h2 class="font-bold text-xl text-blue-900">Today’s Team Status</h2><button type="button" class="admin-back-btn text-red-600 font-bold">← Back</button></div>
-            <div class="read-report-filters"><select id="teamDept" aria-label="Department"><option value="all">All Departments</option></select><select id="teamLoc" aria-label="Location"><option value="all">All Locations</option></select><input id="teamSearch" type="search" placeholder="Name / employee ID" aria-label="Employee search"><select id="teamState" aria-label="Team status"><option value="all">All Statuses</option><option>On Duty</option><option>Punched Out</option><option>Not Arrived</option><option>Shift Not Started</option><option>Weekly Off</option><option>Present (Special Event)</option><option>Approval Pending</option><option>Unavailable</option><option value="late">Late</option><option value="held">Approval Issue</option></select></div>
+            <div class="read-report-filters"><select id="teamDept" aria-label="Department"><option value="all">All Departments</option></select><select id="teamLoc" aria-label="Location"><option value="all">All Locations</option></select><input id="teamSearch" type="search" placeholder="Name / employee ID" aria-label="Employee search"><select id="teamState" aria-label="Team status"><option value="all">All Statuses</option><option>On Duty</option><option>Punched Out</option><option>Not Arrived</option><option>Shift Not Started</option><option>Weekly Off</option><option>Approval Pending</option><option>Unavailable</option><option value="late">Late</option><option value="held">Approval Issue</option></select></div>
             <div class="flex items-center justify-between gap-2"><label class="text-xs"><input id="teamAuto" type="checkbox"> Auto-refresh every 60s</label><button id="teamRefresh" type="button" class="support-send">Refresh</button></div>
             <p id="teamProgress" class="text-xs text-gray-600" role="status"></p><div id="teamCards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
             <p class="text-xs text-gray-500">Today (IST) · Active employees only. Live presence based on accepted punches; this is not a final payroll report. “Late” and “Approval Issue” can overlap other statuses.</p>
@@ -785,10 +785,17 @@
         <div id="admin-fraud-approvals-view" class="hidden w-full flex-col space-y-4">
             <div class="flex justify-between items-center gap-3"><h2 class="text-xl font-bold text-red-800">Fraud Approval</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600 px-3 py-2">← Back</button></div>
             <p class="text-xs text-gray-600">Flagged punches appear automatically. F = not counted until approved. One valid punch = Half Day. Approval restores normal attendance rules.</p>
+            <div class="rounded-2xl border border-red-200 bg-red-50 p-3 space-y-2">
+                <p class="font-bold text-red-800">Mark a normal punch as Fraud</p>
+                <p class="text-xs text-gray-600">Select employee and date, load punches, then enter the reason visible to the employee. One held punch = Half Day; both held = F. Approve punch to reverse the decision.</p>
+                <label class="block text-xs font-bold">Employee ID<input id="manualFraudEmployee" type="text" class="w-full" placeholder="Employee ID"></label>
+                <label class="block text-xs font-bold">Punch date<input id="manualFraudDate" type="date" class="w-full"></label>
+                <button id="manualFraudLoad" type="button" class="support-send">Load employee punches</button>
+            </div>
             <div class="read-report-filters">
                 <label class="text-xs font-bold text-gray-600">Start Date<input id="fraudApprovalStart" type="date" class="w-full" aria-label="Start date"></label>
                 <label class="text-xs font-bold text-gray-600">End Date<input id="fraudApprovalEnd" type="date" class="w-full" aria-label="End date"></label>
-                <select id="fraudApprovalStatus" aria-label="Review status"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="all">All</option></select>
+                <select id="fraudApprovalStatus" aria-label="Review status"><option value="held">Awaiting Approval (All Held)</option><option value="manual">Admin Marked Fraud</option><option value="pending">Pending Requests</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="all">All</option></select>
                 <select id="fraudApprovalDept" aria-label="Department"><option value="all">All Departments</option></select>
                 <select id="fraudApprovalLoc" aria-label="Location"><option value="all">All Locations</option></select>
                 <input id="fraudApprovalSearch" type="search" placeholder="Name / employee ID" aria-label="Find employee">
@@ -840,8 +847,6 @@
                         <input type="text" id="spRemark" placeholder="e.g. Rakshabandhan Early Leave" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50">
                     </div>
                 </div>
-                <label class="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-3 text-sm font-bold text-green-800"><input type="checkbox" id="spFullPresent" class="mt-1"> ✅ Mark All as Full Day Present 'P'</label>
-                <p class="text-xs text-gray-500">Applies to the selected department or All Departments. No punches are created. Counts as one full present day, including weekly off; no late/early deduction. Existing punches stay unchanged. A company-wide Full Day Present rule also covers departments with timing rules.</p>
                 <button id="saveSpecialDayBtn" class="w-full md:w-auto bg-indigo-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-indigo-700 shadow-md">Save Rule</button>
             </div>
 
@@ -918,7 +923,7 @@
                             <th>Remark / Address</th>
                             <th>IN Photo</th>
                             <th>OUT Photo</th>
-                        <th>Designation</th></tr>
+                        <th>Designation</th><th data-no-export>Action</th></tr>
                     </thead>
                     <tbody id="daywiseBody"></tbody>
                 </table>
@@ -1013,15 +1018,8 @@
                     <div><label for="manualLocFilter" class="block text-xs font-bold text-gray-600 mb-1">Location</label><select id="manualLocFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Locations</option></select></div>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Select Employees</label>
-                    <select id="manualEmpSelect" class="hidden" aria-hidden="true" tabindex="-1"></select>
-                    <div class="flex justify-between items-center mb-2"><label class="font-bold text-sm"><input type="checkbox" id="manualSelectAll"> Select All (filtered employees)</label><span id="manualSelectionCount" class="text-xs font-bold text-indigo-700" aria-live="polite">0 selected</span></div>
-                    <div id="manualEmployeeList" class="max-h-60 overflow-y-auto border rounded-xl p-2 space-y-1"></div>
-                    <p class="text-xs text-gray-500 mt-2">Only active employees are shown. Changing department/location clears the selection.</p>
-                    <label for="manualTimeMode" class="block text-sm font-bold mt-4 mb-1">Time Mode</label>
-                    <select id="manualTimeMode" class="w-full p-3 border rounded-xl bg-gray-50"><option value="auto">Auto Shift Time — each employee's own shift</option><option value="custom">Custom Time — same time for selected employees</option></select>
-                    <p class="text-xs text-gray-500 mt-2">Auto mode saves both IN and OUT. Overnight shifts use next-day OUT. Existing punches are skipped by default.</p>
-                    <label class="block text-sm mt-3"><input type="checkbox" id="manualOverwrite"> Replace existing punches for selected IN / OUT times</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Select Employee</label>
+                    <select id="manualEmpSelect" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"></select>
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
@@ -1041,8 +1039,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">Admin Remark / Reason</label>
                     <input type="text" id="manualRemark" placeholder="E.g., System failure, forgot to punch" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-sm font-medium">
                 </div>
-                <p id="manualSaveResult" class="text-sm font-bold text-indigo-700 whitespace-pre-wrap" role="status"></p>
-                <button id="submitManualPunchBtn" class="w-full bg-indigo-600 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-indigo-700 shadow-md">Save Selected Employees</button>
+                <button id="submitManualPunchBtn" class="w-full bg-indigo-600 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-indigo-700 shadow-md">Save Manual Punch</button>
             </div>
         </div>
 
@@ -1323,7 +1320,7 @@
         let currentStream, currentCoordinates, currentPunchTarget;
         let locationTimer = null, locationGeneration = 0, locationActive = false;
         let locationReceivedAt = null, punchInFlight = false;
-        const LOCATION_REFRESH_MS = 5000, LOCATION_MAX_AGE_MS = 25000;
+        const LOCATION_REFRESH_MS = 20000, LOCATION_MAX_AGE_MS = 25000;
         const clockSession = crypto.randomUUID();
 
         // REST responses come from Firebase, never from the SDK offline cache or device clock.
@@ -1503,7 +1500,6 @@
             });
             select.value = employees.some(([id]) => id === previous) ? previous : '';
             select.disabled = employees.length === 0;
-            if (config.prefix === 'manual') renderManualEmployees();
         }
 
         function populateEmployeeSelects() {
@@ -1866,14 +1862,6 @@
         let locationRequest = null;
         const PUNCH_REUSE_GPS_MS = 10000;
 
-        // Browser timestamp measures fix age only; attendance time still uses server time.
-        const GPS_CACHE_MAX_AGE_MS = 5000;
-        function gpsPositionAge(position) {
-            if (!position || !Number.isFinite(position.timestamp)) return Infinity;
-            const age = Date.now() - position.timestamp;
-            return age >= 0 ? age : Infinity;
-        }
-
         function acquireFreshGps(generation) {
             // Keep one high-accuracy acquisition alive while coarse fixes improve.
             return new Promise((resolve, reject) => {
@@ -1901,7 +1889,6 @@
                     watchId = navigator.geolocation.watchPosition(position => {
                         if (finished) return;
                         if (!isCurrent()) return cancel();
-                        if (gpsPositionAge(position) > GPS_CACHE_MAX_AGE_MS) return;
                         if (validPunchGps(position.coords)) finish(null, position);
                         else {
                             sawWeakFix = true;
@@ -1915,7 +1902,7 @@
                             denied.permissionDenied = true; finish(denied);
                         }
                         // Transient unavailable/timeout errors do not restart GPS warm-up.
-                    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: GPS_CACHE_MAX_AGE_MS });
+                    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
                     if (finished && watchId !== null) navigator.geolocation.clearWatch(watchId);
                 } catch (error) { finish(error); }
             });
@@ -1948,11 +1935,11 @@
                 const pos = await acquireFreshGps(generation);
                 if (generation !== locationGeneration || !locationActive || document.hidden) throw new Error('Location request cancelled.');
                 const c = pos.coords;
-                if (!validPunchGps(c) || gpsPositionAge(pos) > GPS_CACHE_MAX_AGE_MS) throw new Error('Valid fresh GPS nahi mila. Refresh Location dabayein.');
+                if (!validPunchGps(c)) throw new Error('Valid GPS nahi mila. Refresh Location dabayein.');
                 currentCoordinates = { latitude: c.latitude, longitude: c.longitude, accuracy: c.accuracy };
-                locationReceivedAt = performance.now() - gpsPositionAge(pos);
+                locationReceivedAt = performance.now();
                 acquired = true;
-                document.getElementById('location-info').textContent = `Loc: ${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} | Accuracy: ${Math.round(c.accuracy)}m. Auto-refresh: 5 sec.`;
+                document.getElementById('location-info').textContent = `Loc: ${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} | Accuracy: ${Math.round(c.accuracy)}m. Auto-refresh: 20 sec.`;
                 return { ...currentCoordinates, receivedAt: locationReceivedAt };
             } catch (err) {
                 if (generation === locationGeneration) {
@@ -2031,7 +2018,7 @@
         }
 
         function verifiedPunchResponse(geo,fix,requestId,employeeId,timestamp) {
-            if (!geo || geo.version!==2 || geo.country!=='IN' || geo.requestId!==requestId ||
+            if (!geo || geo.version!==1 || geo.country!=='IN' || geo.requestId!==requestId ||
                 geo.employeeId!==String(employeeId) || geo.timestamp!==timestamp ||
                 !Number.isFinite(geo.latitude) || !Number.isFinite(geo.longitude) ||
                 Math.abs(geo.latitude-fix.latitude)>1e-7 || Math.abs(geo.longitude-fix.longitude)>1e-7 ||
@@ -2039,7 +2026,7 @@
                 geo.addressLatitude<6 || geo.addressLatitude>38 || geo.addressLongitude<68 || geo.addressLongitude>98)return false;
             const rad=Math.PI/180,a=(geo.addressLatitude-fix.latitude)*rad,b=(geo.addressLongitude-fix.longitude)*rad;
             const h=Math.sin(a/2)**2+Math.cos(fix.latitude*rad)*Math.cos(geo.addressLatitude*rad)*Math.sin(b/2)**2;
-            return 6371000*2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,h))))<=150;
+            return 6371000*2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,h))))<=2000;
         }
 
         let lastLocationSignalAt=-Infinity;
@@ -2098,7 +2085,7 @@
                 fd.append('timestamp', timeIso); fd.append('photo', photoData.split(',')[1]);
                 fd.append('lat', fix.latitude); fd.append('lng', fix.longitude);
                 showLoader('Attendance mark ho rahi hai…');
-                let pUrl, tAdd, geoVerification, locationTimings;
+                let pUrl, tAdd, geoVerification;
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 18000);
                 try {
@@ -2107,7 +2094,6 @@
                     const res = await response.json();
                     if (res.status !== 'success') throw new Error(res.message || 'Location verification failed. Please retry.');
                     geoVerification=res.geoVerification;
-                    locationTimings = {geocodeMs: Number(res.locationTimings?.geocodeMs)||0,totalMs:Number(res.locationTimings?.totalMs)||0};
                     if (!verifiedPunchResponse(geoVerification,fix,requestId,employee.id,timeIso))
                         throw new Error('GPS/address response match nahi hua. Refresh Location karein. Admin updated Code.gs deployment check karein.');
                     pUrl = validPunchPhoto(res.photoUrl);
@@ -2124,7 +2110,7 @@
                 const punchRecord = { timestamp: timeIso, timeSource: 'firebase-synced-app-clock',
                     receivedAt: { '.sv': 'timestamp' }, latitude: fix.latitude, longitude: fix.longitude,
                     accuracy: fix.accuracy, locationAgeMs: Math.round(performance.now() - fix.receivedAt),
-                    address: tAdd, photoUrl: pUrl, geoVerification, locationTimings, location: employee.location || 'N/A', department: employee.department || 'N/A' };
+                    address: tAdd, photoUrl: pUrl, geoVerification, location: employee.location || 'N/A', department: employee.department || 'N/A' };
                 const flagReason = daywisePunchWarning(punchRecord, employee.department);
                 if (flagReason) punchRecord.fraudFlagReason = flagReason;
                 attendanceWriteStarted = true;
@@ -2163,13 +2149,6 @@
         }
         checkOffline();
 
-        function specialRuleFor(date, department) {
-            const rules = globalSettings.specialDays?.[date] || {};
-            if (rules[department]?.fullDayPresent) return rules[department];
-            if (rules.all?.fullDayPresent) return rules.all;
-            return rules[department] || rules.all || null;
-        }
-
         function calculateReport(emp, punches, startStr, endStr) {
             let start = new Date(`${startStr}T00:00:00`);
             let end = new Date(`${endStr}T00:00:00`);
@@ -2194,16 +2173,10 @@
                 let isWODay = (dt.getDay() === woDay);
                 let dayRems = [];
 
-                const sRule = specialRuleFor(dKey, emp.department);
-                if (!isFuture && sRule?.fullDayPresent) {
-                    s.st = 'P';
-                    s.rem = `[⭐ ${sRule.remark || 'Special Event'} — Full Day Present]`;
-                    s.explanation = `Full Day Present · ${dKey}\n\n${sRule.remark || 'Special Event'}\nAdmin special-event credit: 1 day. No punch required; no late/early deduction.`;
-                    if (p?.In) s.in = new Date(p.In.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata'});
-                    if (p?.Out) s.out = new Date(p.Out.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata'});
-                    sum.P++; physicalDaysPresent++;
-                    statuses.push(s);
-                    continue;
+                let sRule = null;
+                if (globalSettings.specialDays && globalSettings.specialDays[dKey]) {
+                    if (globalSettings.specialDays[dKey][emp.department]) sRule = globalSettings.specialDays[dKey][emp.department];
+                    else if (globalSettings.specialDays[dKey]['all']) sRule = globalSettings.specialDays[dKey]['all'];
                 }
 
                 if(!isFuture) {
@@ -2715,99 +2688,31 @@
             finally { deleteInFlight = false; updateDeleteButton(); }
         }
 
-        function renderManualEmployees() {
-            const box = document.getElementById('manualEmployeeList');
-            box.replaceChildren();
-            filteredPickerEmployees('manual').forEach(([id, emp]) => {
-                const label = document.createElement('label');
-                label.className = 'flex items-center gap-3 p-2 rounded-lg hover:bg-indigo-50 text-sm cursor-pointer';
-                const input = document.createElement('input');
-                input.type = 'checkbox'; input.value = id; input.name = 'manualEmployee';
-                input.addEventListener('change', updateManualSelection);
-                const text = document.createElement('span');
-                text.textContent = `${emp.name || id} (${id}) · ${emp.department || 'No department'} · ${emp.startTime || '?'} – ${emp.endTime || '?'}`;
-                label.append(input, text); box.appendChild(label);
-            });
-            if (!box.children.length) box.textContent = 'No active employees match these filters.';
-            updateManualSelection();
-        }
-        function updateManualSelection() {
-            const boxes = [...document.querySelectorAll('input[name="manualEmployee"]')];
-            const count = boxes.filter(el => el.checked).length;
-            const all = document.getElementById('manualSelectAll');
-            all.checked = boxes.length > 0 && count === boxes.length;
-            all.indeterminate = count > 0 && count < boxes.length;
-            all.disabled = boxes.length === 0;
-            document.getElementById('manualSelectionCount').textContent = `${count} / ${boxes.length} selected`;
-        }
-        document.getElementById('manualSelectAll').addEventListener('change', event => {
-            document.querySelectorAll('input[name="manualEmployee"]').forEach(el => el.checked = event.target.checked);
-            updateManualSelection();
-        });
-        function updateManualTimeMode() {
-            const auto = document.getElementById('manualTimeMode').value === 'auto';
-            ['manualIn', 'manualOut'].forEach(id => {
-                const el = document.getElementById(id); el.disabled = auto;
-                el.parentElement.classList.toggle('opacity-50', auto);
-            });
-        }
-        document.getElementById('manualTimeMode').addEventListener('change', updateManualTimeMode);
-        updateManualTimeMode();
-        function manualShiftTimes(date, inTime, outTime) {
-            const valid = value => /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
-            if ((inTime && !valid(inTime)) || (outTime && !valid(outTime))) throw new Error('Invalid shift time. Use HH:MM.');
-            const start = inTime ? Date.parse(`${date}T${inTime}:00+05:30`) : null;
-            let end = outTime ? Date.parse(`${date}T${outTime}:00+05:30`) : null;
-            if (start !== null && end !== null && end < start) end += 86400000;
-            if ((start !== null && !Number.isFinite(start)) || (end !== null && !Number.isFinite(end))) throw new Error('Invalid date/time.');
-            return { In: start === null ? null : new Date(start).toISOString(), Out: end === null ? null : new Date(end).toISOString() };
-        }
-        let manualSaving = false;
         async function submitManualPunch() {
-            if (!isAdmin || manualSaving) return;
-            const ids = [...document.querySelectorAll('input[name="manualEmployee"]:checked')].map(el => el.value);
+            const empId = document.getElementById('manualEmpSelect').value;
             const date = document.getElementById('manualDate').value;
-            const auto = document.getElementById('manualTimeMode').value === 'auto';
             const inTime = document.getElementById('manualIn').value;
             const outTime = document.getElementById('manualOut').value;
             const remark = document.getElementById('manualRemark').value.trim();
-            const overwrite = document.getElementById('manualOverwrite').checked;
-            const result = document.getElementById('manualSaveResult');
-            if (!ids.length || !date) return showMessage('Select employees and a date.', 'error');
-            if (!auto && !inTime && !outTime) return showMessage('Provide IN or OUT time.', 'error');
-            let entries;
+
+            if(!empId || !date) return showMessage('Employee and Date required.', 'error');
+            if(!inTime && !outTime) return showMessage('Provide In or Out time.', 'error');
+
+            showLoader('Saving Manual Punch...');
             try {
-                entries = ids.map(id => {
-                    const emp = allEmployeesData[id];
-                    if (!employeeIsActive(emp)) throw new Error(`Employee ${id} is no longer active. Refresh selection.`);
-                    if (auto && (!emp.startTime || !emp.endTime || emp.startTime === emp.endTime)) throw new Error(`${emp.name || id}: configure a valid IN and OUT shift first.`);
-                    return { id, times: manualShiftTimes(date, auto ? emp.startTime : inTime, auto ? emp.endTime : outTime) };
-                });
-            } catch (err) { return showMessage(err.message, 'error'); }
-            if (!confirm(`Save manual punches for ${ids.length} employees on ${date}? ${overwrite ? 'Existing selected punches will be REPLACED.' : 'Employees with an existing selected punch will be skipped.'}`)) return;
-            manualSaving = true;
-            const button = document.getElementById('submitManualPunchBtn'); button.disabled = true;
-            showLoader('Saving selected employees...');
-            let saved = 0, skipped = 0; const failures = [];
-            try {
-                for (const {id, times} of entries) {
-                    try {
-                        const response = await runTransaction(ref(database, `attendance/${id}/${date}`), current => {
-                            current = current || {};
-                            const keys = ['In', 'Out'].filter(type => times[type]);
-                            if (!overwrite && keys.some(type => current[type])) return;
-                            const next = {...current};
-                            keys.forEach(type => {
-                                next[type] = {timestamp: times[type], address: 'Manual Entry by Admin', remark: remark || (auto ? 'Bulk Manual Punch — Auto Shift' : 'Manual Punch'), location: 'Admin Setup', department: 'Admin Setup', latitude: 'N/A', longitude: 'N/A', photoUrl: 'N/A', manualMode: auto ? 'auto' : 'custom', updatedAt: serverTimestamp()};
-                            });
-                            return next;
-                        }, {applyLocally: false});
-                        if (response.committed) saved++; else skipped++;
-                    } catch (err) { failures.push(`${allEmployeesData[id]?.name || id}: ${err.message}`); }
+                const updates = {};
+                if(inTime) {
+                    const ts = new Date(`${date}T${inTime}:00`).toISOString();
+                    updates[`attendance/${empId}/${date}/In`] = { timestamp: ts, address: "Manual Entry by Admin", remark: remark || "Manual Punch", location: "Admin Setup", department: "Admin Setup", latitude: "N/A", longitude: "N/A", photoUrl: "N/A" };
                 }
-                result.textContent = `${saved} saved · ${skipped} skipped (existing punches) · ${failures.length} failed` + (failures.length ? '\n' + failures.join('\n') : '');
-                showMessage(failures.length ? 'Some entries failed. See the result and retry those employees.' : `${saved} employees saved; ${skipped} skipped.`, failures.length ? 'error' : 'success');
-            } finally { manualSaving = false; button.disabled = false; hideLoader(); }
+                if(outTime) {
+                    const ts = new Date(`${date}T${outTime}:00`).toISOString();
+                    updates[`attendance/${empId}/${date}/Out`] = { timestamp: ts, address: "Manual Entry by Admin", remark: remark || "Manual Punch", location: "Admin Setup", department: "Admin Setup", latitude: "N/A", longitude: "N/A", photoUrl: "N/A" };
+                }
+                await update(ref(database), updates);
+                showMessage('Manual Punch Saved!', 'success');
+                document.getElementById('manualIn').value = ''; document.getElementById('manualOut').value = ''; document.getElementById('manualRemark').value = '';
+            } catch(e) { showMessage('Error saving punch.', 'error'); } finally { hideLoader(); }
         }
 
         async function runFraudCheck() {
@@ -3127,12 +3032,6 @@
             document.getElementById('dept-fraud-container').innerHTML = fraudHtml;
         };
 
-        function updateSpecialPresentMode() {
-            ['spIn','spOut','spHrs'].forEach(id => {
-                document.getElementById(id).disabled = document.getElementById('spFullPresent').checked;
-            });
-        }
-        document.getElementById('spFullPresent').addEventListener('change', updateSpecialPresentMode);
         window.renderSpecialDaysUI = () => {
             const deptSel = document.getElementById('spDept');
             deptSel.innerHTML = '<option value="all">All Departments</option>' + 
@@ -3150,7 +3049,7 @@
                         <td class="font-bold">${dept === 'all' ? 'All Depts' : dept}</td>
                         <td class="font-mono text-xs text-green-700">${rule.inTime || '-'}</td>
                         <td class="font-mono text-xs text-blue-700">${rule.outTime || '-'}</td>
-                        <td class="text-xs font-bold text-indigo-700">${rule.fullDayPresent ? '✅ Full Day P' : rule.minHrs ? rule.minHrs + ' hrs' : '-'}</td>
+                        <td class="text-xs font-bold text-indigo-700">${rule.minHrs ? rule.minHrs + ' hrs' : '-'}</td>
                         <td class="text-xs font-medium max-w-[150px] truncate" title="${rule.remark}">${rule.remark}</td>
                         <td><button onclick="window.deleteSpecialDay('${date}', '${dept}')" class="text-red-500 hover:text-red-700 font-bold text-[10px] bg-red-50 border border-red-200 px-2 py-1 rounded transition-colors uppercase">Delete</button></td>
                     </tr>`;
@@ -3161,23 +3060,18 @@
         };
 
         window.deleteSpecialDay = async (date, dept) => {
-            if (!isAdmin) return;
             if(!confirm(`Kya aap ${date} (${dept === 'all' ? 'All Depts' : dept}) ka rule delete karna chahte hain?`)) return;
             showLoader("Deleting Rule...");
             try {
-                await set(ref(database, `settings/specialDays/${date}/${dept}`), null);
-                if (globalSettings.specialDays[date]) {
-                    delete globalSettings.specialDays[date][dept];
-                    if (Object.keys(globalSettings.specialDays[date]).length === 0) delete globalSettings.specialDays[date];
-                }
-
+                delete globalSettings.specialDays[date][dept];
+                if(Object.keys(globalSettings.specialDays[date]).length === 0) delete globalSettings.specialDays[date];
+                await set(ref(database, 'settings/specialDays'), globalSettings.specialDays);
                 showMessage("Rule Deleted Successfully!", "success");
                 window.renderSpecialDaysUI();
             } catch(e) { showMessage("Error deleting rule", "error"); } finally { hideLoader(); }
         };
 
         document.getElementById('saveSpecialDayBtn').addEventListener('click', async () => {
-            if (!isAdmin || document.getElementById('saveSpecialDayBtn').disabled) return;
             const date = document.getElementById('spDate').value;
             const dept = document.getElementById('spDept').value;
             const inT = document.getElementById('spIn').value;
@@ -3187,29 +3081,22 @@
 
             if(!date || !rem) return showMessage("Date aur Remark daalna zaroori hai!", "error");
 
-            const fullDayPresent = document.getElementById('spFullPresent').checked;
-            const rule = {inTime: fullDayPresent ? '' : inT, outTime: fullDayPresent ? '' : outT, minHrs: fullDayPresent ? '' : hrs, remark: rem, fullDayPresent};
-            if (globalSettings.specialDays?.[date]?.[dept] && !confirm('Replace the existing rule for this date and department?')) return;
-            document.getElementById('saveSpecialDayBtn').disabled = true;
             showLoader("Saving Event Rule...");
             try {
-                await set(ref(database, `settings/specialDays/${date}/${dept}`), rule);
                 if(!globalSettings.specialDays) globalSettings.specialDays = {};
                 if(!globalSettings.specialDays[date]) globalSettings.specialDays[date] = {};
                 
-                globalSettings.specialDays[date][dept] = rule;
+                globalSettings.specialDays[date][dept] = { inTime: inT, outTime: outT, minHrs: hrs, remark: rem };
                 
-
+                await set(ref(database, 'settings/specialDays'), globalSettings.specialDays);
                 showMessage("Special Day Rule Saved Successfully!", "success");
                 
                 document.getElementById('spIn').value = '';
                 document.getElementById('spOut').value = '';
                 document.getElementById('spHrs').value = '';
                 document.getElementById('spRemark').value = '';
-                document.getElementById('spFullPresent').checked = false;
-                updateSpecialPresentMode();
                 window.renderSpecialDaysUI();
-            } catch(e) { showMessage("Error saving rule", "error"); } finally { document.getElementById('saveSpecialDayBtn').disabled = false; hideLoader(); }
+            } catch(e) { showMessage("Error saving rule", "error"); } finally { hideLoader(); }
         });
 
         function normalizeGlobalMsgScale(value) {
@@ -3421,7 +3308,9 @@
         }
 
         function fraudPunchFingerprint(punch) {
-            return JSON.stringify(['timestamp','latitude','longitude','accuracy','address','photoUrl','remark','department','location'].map(key => punch?.[key] ?? null));
+            const values = ['timestamp','latitude','longitude','accuracy','address','photoUrl','remark','department','location'].map(key => punch?.[key] ?? null);
+            if (punch?.manualFraud?.revision) values.push(punch.manualFraud.revision);
+            return JSON.stringify(values);
         }
         function fraudPunchState(punch, department) {
             if (!punch) return { held: false, reason: '', status: 'none' };
@@ -3436,7 +3325,7 @@
         async function updateFraudPunch(id, date, type, action, note = '', expectedFingerprint = null, pendingOnly = false) {
             const actor = currentEmployee, admin = isAdmin;
             if (!actor || !['In','Out'].includes(type) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Invalid punch selection.');
-            if (action === 'request' ? admin || actor.id !== id : !admin || !['approved','rejected'].includes(action)) throw new Error('Action not permitted.');
+            if (action === 'request' ? admin || actor.id !== id : !admin || !['approved','rejected','flag'].includes(action)) throw new Error('Action not permitted.');
             if (!navigator.onLine) throw new Error('Internet connect karein.');
             const path = `attendance/${encodeURIComponent(id)}/${date}/${type}`;
             const snapshot = await databaseRequest(path, { headers: { 'X-Firebase-ETag': 'true' } }, true);
@@ -3446,6 +3335,17 @@
             const department = admin ? allEmployeesData[id]?.department || punch.department : actor.department;
             const state = fraudPunchState(punch, department), fingerprint = fraudPunchFingerprint(punch);
             if (expectedFingerprint && expectedFingerprint !== fingerprint) throw new Error('Punch changed. Refresh and review the new details before approval.');
+            if (action === 'flag') {
+                const reason = String(note).trim();
+                if (!reason || reason.length > 500) throw new Error('Employee ke liye reason likhein (1–500 characters).');
+                const manualFraud = { reason, markedBy: actor.id, markedByName: actor.name || actor.id,
+                    markedAt: { '.sv': 'timestamp' }, revision: crypto.randomUUID() };
+                const flagged = { ...punch, manualFraud, fraudFlagReason: 'Marked as Fraud by Admin: ' + reason };
+                flagged.fraudReview = { fingerprint: fraudPunchFingerprint(flagged), status: 'rejected',
+                    reason: flagged.fraudFlagReason, note: reason, reviewedBy: actor.id,
+                    reviewedByName: actor.name || actor.id, reviewedAt: { '.sv': 'timestamp' } };
+                return databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify(flagged) });
+            }
             if (!state.reason) throw new Error('This punch is not flagged. Refresh report.');
             if (action === 'request' && state.status === 'approved') throw new Error('Admin already approved this punch. Refresh report.');
             if (pendingOnly && state.status !== 'pending') throw new Error('Punch already reviewed. Refresh to see the latest decision.');
@@ -3508,15 +3408,38 @@
         function openFraudApprovals(date = '', employeeId = '') {
             if (!isAdmin) return;
             fraudApprovalData = []; fraudApprovalLimit = 40;
+            document.getElementById('manualFraudDate').value = date || tdStr;
+            document.getElementById('manualFraudEmployee').value = employeeId;
             document.getElementById('fraudApprovalStart').value = date;
             document.getElementById('fraudApprovalEnd').value = date;
             if (!fraudBulkRunning) { document.getElementById('fraudBulkProgress').textContent = ''; document.getElementById('fraudBulkNote').value = ''; }
             document.getElementById('fraudApprovalSearch').value = employeeId;
-            document.getElementById('fraudApprovalStatus').value = 'pending';
+            document.getElementById('fraudApprovalStatus').value = 'held';
             document.getElementById('fraudApprovalDept').value = 'all'; document.getElementById('fraudApprovalLoc').value = 'all';
             document.getElementById('fraudApprovalRows').replaceChildren();
             showView('admin-fraud-approvals-view', 'Fraud Approval'); loadFraudApprovals();
         }
+        document.getElementById('manualFraudLoad').addEventListener('click', async () => {
+            if (!isAdmin || fraudBulkRunning || fraudBusy.size) return;
+            const id = document.getElementById('manualFraudEmployee').value.trim();
+            const date = document.getElementById('manualFraudDate').value;
+            if (!id || /[.#$\[\]\/]/.test(id) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return showMessage('Employee ID aur date select karein.', 'error');
+            const actor = currentEmployee, version = ++fraudApprovalVersion;
+            const button = document.getElementById('manualFraudLoad'); button.disabled = true;
+            try {
+                const [emp, day] = await Promise.all([databaseRequest('employees/' + encodeURIComponent(id)), databaseRequest('attendance/' + encodeURIComponent(id) + '/' + date)]);
+                if (!isAdmin || currentEmployee !== actor || version !== fraudApprovalVersion || activeView !== 'admin-fraud-approvals-view') return;
+                if (!emp) throw new Error('Employee ID nahi mila.');
+                allEmployeesData[id] = emp;
+                fraudApprovalData = ['In','Out'].filter(type => day?.[type]).map(type => ({id, emp, date, type, punch: day[type], state: fraudPunchState(day[type], emp.department)}));
+                fraudApprovalLimit = 40;
+                for (const key of ['fraudApprovalStart','fraudApprovalEnd']) document.getElementById(key).value = date;
+                for (const key of ['fraudApprovalStatus','fraudApprovalDept','fraudApprovalLoc']) document.getElementById(key).value = 'all';
+                document.getElementById('fraudApprovalSearch').value = id;
+                renderFraudApprovals();
+            } catch (error) { showMessage(error.message, 'error'); }
+            finally { button.disabled = false; document.getElementById('fraudApprovalRefresh').disabled = false; }
+        });
         async function loadFraudApprovals() {
             if (!isAdmin) return;
             const actor = currentEmployee, version = ++fraudApprovalVersion;
@@ -3547,7 +3470,7 @@
         }
         function filteredFraudApprovals() {
             const val=id=>document.getElementById(id).value, term=val('fraudApprovalSearch').trim().toLowerCase();
-            return fraudApprovalData.filter(r => (!val('fraudApprovalStart') || r.date>=val('fraudApprovalStart')) && (!val('fraudApprovalEnd') || r.date<=val('fraudApprovalEnd')) && (val('fraudApprovalStatus')==='all'||r.state.status===val('fraudApprovalStatus')) &&
+            return fraudApprovalData.filter(r => (!val('fraudApprovalStart') || r.date>=val('fraudApprovalStart')) && (!val('fraudApprovalEnd') || r.date<=val('fraudApprovalEnd')) && (val('fraudApprovalStatus')==='all'||(val('fraudApprovalStatus')==='held' && r.state.held)||(val('fraudApprovalStatus')==='manual' && !!r.punch.manualFraud)||r.state.status===val('fraudApprovalStatus')) &&
                 (val('fraudApprovalDept')==='all'||r.emp.department===val('fraudApprovalDept')) && (val('fraudApprovalLoc')==='all'||r.emp.location===val('fraudApprovalLoc')) && `${r.emp.name} ${r.id}`.toLowerCase().includes(term));
         }
         function renderFraudApprovals() {
@@ -3557,16 +3480,17 @@
             const bulk=document.getElementById('fraudBulkApprove');
             bulk.disabled=fraudBulkRunning || fraudBusy.size>0 || !start || !end || start>end || !pending.length;
             bulk.textContent=`Approve All Pending (${pending.length})`;
-            document.getElementById('fraudApprovalSummary').textContent = `${rows.length} flagged punches · ${fraudApprovalData.filter(r=>r.state.status==='pending').length} pending overall`;
+            document.getElementById('fraudApprovalSummary').textContent = `${rows.length} punches · ${fraudApprovalData.filter(r=>r.state.status==='pending').length} pending overall`;
             const parent=document.getElementById('fraudApprovalRows'); parent.replaceChildren();
-            if (!rows.length) { const p=document.createElement('p'); p.textContent='No flagged punches match these filters.'; parent.append(p); }
+            if (!rows.length) { const p=document.createElement('p'); p.textContent='No punches match these filters. Use Load employee punches to review normal punches.'; parent.append(p); }
             rows.slice(0,fraudApprovalLimit).forEach(row => {
                 const card=document.createElement('article'); card.className='bg-white border border-red-100 rounded-2xl p-4 space-y-2';
                 const add=(text,cls='text-xs text-gray-600')=>{const p=document.createElement('p');p.className=cls;p.textContent=text;card.append(p);};
                 add(`${row.emp.name || row.id} · ${row.id}`, 'font-bold text-gray-900');
                 add(`${row.date} · ${row.type.toUpperCase()} · ${new Date(row.punch.timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})} · ${row.state.status.toUpperCase()}`, 'text-sm font-bold text-red-700');
                 add(`${row.emp.department || '—'} · ${row.emp.location || '—'}`);
-                add('Reason: '+row.state.reason);add('Address: '+(row.punch.address||'Unavailable'));
+                if(row.punch.manualFraud) add('Admin Marked Fraud · '+(row.punch.manualFraud.markedByName || row.punch.manualFraud.markedBy || 'Admin'), 'text-sm font-bold text-red-700');
+                add('Reason: '+(row.state.reason || 'No automatic fraud flag'));add('Address: '+(row.punch.address||'Unavailable'));
                 add('GPS accuracy: '+(row.punch.accuracy ?? 'Unavailable')+(row.punch.accuracy!=null?' m':''));
                 const review=row.state.review;
                 if(review?.requestedAt) add('Requested by employee: '+supportDate(review.requestedAt));
@@ -3578,21 +3502,22 @@
                 const lat=row.punch.latitude,lng=row.punch.longitude;
                 const number=(x,n)=>(typeof x==='number'||typeof x==='string'&&x.trim()!=='')&&Number.isFinite(Number(x))&&Math.abs(Number(x))<=n;
                 if(number(lat,90)&&number(lng,180))link('View GPS',`https://www.google.com/maps?q=${Number(lat)},${Number(lng)}`);card.append(links);
-                const note=document.createElement('input');note.type='text';note.maxLength=500;note.placeholder='Admin note (optional)';note.className='w-full p-2 border rounded-lg text-sm';note.setAttribute('aria-label','Approval note');card.append(note);
+                const note=document.createElement('input');note.type='text';note.maxLength=500;note.placeholder='Employee remark (required for Mark as Fraud)';note.className='w-full p-2 border rounded-lg text-sm';note.setAttribute('aria-label','Approval note');card.append(note);
                 const actions=document.createElement('div');actions.className='flex gap-2';
-                ['approved','rejected'].forEach(action=>{
+                (row.state.reason ? ['approved','rejected','flag'] : ['flag']).forEach(action=>{
                     if(row.state.status===action)return;
-                    const btn=document.createElement('button');btn.type='button';btn.textContent=action==='approved'?'Approve punch':'Reject punch';btn.className=action==='approved'?'support-send':'support-attach-btn';
+                    const btn=document.createElement('button');btn.type='button';btn.textContent=action==='flag'?'Mark as Fraud':action==='approved'?'Approve punch':'Reject punch';btn.className=action==='approved'?'support-send':'support-attach-btn';
                     btn.disabled=fraudBulkRunning;
                     btn.onclick=async()=>{
                         const key=`${row.id}/${row.date}/${row.type}`;
                         if(!isAdmin||fraudBulkRunning||fraudBusy.has(key))return;
-                        if(!confirm(`${action==='approved'?'Approve':'Reject'} ${row.type.toUpperCase()} for ${row.emp.name||row.id} on ${row.date}?`))return;
+                        if(action==='flag' && !note.value.trim()) return showMessage('Employee ke liye remark likhein.', 'error');
+                        if(!confirm(`${action==='flag'?'Mark as Fraud':action==='approved'?'Approve':'Reject'} ${row.type.toUpperCase()} for ${row.emp.name||row.id} on ${row.date}?`))return;
                         const actor=currentEmployee;fraudBusy.add(key);Array.from(actions.children).forEach(b=>b.disabled=true);
                         try {
                             const saved=await updateFraudPunch(row.id,row.date,row.type,action,note.value,fraudPunchFingerprint(row.punch));
                             if(currentEmployee!==actor||!isAdmin)return;
-                            row.punch=saved;row.state=fraudPunchState(saved,row.emp.department);renderFraudApprovals();showMessage(action==='approved'?'Approved. Reports will count this punch using normal rules.':'Rejected. This punch remains excluded.','success');
+                            row.punch=saved;row.state=fraudPunchState(saved,row.emp.department);renderFraudApprovals();showMessage(action==='flag'?'Marked as Fraud. Employee report mein reason dikhega.':action==='approved'?'Approved. Reports will count this punch using normal rules.':'Rejected. This punch remains excluded.','success');
                         }catch(err){showMessage(err.message,'error');Array.from(actions.children).forEach(b=>b.disabled=false);}
                         finally{fraudBusy.delete(key);renderFraudApprovals();}
                     };actions.append(btn);
@@ -3710,8 +3635,7 @@
             day=day||{};
             const inHeld=fraudPunchState(day.In,emp.department).held, outHeld=fraudPunchState(day.Out,emp.department).held;
             const validIn=day.In&&!inHeld,validOut=day.Out&&!outHeld;
-            const special=specialRuleFor(date, emp.department) || {};
-            if (special.fullDayPresent) return {id,emp,day,state:'Present (Special Event)',late:false,held:false,inHeld:false,outHeld:false};
+            const special=globalSettings.specialDays?.[date]?.[emp.department] || globalSettings.specialDays?.[date]?.all || {};
             const rawStart=String(special.inTime||emp.startTime||'00:00').split(':');
             const start=Date.parse(`${date}T${rawStart[0].padStart(2,'0')}:${(rawStart[1]||'00').padStart(2,'0')}:00+05:30`);
             const wo=Number(globalSettings.deptWeekOffs?.[emp.department] ?? 6);
@@ -3820,7 +3744,7 @@
                 row.hidden = status !== 'all' && cell.dataset.status !== status;
                 if (!row.hidden) visible++;
             });
-            if (!visible) tbody.insertAdjacentHTML('beforeend', '<tr data-daywise-empty><td colspan="10" class="text-center py-4 text-gray-500 font-bold">No records found for selected filters.</td></tr>');
+            if (!visible) tbody.insertAdjacentHTML('beforeend', '<tr data-daywise-empty><td colspan="11" class="text-center py-4 text-gray-500 font-bold">No records found for selected filters.</td></tr>');
             document.getElementById('exportDaywiseBtn').classList.toggle('hidden', visible === 0);
         }
 
@@ -3833,15 +3757,7 @@
                 const punch = dayPunch?.[type]; if (!punch) return;
                 const details = [];
                 if (punch.remark) details.push('Remark: ' + String(punch.remark));
-                if (punch.address) details.push('Address (map service): ' + String(punch.address));
-                const hasGps = value => value !== null && value !== undefined && String(value).trim() !== '' && Number.isFinite(Number(value));
-                if (hasGps(punch.latitude) && hasGps(punch.longitude) && Math.abs(Number(punch.latitude)) <= 90 && Math.abs(Number(punch.longitude)) <= 180) {
-                    details.push('Recorded GPS: ' + Number(punch.latitude).toFixed(6) + ', ' + Number(punch.longitude).toFixed(6));
-                    if (punch.locationTimings) details.push('Server location lookup: ' + (Number(punch.locationTimings.geocodeMs)/1000).toFixed(1) + ' sec');
-                    if (hasGps(punch.accuracy)) details.push('GPS accuracy: ±' + Math.round(Number(punch.accuracy)) + ' m');
-                    details.push('https://www.google.com/maps?q=' + Number(punch.latitude) + ',' + Number(punch.longitude));
-                    details.push('Address galat lage to recorded GPS map se verify karein.');
-                } else details.push('Recorded GPS unavailable; address independently verify karein.');
+                if (punch.address) details.push('Address: ' + String(punch.address));
                 if (details.length) lines.push(type.toUpperCase() + '\n' + details.join('\n'));
             });
             return lines.join('\n\n');
@@ -3876,7 +3792,11 @@
 
                     let inTime = '-'; let outTime = '-'; let remarkTxt = '';
                     
-                    const sRule = specialRuleFor(checkDate, emp.department);
+                    let sRule = null;
+                    if (globalSettings.specialDays && globalSettings.specialDays[checkDate]) {
+                        if (globalSettings.specialDays[checkDate][emp.department]) sRule = globalSettings.specialDays[checkDate][emp.department];
+                        else if (globalSettings.specialDays[checkDate]['all']) sRule = globalSettings.specialDays[checkDate]['all'];
+                    }
 
                     if (dayPunch) {
                         if (sRule && sRule.remark) {
@@ -3940,6 +3860,7 @@
                         ${daywisePhotoCell(dayPunch?.In)}
                         ${daywisePhotoCell(dayPunch?.Out)}
                         <td>${punchHtml(designationName(emp))}</td>
+                        <td data-no-export>${dayPunch?.In || dayPunch?.Out ? `<button type="button" class="px-2 py-1 rounded-lg bg-red-50 text-red-700 font-bold text-xs whitespace-nowrap" data-daywise-fraud="${punchHtml(JSON.stringify({id,date:checkDate,name:emp.name||id,fingerprints:Object.fromEntries(['In','Out'].filter(t=>dayPunch?.[t]).map(t=>[t,fraudPunchFingerprint(dayPunch[t])]))}))}">Mark Fraud</button>` : '—'}</td>
                     </tr>`;
 
                 });
@@ -3971,6 +3892,7 @@
             const table = document.getElementById('daywiseTable');
             const headers = [];
             for (let i = 0; i < table.rows[0].cells.length; i++) {
+                if (table.rows[0].cells[i].hasAttribute('data-no-export')) continue;
                 headers.push('"' + table.rows[0].cells[i].innerText.replace(/"/g, '""') + '"');
             }
             csvContent += headers.join(",") + "\n";
@@ -3982,6 +3904,7 @@
                 
                 const rowData = [];
                 for (let j = 0; j < row.cells.length; j++) {
+                    if (row.cells[j].hasAttribute("data-no-export")) continue;
                     let cellText = "";
                     if (j === 5) { 
                         cellText = row.cells[j].getAttribute('data-status') || row.cells[j].innerText;
@@ -4086,19 +4009,70 @@
         
         document.getElementById('adminMtdBtn').addEventListener('click', () => applyAdminReportPreset('MTD'));
         document.getElementById('adminPrevMtdBtn').addEventListener('click', () => applyAdminReportPreset('PREVIOUS'));
-        document.getElementById('daywiseBody').addEventListener('click', event => {
-            const button = event.target.closest('[data-daywise-info]');
-            if (button) {
-                window.showRemark(button.dataset.daywiseInfo);
-                const container = document.getElementById('remark-modal-text');
-                for (const match of button.dataset.daywiseInfo.matchAll(/https:\/\/www\.google\.com\/maps\?q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g)) {
-                    const link = document.createElement('a');
-                    link.href = match[0]; link.target = '_blank'; link.rel = 'noopener noreferrer';
-                    link.textContent = 'Open recorded GPS map ↗';
-                    link.className = 'block text-blue-600 underline mt-2';
-                    container.append(link);
-                }
+        // One conditional day write makes IN + OUT marking atomic.
+        async function flagDaywisePunches(selection, types, note) {
+            const actor = currentEmployee;
+            if (!isAdmin || !actor) throw new Error('Admin login required.');
+            const reason = String(note).trim();
+            if (!reason || reason.length > 500) throw new Error('Employee ke liye remark likhein (1–500 characters).');
+            if (!types.length || types.some(t=>!['In','Out'].includes(t)) || !/^\d{4}-\d{2}-\d{2}$/.test(selection.date)) throw new Error('Invalid punch selection.');
+            const path = `attendance/${encodeURIComponent(selection.id)}/${selection.date}`;
+            const snapshot = await databaseRequest(path, {headers:{'X-Firebase-ETag':'true'}}, true);
+            if (!isAdmin || currentEmployee !== actor) throw new Error('Session changed.');
+            if (!snapshot.data || !snapshot.etag) throw new Error('Punch unavailable. Fetch report again.');
+            const day = {...snapshot.data};
+            for (const type of types) {
+                const punch = day[type];
+                if (!punch || !selection.fingerprints[type] || fraudPunchFingerprint(punch) !== selection.fingerprints[type]) throw new Error('Punch changed. Close and Fetch report again.');
+                const marked = {...punch, fraudFlagReason:'Marked as Fraud by Admin: '+reason,
+                    manualFraud:{reason,markedBy:actor.id,markedByName:actor.name||actor.id,markedAt:{'.sv':'timestamp'},revision:crypto.randomUUID()}};
+                marked.fraudReview = {fingerprint:fraudPunchFingerprint(marked),status:'rejected',reason:marked.fraudFlagReason,note:reason,
+                    reviewedBy:actor.id,reviewedByName:actor.name||actor.id,reviewedAt:{'.sv':'timestamp'}};
+                day[type] = marked;
             }
+            return databaseRequest(path, {method:'PUT',headers:{'if-match':snapshot.etag},body:JSON.stringify(day)});
+        }
+        function openDaywiseFraud(selection) {
+            if (!isAdmin) return;
+            const dialog = document.createElement('dialog');
+            dialog.className = 'rounded-2xl p-5 shadow-xl w-full max-w-md';
+            dialog.style.maxWidth = 'min(440px, 92vw)';
+            dialog.innerHTML = `<form class="space-y-3">
+                <h3 class="font-bold text-lg text-red-800">Mark as Fraud</h3>
+                <p data-employee class="text-sm font-bold"></p>
+                <label class="block text-sm font-bold">Punch<select name="punch" class="w-full" required></select></label>
+                <label class="block text-sm font-bold">Remark for employee<textarea name="reason" required maxlength="500" rows="3" class="w-full border rounded-lg p-2" placeholder="Duty ke beech bina permission ghar chale gaye…"></textarea></label>
+                <p class="text-xs text-gray-600">One held punch = Half Day; both held = F. Employee can see this remark in report ⓘ.</p>
+                <p data-error role="alert" class="text-sm text-red-700"></p>
+                <div class="flex gap-2"><button type="button" data-cancel class="support-attach-btn">Cancel</button><button type="submit" class="support-send">Save Fraud Mark</button></div>
+            </form>`;
+            dialog.querySelector('[data-employee]').textContent = `${selection.name} · ${selection.id} · ${selection.date}`;
+            const select = dialog.querySelector('select');
+            for (const type of ['In','Out']) if (selection.fingerprints[type]) select.add(new Option(type.toUpperCase(),type));
+            if (selection.fingerprints.In && selection.fingerprints.Out) select.add(new Option('Both IN + OUT','both'));
+            let busy = false;
+            dialog.querySelector('[data-cancel]').onclick = ()=>dialog.close();
+            dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+            dialog.addEventListener('close',()=>dialog.remove());
+            dialog.querySelector('form').onsubmit = async e => {
+                e.preventDefault(); if (busy) return;
+                const types = select.value === 'both' ? ['In','Out'] : [select.value];
+                busy = true; dialog.querySelectorAll('button').forEach(b=>b.disabled=true);
+                try {
+                    await flagDaywisePunches(selection, types, dialog.querySelector('textarea').value);
+                    dialog.close();
+                    showMessage('Fraud marked. Employee report mein remark dikhega.', 'success');
+                    if (isAdmin && activeView === 'admin-daywise-view') await fetchDaywiseReport();
+                } catch(error) { dialog.querySelector('[data-error]').textContent = error.message; }
+                finally { busy = false; dialog.querySelectorAll('button').forEach(b=>b.disabled=false); }
+            };
+            document.body.append(dialog); dialog.showModal();
+        }
+        document.getElementById('daywiseBody').addEventListener('click', event => {
+            const fraudButton = event.target.closest('[data-daywise-fraud]');
+            if (fraudButton) { openDaywiseFraud(JSON.parse(fraudButton.dataset.daywiseFraud)); return; }
+            const button = event.target.closest('[data-daywise-info]');
+            if (button) window.showRemark(button.dataset.daywiseInfo);
         });
         document.getElementById('fetchAdminReportBtn').addEventListener('click', fetchAdminReport);
         document.getElementById('daywiseStatusFilter').addEventListener('change', applyDaywiseStatusFilter);
