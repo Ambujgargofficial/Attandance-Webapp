@@ -712,6 +712,8 @@
                 <div id="admin-btn-grid" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">📅</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Monthly Grid</h3>
                 </div>
+                <button id="adminMiniManageBtn" type="button" class="bg-indigo-50 p-5 rounded-3xl border border-indigo-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">👤</span><span class="font-bold text-[15px] text-indigo-800">Manage Mini Admins</span></button>
+                <button id="adminMarkStatusBtn" type="button" class="bg-indigo-50 p-5 rounded-3xl border border-indigo-200 flex flex-col items-center text-center"><span class="text-3xl mb-3">📝</span><span class="font-bold text-[15px] text-indigo-800">Mark Attendance</span></button>
                 <div id="admin-btn-manual" class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col items-center text-center">
                     <div class="text-3xl mb-3">✍️</div><h3 class="font-bold text-[15px] leading-tight text-gray-800">Manual Punch</h3>
                 </div>
@@ -754,7 +756,7 @@
 
         <div id="admin-team-status-view" class="hidden w-full flex-col space-y-3">
             <div class="flex justify-between items-center gap-2"><h2 class="font-bold text-xl text-blue-900">Today’s Team Status</h2><button type="button" class="admin-back-btn text-red-600 font-bold">← Back</button></div>
-            <div class="read-report-filters"><select id="teamDept" aria-label="Department"><option value="all">All Departments</option></select><select id="teamLoc" aria-label="Location"><option value="all">All Locations</option></select><input id="teamSearch" type="search" placeholder="Name / employee ID" aria-label="Employee search"><select id="teamState" aria-label="Team status"><option value="all">All Statuses</option><option>On Duty</option><option>Punched Out</option><option>Not Arrived</option><option>Shift Not Started</option><option>Weekly Off</option><option>Approval Pending</option><option>Unavailable</option><option value="late">Late</option><option value="held">Approval Issue</option></select></div>
+            <div class="read-report-filters"><select id="teamDept" aria-label="Department"><option value="all">All Departments</option></select><select id="teamLoc" aria-label="Location"><option value="all">All Locations</option></select><input id="teamSearch" type="search" placeholder="Name / employee ID" aria-label="Employee search"><select id="teamState" aria-label="Team status"><option value="all">All Statuses</option><option>On Duty</option><option>Punched Out</option><option>Not Arrived</option><option>Shift Not Started</option><option>Weekly Off</option><option>Approval Pending</option><option>Unavailable</option><option>Holiday · P</option><option>Manual Present</option><option>Manual Half</option><option>Manual Absent</option><option>Manual Not Marked</option><option value="late">Late</option><option value="held">Approval Issue</option></select></div>
             <div class="flex items-center justify-between gap-2"><label class="text-xs"><input id="teamAuto" type="checkbox"> Auto-refresh every 60s</label><button id="teamRefresh" type="button" class="support-send">Refresh</button></div>
             <p id="teamProgress" class="text-xs text-gray-600" role="status"></p><div id="teamCards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
             <p class="text-xs text-gray-500">Today (IST) · Active employees only. Live presence based on accepted punches; this is not a final payroll report. “Late” and “Approval Issue” can overlap other statuses.</p>
@@ -847,6 +849,7 @@
                         <input type="text" id="spRemark" placeholder="e.g. Rakshabandhan Early Leave" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-bold bg-gray-50">
                     </div>
                 </div>
+                <label class="flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm"><input id="spFullDayPresent" type="checkbox" class="mt-1"><span><strong>Full-day credit (P) — punch not required</strong><small class="block text-gray-600">Holiday / paid off: bina IN–OUT ke bhi 1 day credit. Explicit Manual attendance and fraud holds keep their existing priority.</small></span></label>
                 <button id="saveSpecialDayBtn" class="w-full md:w-auto bg-indigo-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-indigo-700 shadow-md">Save Rule</button>
             </div>
 
@@ -904,6 +907,7 @@
                     </select>
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
+<div class="w-full"><label for="daywiseCategoryFilter" class="block text-xs font-bold text-gray-600 mb-1">Punch Category</label><select id="daywiseCategoryFilter" class="w-full p-2.5 border rounded-xl bg-gray-50 text-sm font-bold"><option value="all">All Categories</option><option value="Auto">Auto</option><option value="Manual">Manual</option></select></div>
                     <button id="fetchDaywiseBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0 transition-colors">Fetch</button>
                     <button id="exportDaywiseBtn" class="hidden bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-xl h-[42px] w-[42px] flex items-center justify-center shrink-0 transition-colors shadow-sm" title="Export CSV">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -938,6 +942,7 @@
             </div>
             <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col md:flex-row gap-3 items-end">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+<div class="w-full"><label for="repCategoryFilter" class="block text-xs font-bold text-gray-600 mb-1">Punch Category</label><select id="repCategoryFilter" class="w-full p-2.5 border rounded-xl bg-gray-50 text-sm font-bold"><option value="all">All Categories</option><option value="Auto">Auto</option><option value="Manual">Manual</option></select></div>
                     <div><label for="repDeptFilter" class="block text-xs font-bold text-gray-600 mb-1">Department</label><select id="repDeptFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Departments</option></select></div>
                     <div><label for="repLocFilter" class="block text-xs font-bold text-gray-600 mb-1">Location</label><select id="repLocFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold"><option value="">All Locations</option></select></div>
                 </div>
@@ -968,6 +973,7 @@
                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Select Month</label>
                     <input type="month" id="gridMonth" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-gray-50">
                 </div>
+<div class="w-full"><label for="gridCategoryFilter" class="block text-xs font-bold text-gray-600 mb-1">Punch Category</label><select id="gridCategoryFilter" class="w-full p-2.5 border rounded-xl bg-gray-50 text-sm font-bold"><option value="all">All Categories</option><option value="Auto">Auto</option><option value="Manual">Manual</option></select></div>
                 <button id="generateGridBtn" class="bg-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl w-full md:w-auto h-[42px] shrink-0">Generate Grid</button>
             </div>
             <div class="flex justify-between items-center px-1">
@@ -1005,6 +1011,69 @@
                 <button id="deleteAttendanceBtn" disabled class="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl p-3 font-bold">Delete Selected Punch</button>
                 <p id="deleteAttendanceResult" class="text-sm font-medium" role="status"></p>
             </div>
+        </div>
+
+        <div id="admin-mini-manage-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center"><h2 class="text-xl font-bold">👤 Manage Mini Admins</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600">← Back</button></div>
+            <p class="text-xs text-gray-600">Mini admins can mark Manual employees and view their Daywise, Monthly and Individual reports in allowed locations.</p>
+            <div class="bg-white border rounded-2xl p-4 space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="text-xs font-bold">Mini Admin ID<input id="miniManageId" class="w-full border rounded-lg p-2" placeholder="10-digit numeric ID" inputmode="numeric" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></label>
+                    <label class="text-xs font-bold">Name<input id="miniManageName" class="w-full border rounded-lg p-2" maxlength="100"></label>
+                    <label class="text-xs font-bold">PIN<input id="miniManagePin" type="password" inputmode="numeric" class="w-full border rounded-lg p-2" maxlength="12" placeholder="4–12 digits; blank on Edit keeps PIN" autocomplete="new-password"></label>
+                    <label class="text-sm"><input id="miniManageActive" type="checkbox" checked> Active</label>
+                </div>
+                <label class="block text-sm"><input id="miniManageAllLoc" type="checkbox"> All Locations</label>
+                <div id="miniManageLocations" class="flex flex-wrap gap-3 text-sm"></div>
+                <label class="block text-sm"><input id="miniManagePast" type="checkbox"> Allow past-date attendance (otherwise Today only)</label>
+                <label class="block text-sm"><input id="miniManageEdit" type="checkbox" checked> Allow editing saved Manual attendance</label>
+                <div class="flex gap-2"><button id="miniManageSave" class="support-send" type="button">Save Mini Admin</button><button id="miniManageNew" class="support-attach-btn" type="button">New / Clear</button><button id="miniManageReload" class="support-attach-btn" type="button">Reload</button></div>
+            </div>
+            <p id="miniManageMessage" role="status" class="text-sm font-bold"></p>
+            <div id="miniManageList" class="space-y-2"></div>
+        </div>
+        <div id="mini-admin-view" class="hidden w-full space-y-4">
+            <h2 id="miniWelcome" class="text-xl font-bold">Mini Admin</h2>
+            <div id="miniTabs" class="flex flex-wrap gap-2"><button type="button" class="support-send" data-mini-mode="mark">📝 Mark Attendance</button><button type="button" class="support-attach-btn" data-mini-mode="daily">Daywise</button><button type="button" class="support-attach-btn" data-mini-mode="monthly">Monthly Grid</button><button type="button" class="support-attach-btn" data-mini-mode="individual">Individual</button></div>
+            <div class="read-report-filters">
+                <label id="miniDateWrap" class="text-xs font-bold">Date<input id="miniDate" type="date"></label>
+                <label id="miniMonthWrap" class="text-xs font-bold hidden">Month<input id="miniMonth" type="month"></label>
+                <label id="miniFromWrap" class="text-xs font-bold hidden">From<input id="miniFrom" type="date"></label>
+                <label id="miniToWrap" class="text-xs font-bold hidden">To<input id="miniTo" type="date"></label>
+                <select id="miniLocation" aria-label="Location"><option value="all">All Allowed Locations</option></select>
+                <input id="miniSearch" type="search" placeholder="Name / employee ID" aria-label="Search employee">
+                <select id="miniEmployee" class="hidden" aria-label="Individual employee"><option value="">Select Employee</option></select>
+                <button id="miniFetch" type="button" class="support-send">Load</button>
+            </div>
+            <div id="miniMarkTools" class="flex flex-wrap gap-2 items-center bg-indigo-50 p-3 rounded-xl">
+                <label><input id="miniSelectAll" type="checkbox"> Select all filtered</label>
+                <select id="miniBulkStatus" aria-label="Bulk attendance"><option value="P">P · Full</option><option value="P/A">P/A · Half</option><option value="A">A · Absent</option></select>
+                <button id="miniApply" type="button" class="support-attach-btn">Apply to Selected</button><button id="miniSave" type="button" class="support-send">Save Selected</button>
+            </div>
+            <p id="miniProgress" role="status" class="text-sm font-bold"></p>
+            <p id="miniSummary" class="text-sm font-bold text-indigo-700"></p>
+            <button id="miniExport" type="button" class="support-attach-btn hidden">Download CSV</button>
+            <div class="report-table-wrapper bg-white"><table class="report-table text-xs"><thead id="miniReportHead"></thead><tbody id="miniReportBody"></tbody></table></div>
+        </div>
+
+        <div id="admin-mark-status-view" class="hidden w-full flex-col space-y-4">
+            <div class="flex justify-between items-center"><h2 class="text-xl font-bold">📝 Mark Attendance</h2><button type="button" class="admin-back-btn text-sm font-bold text-indigo-600">← Back</button></div>
+            <p class="text-xs text-gray-600">Manual category employees only. P = Full day · P/A = Half day · A = Absent. No IN / OUT time needed. Set category and shift in Employee Directory → Edit.</p>
+            <div class="read-report-filters">
+                <label class="text-xs font-bold">Date<input id="markStatusDate" type="date"></label>
+                <select id="markStatusDept" aria-label="Department"><option value="all">All Departments</option></select>
+                <select id="markStatusLoc" aria-label="Location"><option value="all">All Locations</option></select>
+                <input id="markStatusSearch" type="search" placeholder="Name / employee ID" aria-label="Find employee">
+                <button id="markStatusLoad" type="button" class="support-send">Load</button>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center bg-indigo-50 rounded-xl p-3">
+                <label class="text-sm font-bold"><input id="markStatusAll" type="checkbox"> Select all filtered</label>
+                <select id="markStatusBulk" aria-label="Bulk status"><option value="P">P · Full day</option><option value="P/A">P/A · Half day</option><option value="A">A · Absent</option></select>
+                <button id="markStatusApply" type="button" class="support-attach-btn">Apply to Selected</button>
+                <button id="markStatusSave" type="button" class="support-send">Save Selected</button>
+            </div>
+            <p id="markStatusProgress" role="status" class="text-sm font-bold"></p>
+            <div class="report-table-wrapper bg-white"><table class="report-table text-xs"><thead><tr><th>Select</th><th>Employee</th><th>Department / Location</th><th>Shift</th><th>Saved</th><th>Mark Status</th><th>Remark (optional)</th><th>Action</th></tr></thead><tbody id="markStatusRows"></tbody></table></div>
         </div>
 
         <div id="admin-manual-view" class="hidden w-full flex-col space-y-4">
@@ -1078,13 +1147,14 @@
                     <label for="empDirDesignationFilter" class="block text-sm font-bold mb-2">Designation</label>
                     <select id="empDirDesignationFilter" class="w-full p-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold outline-none"><option value="all">All Designations</option></select>
                 </div>
+<div class="w-full"><label for="empDirCategoryFilter" class="block text-xs font-bold text-gray-600 mb-1">Punch Category</label><select id="empDirCategoryFilter" class="w-full p-2.5 border rounded-xl bg-gray-50 text-sm font-bold"><option value="all">All Categories</option><option value="Auto">Auto</option><option value="Manual">Manual</option></select></div>
                 <button id="addEmployeeBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-xl shrink-0 h-[42px] shadow-md transition-colors flex items-center gap-2">
                     <span>+ Add Employee</span>
                 </button>
             </div>
             <div class="report-table-wrapper bg-white mt-2">
                 <table class="report-table text-[12px]">
-                    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Location</th><th>Designation</th><th>Shift</th><th>Status</th><th>Action</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Location</th><th>Designation</th><th>Shift</th><th>Punch Category</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="empdirBody"></tbody>
                 </table>
             </div>
@@ -1275,6 +1345,7 @@
                     <div><label class="text-xs font-bold text-gray-600 uppercase">Shift End (HH:MM)</label><input type="time" id="mod-emp-end" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
                     <div><label class="text-xs font-bold text-gray-600 uppercase">Grace IN (Mins)</label><input type="number" id="mod-emp-all-in" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value="0" min="0"></div>
                     <div><label class="text-xs font-bold text-gray-600 uppercase">Grace OUT (Mins)</label><input type="number" id="mod-emp-all-out" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value="0" min="0"></div>
+                    <div><label class="text-xs font-bold text-gray-600 uppercase">Punch Category</label><select id="mod-emp-category" class="w-full p-2.5 mt-1 border rounded-lg"><option value="Auto">Auto</option><option value="Manual">Manual</option></select></div>
                     <div><label class="text-xs font-bold text-gray-600 uppercase">Base Salary</label><input type="number" id="mod-emp-salary" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value="0" min="0"></div>
                     <div><label class="text-xs font-bold text-gray-600 uppercase">Status</label>
                         <select id="mod-emp-status" class="w-full p-2.5 mt-1 border border-gray-300 rounded-lg bg-gray-50 font-bold outline-none focus:ring-2 focus:ring-indigo-500">
@@ -1386,6 +1457,7 @@
         }
 
         async function syncAppClock() {
+            if(currentEmployee?.role === 'mini') throw new Error('Mini attendance uses server-side date validation.');
             if (!currentEmployee || document.hidden) throw new Error('App kholkar dobara try karein.');
             if (clockSync) return clockSync;
             const employeeId = currentEmployee.id, epoch = clockEpoch;
@@ -1413,7 +1485,7 @@
 
         function resumeAppClock() {
             invalidateAppClock();
-            if (currentEmployee && !document.hidden) syncAppClock().catch(() => {});
+            if (currentEmployee && currentEmployee.role !== 'mini' && !document.hidden) syncAppClock().catch(() => {});
         }
 
         // A stalled foreground timer also requires re-sync (sleep/frozen tab).
@@ -1421,7 +1493,7 @@
             const tick = performance.now();
             if (tick - lastClockTick > 5000) invalidateAppClock();
             lastClockTick = tick;
-            if (currentEmployee && !document.hidden && navigator.onLine &&
+            if (currentEmployee && currentEmployee.role !== 'mini' && !document.hidden && navigator.onLine &&
                 (!appClock || tick - appClock.at >= CLOCK_SYNC_MS) &&
                 tick - lastClockAttempt >= 10000) syncAppClock().catch(() => {});
             if (!document.hidden) {
@@ -1430,7 +1502,7 @@
         }, 1000);
         window.addEventListener('pageshow', event => { if (event.persisted) resumeAppClock(); });
         window.addEventListener('online', () => {
-            if (currentEmployee && !document.hidden) syncAppClock().catch(() => {});
+            if (currentEmployee && currentEmployee.role !== 'mini' && !document.hidden) syncAppClock().catch(() => {});
         });
 
         function locationIsFresh() {
@@ -1480,9 +1552,10 @@
         function filteredPickerEmployees(prefix) {
             const department = document.getElementById(`${prefix}DeptFilter`).value;
             const location = document.getElementById(`${prefix}LocFilter`).value;
+            const category = document.getElementById(`${prefix}CategoryFilter`)?.value || 'all';
             return activeEmployeeEntries().filter(([, emp]) =>
                 (!department || String(emp.department || '').trim() === department) &&
-                (!location || String(emp.location || '').trim() === location));
+                (!location || String(emp.location || '').trim() === location) && matchesPunchCategory(emp, category));
         }
 
         function populateEmployeePicker(config) {
@@ -1548,6 +1621,7 @@
         document.getElementById('gridMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         function showView(viewId, titleText = "Smart Attendance") {
+            if (miniSession && !["mini-admin-view","login-section"].includes(viewId)) return;
             if (activeView === 'support-chat-view' && viewId !== 'support-chat-view') supportStop();
             if (activeView === 'report-section' && viewId !== 'report-section') ++reportVersion;
             if (activeView === 'admin-message-reads-view' && viewId !== activeView) ++messageReadVersion;
@@ -1557,7 +1631,7 @@
             activeView = viewId;
             document.body.dataset.view = viewId;
             if(isAdmin && ['admin-dashboard','admin-location-health-view'].includes(viewId))setTimeout(()=>loadLocationHealth(),0);
-            const viewsList = ['admin-team-status-view', 'admin-location-health-view', 'admin-photo-cleanup-view', 'admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
+            const viewsList = ['admin-mini-manage-view','mini-admin-view','admin-mark-status-view','admin-team-status-view', 'admin-location-health-view', 'admin-photo-cleanup-view', 'admin-fraud-approvals-view', 'admin-message-reads-view', 'support-chat-view', 'login-section', 'forgot-pin-section', 'employee-dashboard', 'attendance-section', 'report-section', 'admin-dashboard', 'admin-daywise-view', 'admin-reports-view', 'admin-master-grid-view', 'admin-manual-view', 'admin-delete-view', 'admin-fraud-view', 'admin-settings-view', 'admin-empdir-view', 'admin-special-view'];
             
             viewsList.forEach(id => {
                 const el = document.getElementById(id);
@@ -1662,7 +1736,7 @@
                 ]);
                 const adminSnap = adminResult.status === 'fulfilled' ? adminResult.value : null;
                 if (adminSnap?.exists() && String(adminSnap.val().pin) === pin) {
-                    isAdmin = true;
+                    isAdmin = true; mainAdminCredentials={id:empId,pin}; miniSession=null;
                     currentEmployee = { ...adminSnap.val(), id: empId };
                     invalidateAppClock();
                     await fetchGlobalData(true);
@@ -1672,7 +1746,12 @@
                 }
                 if (employeeResult.status !== 'fulfilled') throw employeeResult.reason;
                 const empSnap = employeeResult.value;
-                if (!empSnap.exists()) throw new Error('ID not found.');
+                if (!empSnap.exists()) {
+                    if(adminSnap?.exists()) throw new Error('Incorrect PIN.');
+                    if(!/^\d{10}$/.test(empId)) throw new Error('ID not found.');
+                    await loginMiniFromSharedForm(empId,pin);
+                    return;
+                }
                 const empData = empSnap.val();
                 if (String(empData.pin) !== pin) throw new Error('Incorrect PIN.');
                 if (!employeeIsActive(empData)) throw new Error('Account inactive. Contact Admin.');
@@ -1779,7 +1858,7 @@
                 if (p['In'] && !p['Out']) status = "PunchedIn";
                 if (p['In'] && p['Out']) status = "PunchedOut";
             }
-            renderDashButtons(status);
+            renderDashButtons(punchCategory(currentEmployee) === 'Manual' || manualStatusRecord(punchSnap.val()) ? 'Manual' : status);
             const savedPunches = punchSnap.val() || {};
             const heldTypes = ['In', 'Out'].filter(type => fraudPunchState(savedPunches[type], currentEmployee.department).held);
             if (heldTypes.length) {
@@ -1797,6 +1876,11 @@
             const container = document.getElementById('emp-action-buttons');
             const badge = document.getElementById('emp-status-badge');
             
+            if (status === 'Manual') {
+                badge.textContent = 'Admin Attendance'; badge.className = 'bg-indigo-50 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full';
+                container.innerHTML = '<div class="rounded-2xl bg-indigo-50 p-5 text-center"><strong>Attendance marked by Admin</strong><p class="text-sm mt-2">Apni attendance View My Report mein dekhein.</p></div>';
+                return;
+            }
             if (status === "None") {
                 badge.dataset.state = "ready"; badge.innerText = "No Punch Yet"; badge.className = "bg-gray-200 text-gray-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider";
                 container.innerHTML = `<button id="markInBtn" class="w-full bg-[#dcfce7] border border-[#bbf7d0] text-[#166534] py-5 rounded-2xl hover:bg-[#bbf7d0] font-extrabold text-lg shadow-sm transition-all flex flex-col items-center justify-center gap-1"><span class="text-2xl">➡️</span> Mark Duty IN</button>`;
@@ -1812,6 +1896,7 @@
         }
 
         function startPunchSequence(type) {
+            if (punchCategory(currentEmployee) === 'Manual') return showMessage('Aapki attendance admin mark karega.', 'info');
             currentPunchTarget = type;
             initCameraAndLocation();
         }
@@ -2042,6 +2127,7 @@
         }
 
         async function handlePunch() {
+            if (punchCategory(currentEmployee) === 'Manual') return showMessage('Aapki attendance admin mark karega.', 'info');
             if (punchInFlight || !currentEmployee || !locationActive) return;
             punchInFlight = true;
             updateCaptureButton();
@@ -2113,9 +2199,18 @@
                     address: tAdd, photoUrl: pUrl, geoVerification, location: employee.location || 'N/A', department: employee.department || 'N/A' };
                 const flagReason = daywisePunchWarning(punchRecord, employee.department);
                 if (flagReason) punchRecord.fraudFlagReason = flagReason;
+                const dayPath = `attendance/${encodeURIComponent(employee.id)}/${today}`;
+                const [latestEmployee, latestDay] = await Promise.all([
+                    databaseRequest('employees/'+encodeURIComponent(employee.id)),
+                    databaseRequest(dayPath,{headers:{'X-Firebase-ETag':'true'}},true)
+                ]);
+                if(!employeeIsActive(latestEmployee) || punchCategory(latestEmployee)==='Manual') throw new Error('Attendance category/status changed. Login again; admin se contact karein.');
+                if(latestDay.data?.ManualStatus || latestDay.data?.[punchType]) throw new Error('Attendance already marked. Dashboard refresh karein.');
+                if(!latestDay.etag) throw new Error('Attendance verify nahi hui. Retry karein.');
+                assertFresh();
                 attendanceWriteStarted = true;
-                await databaseRequest(`attendance/${encodeURIComponent(employee.id)}/${today}/${punchType}`, {
-                    method: 'PUT', headers: { 'if-match': 'null_etag' }, body: JSON.stringify(punchRecord)
+                await databaseRequest(dayPath, {
+                    method: 'PUT', headers: { 'if-match': latestDay.etag }, body: JSON.stringify({...latestDay.data,[punchType]:punchRecord})
                 });
                 stopCamera();
                 showMessage(flagReason ? `${punchType} saved as F. Admin approval required.` : `${punchType} Marked!`, flagReason ? 'info' : 'success');
@@ -2149,10 +2244,301 @@
         }
         checkOffline();
 
+        let mainAdminCredentials=null, miniSession=null, miniManageUsers=[], miniManageEditing=false, miniManageBusy=false;
+        let miniMode='mark', miniRows=[], miniData=null, miniBusy=false, miniLoadedRange=null, miniCsv=[];
+        const miniEl=id=>document.getElementById(id);
+        async function miniCall(action,payload={},main=false) {
+            const body=new URLSearchParams({action,payload:JSON.stringify(payload)});
+            if(main){if(!isAdmin||!mainAdminCredentials)throw new Error('Main admin se logout/login karke retry karein.');body.set('adminId',mainAdminCredentials.id);body.set('adminPin',mainAdminCredentials.pin);}
+            else if(miniSession)body.set('token',miniSession.token);
+            const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),180000);
+            try{
+                const response=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',body,signal:controller.signal});
+                if(!response.ok)throw new Error('Server unavailable. Retry.');
+                let result;try{result=await response.json();}catch{throw new Error('Updated Code.gs ko New Version deploy karein.');}
+                if(!result.ok)throw new Error(result.error||result.message||'Update Code.gs deployment and retry.');
+                return result;
+            }catch(e){if(e.name==='AbortError')throw new Error('Request timeout. Reload before retrying a save.');throw e;}
+            finally{clearTimeout(timer);}
+        }
+        function resetMiniManage() {
+            miniManageEditing=false;miniEl('miniManageId').readOnly=false;
+            ['miniManageId','miniManageName','miniManagePin'].forEach(id=>miniEl(id).value='');
+            miniEl('miniManageActive').checked=true;miniEl('miniManageEdit').checked=true;miniEl('miniManagePast').checked=false;miniEl('miniManageAllLoc').checked=false;
+            miniEl('miniManageLocations').querySelectorAll('input').forEach(i=>{i.checked=false;i.disabled=false;});
+        }
+        async function loadMiniManage() {
+            if(!isAdmin||miniManageBusy)return;miniManageBusy=true;miniEl('miniManageMessage').textContent='Loading…';
+            try{
+                const actor=currentEmployee,r=await miniCall('miniManageList',{},true);if(!isAdmin||actor!==currentEmployee)return;
+                miniManageUsers=r.users;
+                miniEl('miniManageLocations').innerHTML=r.locations.map(loc=>`<label><input type="checkbox" value="${punchHtml(loc)}"> ${punchHtml(loc)}</label>`).join('');
+                miniEl('miniManageList').innerHTML=r.users.map(u=>`<div class="bg-white border rounded-xl p-3 flex flex-wrap justify-between gap-2"><div><strong>${punchHtml(u.name)} · ${punchHtml(u.id)}</strong><p class="text-xs">${u.active?'Active':'Inactive'} · ${punchHtml(u.locations.includes('*')?'All Locations':u.locations.join(', '))} · ${u.allowPast?'Past dates allowed':'Today only'} · ${u.canEdit?'Edit allowed':'New marks only'}</p></div><div class="flex gap-2"><button type="button" data-mini-edit="${punchHtml(u.id)}" class="support-attach-btn">Edit</button><button type="button" data-mini-delete="${punchHtml(u.id)}" class="text-red-700 font-bold">Delete</button></div></div>`).join('')||'<p>No Mini Admin accounts yet.</p>';
+                resetMiniManage();miniEl('miniManageMessage').textContent=`${r.users.length} Mini Admin accounts`;
+            }catch(e){miniEl('miniManageMessage').textContent=e.message;}finally{miniManageBusy=false;}
+        }
+        miniEl('adminMiniManageBtn').onclick=()=>{if(isAdmin){showView('admin-mini-manage-view','Manage Mini Admins');loadMiniManage();}};
+        miniEl('miniManageNew').onclick=()=>{if(!miniManageBusy)resetMiniManage();};
+        miniEl('miniManageReload').onclick=loadMiniManage;
+        miniEl('miniManageAllLoc').onchange=e=>miniEl('miniManageLocations').querySelectorAll('input').forEach(i=>i.disabled=e.target.checked);
+        miniEl('miniManageSave').onclick=async()=>{
+            if(!isAdmin||miniManageBusy)return;
+            const payload={id:miniEl('miniManageId').value.trim(),name:miniEl('miniManageName').value.trim(),pin:miniEl('miniManagePin').value.trim(),edit:miniManageEditing,active:miniEl('miniManageActive').checked,
+                locations:miniEl('miniManageAllLoc').checked?['*']:[...miniEl('miniManageLocations').querySelectorAll('input:checked')].map(i=>i.value),allowPast:miniEl('miniManagePast').checked,canEdit:miniEl('miniManageEdit').checked};
+            if(!/^\d{10}$/.test(payload.id))return showMessage('Mini Admin ID exactly 10 digits ki honi chahiye.','error');
+            if(!payload.name||!payload.locations.length||(!payload.edit&&!/^\d{4,12}$/.test(payload.pin)))return showMessage('Name, locations aur 4–12 digit PIN bharein.','error');
+            miniManageBusy=true;miniEl('miniManageSave').disabled=true;
+            try{await miniCall('miniSaveUser',payload,true);miniEl('miniManagePin').value='';showMessage('Mini Admin saved. Existing sessions need login again.','success');miniManageBusy=false;await loadMiniManage();}
+            catch(e){miniEl('miniManageMessage').textContent=e.message;}finally{miniManageBusy=false;miniEl('miniManageSave').disabled=false;}
+        };
+        miniEl('miniManageList').onclick=async e=>{
+            if(!isAdmin||miniManageBusy)return;
+            const edit=e.target.closest('[data-mini-edit]'),del=e.target.closest('[data-mini-delete]');
+            if(edit){const u=miniManageUsers.find(u=>u.id===edit.dataset.miniEdit);if(!u)return;resetMiniManage();miniManageEditing=true;miniEl('miniManageId').value=u.id;miniEl('miniManageId').readOnly=true;miniEl('miniManageName').value=u.name;miniEl('miniManageActive').checked=u.active;miniEl('miniManagePast').checked=u.allowPast;miniEl('miniManageEdit').checked=u.canEdit;miniEl('miniManageAllLoc').checked=u.locations.includes('*');miniEl('miniManageLocations').querySelectorAll('input').forEach(i=>{i.checked=u.locations.includes(i.value);i.disabled=u.locations.includes('*');});miniEl('miniManageId').scrollIntoView({block:'center',behavior:'smooth'});}
+            if(del&&confirm('Delete Mini Admin '+del.dataset.miniDelete+'? Saved attendance remains.')){miniManageBusy=true;try{await miniCall('miniDeleteUser',{id:del.dataset.miniDelete},true);miniManageBusy=false;await loadMiniManage();}catch(err){miniEl('miniManageMessage').textContent=err.message;}finally{miniManageBusy=false;}}
+        };
+        async function loginMiniFromSharedForm(id,pin) {
+            const r=await miniCall('miniLogin',{id,pin});
+            mainAdminCredentials=null;isAdmin=false;currentEmployee={id:r.user.id,name:r.user.name,role:'mini'};
+            miniSession={token:r.token,user:r.user,today:r.today};invalidateAppClock();miniRows=[];miniData=null;miniLoadedRange=null;miniMode='mark';
+            miniEl('miniDate').value=r.today;miniEl('miniFrom').value=r.today;miniEl('miniTo').value=r.today;miniEl('miniMonth').value=r.today.slice(0,7);
+            miniEl('miniSearch').value='';miniEl('miniLocation').replaceChildren(new Option('All Allowed Locations','all'));
+            miniEl('miniWelcome').textContent='Mini Admin · '+r.user.name;
+            showView('mini-admin-view','Mini Admin');configureMiniMode();await loadMiniPortal();
+        }
+        function miniDirty() {return miniRows.some(r=>r.status!==(r.day?.ManualStatus?.status||'')||r.remark!==(r.day?.ManualStatus?.remark||''));}
+        function miniRange() {
+            if(miniMode==='mark'||miniMode==='daily')return {from:miniEl('miniDate').value,to:miniEl('miniDate').value};
+            if(miniMode==='individual')return {from:miniEl('miniFrom').value,to:miniEl('miniTo').value};
+            const month=miniEl('miniMonth').value;if(!/^\d{4}-\d{2}$/.test(month))return {from:'',to:''};
+            const [y,m]=month.split('-').map(Number),end=month+'-'+new Date(y,m,0).getDate();return {from:month+'-01',to:end>miniSession.today?miniSession.today:end,displayTo:end};
+        }
+        function configureMiniMode() {
+            miniEl('miniDateWrap').classList.toggle('hidden',!['mark','daily'].includes(miniMode));miniEl('miniMonthWrap').classList.toggle('hidden',miniMode!=='monthly');
+            ['miniFromWrap','miniToWrap','miniEmployee'].forEach(id=>miniEl(id).classList.toggle('hidden',miniMode!=='individual'));
+            miniEl('miniMarkTools').classList.toggle('hidden',miniMode!=='mark');miniEl('miniDate').disabled=miniMode==='mark'&&!miniSession.user.allowPast;
+            if(miniMode==='mark'&&!miniSession.user.allowPast)miniEl('miniDate').value=miniSession.today;
+            ['miniDate','miniFrom','miniTo'].forEach(id=>miniEl(id).max=miniSession.today);miniEl('miniMonth').max=miniSession.today.slice(0,7);
+            miniEl('miniTabs').querySelectorAll('button').forEach(b=>b.className=b.dataset.miniMode===miniMode?'support-send':'support-attach-btn');
+        }
+        function miniVisibleRows() {const q=miniEl('miniSearch').value.trim().toLowerCase(),loc=miniEl('miniLocation').value;return miniRows.filter(r=>(loc==='all'||r.emp.location===loc)&&`${r.emp.name} ${r.id}`.toLowerCase().includes(q));}
+        function miniBlocked(row) {return row.day?.In||row.day?.Out?'Existing IN / OUT — contact main admin':!row.emp.startTime||!row.emp.endTime?'Shift missing':row.day?.ManualStatus&&!miniSession.user.canEdit?'Saved — editing not allowed':'';}
+        function renderMiniPortal() {
+            if(!miniSession)return;
+            const visible=miniVisibleRows(),range=miniLoadedRange;
+            miniCsv=[];miniEl('miniSummary').textContent='';miniEl('miniExport').classList.add('hidden');
+            miniEl('miniSave').disabled=miniBusy;miniEl('miniApply').disabled=miniBusy;miniEl('miniFetch').disabled=miniBusy;
+            if(!range){miniEl('miniReportHead').innerHTML='';miniEl('miniReportBody').innerHTML='';return;}
+            if(miniMode==='mark'){
+                const selectable=visible.filter(r=>!miniBlocked(r));miniEl('miniSelectAll').checked=!!selectable.length&&selectable.every(r=>r.selected);miniEl('miniSelectAll').indeterminate=selectable.some(r=>r.selected)&&!miniEl('miniSelectAll').checked;
+                miniEl('miniSave').textContent='Save Selected ('+selectable.filter(r=>r.selected).length+')';
+                miniEl('miniReportHead').innerHTML='<tr><th>Select</th><th>Employee</th><th>Location / Shift</th><th>Saved</th><th>Status</th><th>Remark</th><th>Action</th></tr>';
+                miniEl('miniReportBody').innerHTML=visible.map(r=>`<tr data-mini-id="${punchHtml(r.id)}"><td><input type="checkbox" data-mini-select ${r.selected?'checked':''} ${miniBusy||miniBlocked(r)?'disabled':''}></td><td>${punchHtml(r.emp.name||r.id)}<small class="block">${punchHtml(r.id)}</small></td><td>${punchHtml(r.emp.location||'—')}<small class="block">${punchHtml(r.emp.startTime||'—')}–${punchHtml(r.emp.endTime||'—')}</small></td><td>${punchHtml(r.day?.ManualStatus?.status||'Not marked')}</td><td><select data-mini-status ${miniBusy||miniBlocked(r)?'disabled':''}><option value="">Select</option>${['P','P/A','A'].map(st=>`<option ${r.status===st?'selected':''}>${st}</option>`).join('')}</select></td><td><input data-mini-remark maxlength="500" value="${punchHtml(r.remark)}" class="border rounded p-2" ${miniBusy||miniBlocked(r)?'disabled':''}></td><td><button data-mini-save type="button" class="support-send" ${miniBusy||miniBlocked(r)?'disabled':''}>Save</button><small class="block text-red-700">${punchHtml(miniBlocked(r)||r.error||'')}</small></td></tr>`).join('')||'<tr><td colspan="7">No Manual employees in your assigned locations.</td></tr>';return;
+            }
+            if(miniMode==='individual') {
+                const selected=miniEl('miniEmployee').value;miniEl('miniEmployee').replaceChildren(new Option('Select Employee',''));
+                visible.forEach(r=>miniEl('miniEmployee').add(new Option(`${r.emp.name||r.id} (${r.id})`,r.id)));
+                if(visible.some(r=>r.id===selected))miniEl('miniEmployee').value=selected;
+                const row=visible.find(r=>r.id===miniEl('miniEmployee').value);
+                if(!row){miniEl('miniReportHead').innerHTML='';miniEl('miniReportBody').innerHTML='<tr><td>Select an employee above.</td></tr>';return;}
+                const report=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to);
+                miniEl('miniSummary').textContent=`${row.emp.name} · P ${report.sum.P} · P/A ${report.sum.PA} · A ${report.sum.A} · Net ${report.sum.Net}`;
+                miniCsv=[['Date','IN','OUT','Status','Remark'],...report.statuses.map(d=>[d.date,d.in,d.out,d.st,[d.eventInfo,d.explanation,d.rem].filter(Boolean).join('\n')])];
+            } else if(miniMode==='daily'){
+                miniCsv=[['ID','Name','Location','Shift','IN','OUT','Status','Remark'],...visible.map(row=>{const d=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to).statuses[0];return[row.id,row.emp.name,row.emp.location,`${row.emp.startTime||''}–${row.emp.endTime||''}`,d.in,d.out,d.st,[d.eventInfo,d.explanation,d.rem].filter(Boolean).join('\n')];})];
+            } else {
+                const end=range.displayTo||range.to,first=visible[0],dates=first?calculateReport(first.emp,{},range.from,end).statuses.map(d=>d.date):[];
+                miniCsv=[['ID','Name','Location',...dates.map(d=>d.slice(8)),'P','P/A','A','L','E','W/O','Deduction','Net'],...visible.map(row=>{const report=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,end),s=report.sum;return[row.id,row.emp.name,row.emp.location,...report.statuses.map(d=>d.st||'—'),s.P,s.PA,s.A,s.L,s.E,s.WO,report.totalDed,s.Net];})];
+            }
+            miniEl('miniReportHead').innerHTML='<tr>'+miniCsv[0].map(v=>'<th>'+punchHtml(v)+'</th>').join('')+'</tr>';
+            miniEl('miniReportBody').innerHTML=miniCsv.slice(1).map(row=>{
+                const days=miniMode==='monthly' ? calculateReport(miniData.employees[row[0]],miniData.attendance[row[0]]||{},range.from,range.displayTo||range.to).statuses : [];
+                return '<tr>'+row.map((v,i)=>'<td class="whitespace-pre-wrap">'+punchHtml(v??'')+(days[i-3]?.eventInfo ? ` <button type="button" data-event-info="${punchHtml(days[i-3].eventInfo)}" class="text-indigo-700 font-bold" aria-label="Special Event and Admin Remark">ⓘ</button>` : '')+'</td>').join('')+'</tr>';
+            }).join('')||'<tr><td>No matching employees.</td></tr>';
+            miniEl('miniExport').classList.toggle('hidden',miniCsv.length<2);
+        }
+        async function loadMiniPortal() {
+            if(!miniSession||miniBusy)return;
+            if(miniDirty()&&!confirm('Discard unsaved attendance changes and reload?'))return;
+            const session=miniSession,range=miniRange(),mode=miniMode;miniBusy=true;renderMiniPortal();miniEl('miniProgress').textContent='Loading your Manual employees…';
+            try{
+                const r=await miniCall('miniLoad',{from:range.from,to:range.to});if(miniSession!==session)return;
+                session.user=r.user;session.today=r.today;globalSettings={...globalSettings,deptWeekOffs:{},deptFraudKeywords:{},deptFraudStrictKeywords:{},specialDays:{},minHoursForHalfDay:4,veryEarlyThreshold:2,lateThreshold:3,earlyThreshold:3,...r.settings};miniData=r;miniLoadedRange=range;
+                miniRows=Object.entries(r.employees).map(([id,emp])=>{const day=r.attendance[id]?.[range.from]||{};return{id,emp,day,status:day.ManualStatus?.status||'',remark:day.ManualStatus?.remark||'',selected:false};}).sort((a,b)=>String(a.emp.name).localeCompare(String(b.emp.name)));
+                const old=miniEl('miniLocation').value;miniEl('miniLocation').replaceChildren(new Option('All Allowed Locations','all'));[...new Set(miniRows.map(r=>r.emp.location).filter(Boolean))].sort().forEach(loc=>miniEl('miniLocation').add(new Option(loc,loc)));miniEl('miniLocation').value=[...miniEl('miniLocation').options].some(o=>o.value===old)?old:'all';
+                miniEl('miniProgress').textContent=`${range.from} to ${range.to} · ${miniRows.length} Manual employees · ${r.user.allowPast?'Past-date marking allowed':'Marking: Today only'}`;
+                configureMiniMode();
+            }catch(e){miniEl('miniProgress').textContent=e.message;}finally{miniBusy=false;renderMiniPortal();}
+        }
+        async function saveMiniRows(rows) {
+            if(!miniSession||miniBusy||miniMode!=='mark'||!rows.length)return;
+            if(miniEl('miniDate').value!==miniLoadedRange?.from)return showMessage('Date changed. Load first.','error');
+            if(rows.some(r=>miniBlocked(r)||!['P','P/A','A'].includes(r.status)))return showMessage('Select P / P/A / A for each employee.','error');
+            const session=miniSession,date=miniLoadedRange.from;miniBusy=true;renderMiniPortal();let done=0,failed=0;
+            try{
+                for(let i=0;i<rows.length;i+=50){
+                    const batch=rows.slice(i,i+50),r=await miniCall('miniMark',{date,changes:batch.map(row=>({id:row.id,status:row.status,remark:row.remark,version:manualStatusVersion(row.day)}))});
+                    if(miniSession!==session)return;
+                    r.results.forEach(result=>{const row=batch.find(row=>row.id===result.id);if(!row)return;if(result.ok){row.day=result.day;row.status=result.day.ManualStatus.status;row.remark=result.day.ManualStatus.remark;row.selected=false;row.error='';miniData.attendance[row.id][date]=result.day;done++;}else{row.error=result.error;failed++;}});
+                    miniEl('miniProgress').textContent=`${date} · Saved ${done} · Failed ${failed}`;
+                }
+            }catch(e){miniEl('miniProgress').textContent=e.message+' Reload to verify saved attendance.';}finally{miniBusy=false;renderMiniPortal();}
+        }
+        miniEl('miniTabs').onclick=e=>{const b=e.target.closest('[data-mini-mode]');if(!b||miniBusy||!miniSession)return;if(miniDirty()&&!confirm('Discard unsaved changes?'))return;miniMode=b.dataset.miniMode;miniRows=[];miniLoadedRange=null;configureMiniMode();renderMiniPortal();loadMiniPortal();};
+        miniEl('miniFetch').onclick=loadMiniPortal;
+        ['miniLocation','miniSearch','miniEmployee'].forEach(id=>miniEl(id).addEventListener('input',()=>{if(!miniBusy)renderMiniPortal();}));
+        miniEl('miniSelectAll').onchange=e=>{if(miniBusy)return;miniVisibleRows().filter(r=>!miniBlocked(r)).forEach(r=>r.selected=e.target.checked);renderMiniPortal();};
+        miniEl('miniApply').onclick=()=>{if(miniBusy)return;miniVisibleRows().filter(r=>r.selected&&!miniBlocked(r)).forEach(r=>r.status=miniEl('miniBulkStatus').value);renderMiniPortal();};
+        miniEl('miniSave').onclick=()=>saveMiniRows(miniVisibleRows().filter(r=>r.selected&&!miniBlocked(r)));
+        miniEl('miniReportBody').onchange=e=>{if(miniBusy||miniMode!=='mark')return;const row=miniRows.find(r=>r.id===e.target.closest('[data-mini-id]')?.dataset.miniId);if(!row)return;if(e.target.matches('[data-mini-remark]')){row.remark=e.target.value;return;}if(e.target.matches('[data-mini-select]'))row.selected=e.target.checked;if(e.target.matches('[data-mini-status]'))row.status=e.target.value;renderMiniPortal();};
+        miniEl('miniReportBody').onclick=e=>{if(!e.target.closest('[data-mini-save]'))return;const row=miniRows.find(r=>r.id===e.target.closest('[data-mini-id]')?.dataset.miniId);if(row)saveMiniRows([row]);};
+        miniEl('miniExport').onclick=()=>{
+            if(miniMode==='mark'||miniCsv.length<2)return;
+            const csv=miniCsv.map(row=>row.map(v=>{let s=String(v??'');if(/^[=+@-]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}).join(',')).join('\r\n');
+            const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Manual-'+miniMode+'-'+miniLoadedRange.from+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        };
+
+        function matchesPunchCategory(emp, category) { return !category || category === 'all' || punchCategory(emp) === category; }
+        function punchCategory(emp) { return emp?.attendanceCategory === 'Manual' ? 'Manual' : 'Auto'; }
+        function manualStatusRecord(day) {
+            return day && !day.In && !day.Out && ['P','P/A','A'].includes(day.ManualStatus?.status) ? day.ManualStatus : null;
+        }
+        function manualStatusVersion(day) { return JSON.stringify(day?.ManualStatus || null); }
+        async function saveManualStatusRow(row, date, status, remark) {
+            const actor = currentEmployee;
+            if (!isAdmin || !actor) throw new Error('Admin login required.');
+            if (!['P','P/A','A'].includes(status)) throw new Error('P, P/A ya A select karein.');
+            const today = istDate(await ensureAppTime());
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today || new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date) throw new Error('Valid date select karein. Future attendance allowed nahi hai.');
+            const path = `attendance/${encodeURIComponent(row.id)}/${date}`;
+            const [emp,snapshot] = await Promise.all([databaseRequest('employees/'+encodeURIComponent(row.id)),databaseRequest(path,{headers:{'X-Firebase-ETag':'true'}},true)]);
+            if (!isAdmin || currentEmployee !== actor) throw new Error('Admin session changed.');
+            if (!employeeIsActive(emp) || punchCategory(emp)!=='Manual') throw new Error('Employee ab active Manual category mein nahi hai. Reload karein.');
+            if (!emp.startTime || !emp.endTime) throw new Error('Employee Directory mein shift set karein.');
+            const day = snapshot.data || {};
+            if (day.In || day.Out) throw new Error('IN / OUT punch already saved hai. Status se overwrite nahi hoga.');
+            if (!snapshot.etag || manualStatusVersion(day)!==row.version) throw new Error('Attendance change hui hai. Reload karke check karein.');
+            const record = {status,remark:String(remark||'').trim().slice(0,500),markedBy:actor.id,markedByName:actor.name||actor.id,
+                markedAt:{'.sv':'timestamp'},revision:crypto.randomUUID(),source:'admin-status',location:emp.location||'',department:emp.department||'',
+                shiftStart:emp.startTime,shiftEnd:emp.endTime};
+            return databaseRequest(path,{method:'PUT',headers:{'if-match':snapshot.etag},body:JSON.stringify({...day,ManualStatus:record})});
+        }
+        let markStatusRows=[], markStatusDate='', markStatusBusy=false, markStatusLoading=false, markStatusVersion=0;
+        const markEl = id=>document.getElementById(id);
+        function visibleManualRows() {
+            const q=markEl('markStatusSearch').value.trim().toLowerCase();
+            return markStatusRows.filter(r=>(markEl('markStatusDept').value==='all'||r.emp.department===markEl('markStatusDept').value)&&(markEl('markStatusLoc').value==='all'||r.emp.location===markEl('markStatusLoc').value)&&`${r.id} ${r.emp.name}`.toLowerCase().includes(q));
+        }
+        function renderMarkStatus() {
+            const rows=visibleManualRows();
+            const selected=rows.filter(r=>r.selected&&!r.blocked);
+            markEl('markStatusAll').checked=!!rows.length && rows.filter(r=>!r.blocked).length>0 && rows.filter(r=>!r.blocked).every(r=>r.selected);
+            markEl('markStatusAll').indeterminate=selected.length>0&&!markEl('markStatusAll').checked;
+            markEl('markStatusSave').textContent=`Save Selected (${selected.length})`;
+            markEl('markStatusSave').disabled=markStatusBusy||markStatusLoading||!selected.length;
+            markEl('markStatusApply').disabled=markStatusBusy||markStatusLoading||!selected.length;
+            for(const id of ['markStatusLoad','markStatusDate','markStatusAll','markStatusBulk','markStatusDept','markStatusLoc','markStatusSearch']) markEl(id).disabled=markStatusBusy||markStatusLoading;
+            markEl('markStatusRows').innerHTML=rows.map(r=>`<tr data-mark-id="${punchHtml(r.id)}">
+                <td><input type="checkbox" data-mark-select aria-label="Select ${punchHtml(r.emp.name||r.id)}" ${r.selected?'checked':''} ${r.blocked||markStatusBusy?'disabled':''}></td>
+                <td><strong>${punchHtml(r.emp.name||r.id)}</strong><small class="block">${punchHtml(r.id)}</small></td>
+                <td>${punchHtml(r.emp.department||'—')}<small class="block">${punchHtml(r.emp.location||'—')}</small></td>
+                <td class="whitespace-nowrap">${punchHtml(r.emp.startTime||'—')} – ${punchHtml(r.emp.endTime||'—')}</td>
+                <td>${punchHtml(r.day?.ManualStatus?.status||'Not marked')}</td>
+                <td><select data-mark-status aria-label="Status" ${r.blocked||markStatusBusy?'disabled':''}><option value="">Select</option>${['P','P/A','A'].map(st=>`<option value="${st}" ${r.draft===st?'selected':''}>${st}</option>`).join('')}</select></td>
+                <td><input data-mark-remark aria-label="Remark" maxlength="500" class="border rounded-lg p-2" value="${punchHtml(r.remark)}" ${r.blocked||markStatusBusy?'disabled':''}></td>
+                <td><button type="button" data-mark-save class="support-send" ${r.blocked||markStatusBusy?'disabled':''}>Save</button><small class="block ${r.error||r.blocked?'text-red-700':'text-green-700'}">${punchHtml(r.blocked||r.error||r.message||'')}</small></td>
+            </tr>`).join('')||'<tr><td colspan="8">No Manual employees found. Employee Directory → Edit → Punch Category: Manual.</td></tr>';
+        }
+        async function loadMarkStatus() {
+            if(!isAdmin||markStatusBusy||markStatusLoading)return;
+            if(markStatusRows.some(r=>r.dirty)&&!confirm('Unsaved changes hain. Reload karne par ye hat jayengi. Continue?')){markEl('markStatusDate').value=markStatusDate;return;}
+            const actor=currentEmployee,version=++markStatusVersion,date=markEl('markStatusDate').value;
+            markStatusLoading=true;renderMarkStatus();markEl('markStatusProgress').textContent='Loading Manual employees…';
+            try {
+                const today=istDate(await ensureAppTime());
+                if(!date||date>today)throw new Error('Today ya past date select karein.');
+                const employees=await databaseRequest('employees');
+                if(!isAdmin||currentEmployee!==actor||version!==markStatusVersion)return;
+                allEmployeesData=employees||{};
+                const entries=activeEmployeeEntries().filter(([,emp])=>punchCategory(emp)==='Manual'),rows=[];let next=0;
+                await Promise.all(Array.from({length:Math.min(6,entries.length)},async()=>{
+                    while(next<entries.length){
+                        const [id,emp]=entries[next++];let day=null,blocked='';
+                        try{day=await databaseRequest(`attendance/${encodeURIComponent(id)}/${date}`);}catch{blocked='Load failed. Reload before saving.';}
+                        if(day?.In||day?.Out)blocked='Existing IN / OUT punch. Review in Daywise Report.';
+                        if(!emp.startTime||!emp.endTime)blocked='Set shift in Employee Directory.';
+                        rows.push({id,emp,day:day||{},version:manualStatusVersion(day),blocked,draft:day?.ManualStatus?.status||'',remark:day?.ManualStatus?.remark||'',selected:false,dirty:false});
+                    }
+                }));
+                if(!isAdmin||currentEmployee!==actor||version!==markStatusVersion||activeView!=='admin-mark-status-view')return;
+                markStatusRows=rows.sort((a,b)=>String(a.emp.name||a.id).localeCompare(String(b.emp.name||b.id)));markStatusDate=date;
+                for(const [id,key,label] of [['markStatusDept','department','All Departments'],['markStatusLoc','location','All Locations']]){
+                    const el=markEl(id),old=el.value;el.replaceChildren(new Option(label,'all'));
+                    [...new Set(rows.map(r=>r.emp[key]).filter(Boolean))].sort().forEach(v=>el.add(new Option(v,v)));el.value=[...el.options].some(o=>o.value===old)?old:'all';
+                }
+                markEl('markStatusProgress').textContent=`${date} · ${rows.length} Manual employees · Select status, then Save.`;
+            }catch(e){markEl('markStatusProgress').textContent=e.message;markEl('markStatusDate').value=markStatusDate||date;}
+            finally{markStatusLoading=false;renderMarkStatus();}
+        }
+        async function saveMarkStatus(rows) {
+            if(!isAdmin||markStatusBusy||markStatusLoading||!rows.length)return;
+            if(markEl('markStatusDate').value!==markStatusDate)return showMessage('Date changed. Load attendance first.','error');
+            if(rows.some(r=>r.blocked||!['P','P/A','A'].includes(r.draft)))return showMessage('Har selected employee ka P, P/A ya A select karein.','error');
+            const actor=currentEmployee,date=markStatusDate;
+            const work=rows.map(r=>({row:r,status:r.draft,remark:r.remark}));
+            markStatusBusy=true;renderMarkStatus();let next=0,done=0,failed=0;
+            try{
+                await Promise.all(Array.from({length:Math.min(4,work.length)},async()=>{
+                    while(next<work.length){
+                        const item=work[next++],r=item.row;
+                        try{
+                            if(!isAdmin||currentEmployee!==actor)throw new Error('Admin session changed.');
+                            const saved=await saveManualStatusRow(r,date,item.status,item.remark);
+                            r.day=saved||{};r.version=manualStatusVersion(r.day);r.dirty=false;r.selected=false;r.error='';r.message='Saved';done++;
+                        }catch(e){r.error=e.message;r.message='';failed++;}
+                        markEl('markStatusProgress').textContent=`${date} · Saved ${done} / ${work.length} · Failed ${failed}`;
+                    }
+                }));
+            }finally{markStatusBusy=false;renderMarkStatus();}
+        }
+        markEl('adminMarkStatusBtn').onclick=async()=>{
+            if(!isAdmin)return;
+            showView('admin-mark-status-view','Mark Attendance');
+            if(markStatusRows.some(r=>r.dirty)){renderMarkStatus();return;}
+            try { markEl('markStatusDate').value=markStatusDate || istDate(await ensureAppTime()); await loadMarkStatus(); }
+            catch(e) { markEl('markStatusProgress').textContent=e.message; }
+        };
+        markEl('markStatusLoad').onclick=loadMarkStatus;
+        markEl('markStatusDate').onchange=loadMarkStatus;
+        ['markStatusDept','markStatusLoc','markStatusSearch'].forEach(id=>markEl(id).addEventListener('input',renderMarkStatus));
+        markEl('markStatusAll').onchange=e=>{visibleManualRows().filter(r=>!r.blocked).forEach(r=>r.selected=e.target.checked);renderMarkStatus();};
+        markEl('markStatusApply').onclick=()=>{visibleManualRows().filter(r=>r.selected&&!r.blocked).forEach(r=>{r.draft=markEl('markStatusBulk').value;r.dirty=true;r.message='';});renderMarkStatus();};
+        markEl('markStatusSave').onclick=()=>saveMarkStatus(visibleManualRows().filter(r=>r.selected&&!r.blocked));
+        markEl('markStatusRows').addEventListener('change',e=>{
+            const r=markStatusRows.find(r=>r.id===e.target.closest('[data-mark-id]')?.dataset.markId);if(!r||markStatusBusy)return;
+            if(e.target.matches('[data-mark-select]'))r.selected=e.target.checked;
+            if(e.target.matches('[data-mark-status]')){r.draft=e.target.value;r.dirty=true;r.message='';}
+            if(e.target.matches('[data-mark-remark]')){r.remark=e.target.value;r.dirty=true;r.message='';return;}
+            renderMarkStatus();
+        });
+        markEl('markStatusRows').addEventListener('click',e=>{
+            if(!e.target.closest('[data-mark-save]'))return;
+            const r=markStatusRows.find(r=>r.id===e.target.closest('[data-mark-id]')?.dataset.markId);if(r)saveMarkStatus([r]);
+        });
+
+        function specialEventInfo(rule) {
+            if(!rule) return '';
+            const lines=['Special Event', 'Admin Remark: '+(String(rule.remark||'').trim() || 'Not provided')];
+            if(rule.fullDayPresent === true) lines.push('Paid Holiday: Full-day credit (P), punch not required.');
+            if(rule.inTime) lines.push('Allowed IN: '+rule.inTime);
+            if(rule.outTime) lines.push('Allowed OUT: '+rule.outTime);
+            if(rule.minHrs) lines.push('Minimum duty for Half Day: '+rule.minHrs+' hours');
+            return lines.join('\n');
+        }
         function calculateReport(emp, punches, startStr, endStr) {
             let start = new Date(`${startStr}T00:00:00`);
             let end = new Date(`${endStr}T00:00:00`);
-            let todayStr = getLocalDateStr(new Date());
+            let todayStr = miniSession?.today || getLocalDateStr(new Date());
             let statuses = [], sum = {P:0, PA:0, A:0, F:0, L:0, E:0, WO:0, Tot:0, Net:0};
 
             let woDay = 6; 
@@ -2179,17 +2565,24 @@
                     else if (globalSettings.specialDays[dKey]['all']) sRule = globalSettings.specialDays[dKey]['all'];
                 }
 
+                s.eventInfo = !isFuture ? specialEventInfo(sRule) : '';
                 if(!isFuture) {
                     if(isWODay) totalWODays++;
 
-                    if(p) {
+                    const manual = manualStatusRecord(p);
+                    if (manual) {
+                        s.st = manual.status;
+                        s.rem = 'Attendance marked by Admin · ' + manual.status + (manual.remark ? '\nRemark: ' + manual.remark : '');
+                        s.punchDetails = [];
+                        if (isWODay) totalWODays--;
+                    } else if(p) {
                         // Special Day remark only if they actually punched
                         if (sRule && sRule.remark) {
                             let timeInfo = [];
                             if(sRule.inTime) timeInfo.push(`IN: ${sRule.inTime}`);
                             if(sRule.outTime) timeInfo.push(`OUT: ${sRule.outTime}`);
                             let timeStr = timeInfo.length > 0 ? ` (${timeInfo.join(', ')})` : '';
-                            dayRems.push(`[⭐ ${sRule.remark}${timeStr}]`);
+                            // Special-event details are shown separately in the info dialog.
                         }
 
                         if(p.In) { 
@@ -2302,7 +2695,13 @@
                         }
                     }
                     
-                    if(isWODay && s.st === 'A') s.st = 'W/O';
+                    // A paid holiday is report credit, not a fabricated IN / OUT punch.
+                    if(sRule?.fullDayPresent === true && !manual && !s.fraudTypes.length) {
+                        s.st = 'P';
+                        s.explanation = `Paid Holiday · ${dKey}\n\nFull-day credit approved by Admin. IN / OUT punch is not required.\nAttendance credit: 1 day.`;
+                        if(isWODay) totalWODays--;
+                    }
+                    if(isWODay && s.st === 'A' && !manual) s.st = 'W/O';
                     
                     if(s.st === 'P') { sum.P++; physicalDaysPresent++; }
                     else if(s.st === 'P/A') { sum.PA++; physicalDaysPresent++; }
@@ -2376,8 +2775,8 @@
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 
                 if (d.st === 'F') cls = 'status-A';
-                const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: [d.explanation, d.rem].filter(Boolean).join('\n\n'), explanationOnly: !!d.explanation && !d.rem && !d.punchDetails?.some(detail => detail.approved) }));
-                const inf = (d.explanation || d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
+                const payload = punchHtml(JSON.stringify({ id: data.emp.id || currentEmployee?.id, date: d.date, types: d.fraudTypes || [], text: [d.eventInfo, d.explanation, d.rem].filter(Boolean).join('\n\n'), explanationOnly: !!(d.eventInfo || d.explanation) && !d.rem && !d.punchDetails?.some(detail => detail.approved) }));
+                const inf = (d.eventInfo || d.explanation || d.rem || d.punchDetails?.some(detail => detail.approved)) ? `<button type="button" data-report-info="${payload}" class="${(d.fraudTypes?.length || d.punchDetails?.some(detail => detail.approved)) ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-200 text-gray-800'} rounded-full w-6 h-6 font-bold text-xs" aria-label="View attendance details">ⓘ</button>` : '-';
                 const photoCells = isAdminMode ? ['In','Out'].map(type => {
                     const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
                     return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
@@ -2455,6 +2854,7 @@
 
         async function generateGrid() {
             const monthVal = document.getElementById('gridMonth').value;
+            const category = document.getElementById('gridCategoryFilter').value;
             if(!monthVal) return showMessage('Please select a month', 'error');
 
             showLoader('Generating Grid...');
@@ -2465,7 +2865,9 @@
                 const startStr = getLocalDateStr(startDate);
                 const endStr = getLocalDateStr(endDate);
 
-                const allPunches = await fetchAttendanceRange(activeEmployeeEntries(), startStr, endStr);
+                const selectedEmployees = activeEmployeeEntries().filter(([,emp])=>matchesPunchCategory(emp, category));
+                const allPunches = await fetchAttendanceRange(selectedEmployees, startStr, endStr);
+                if(category !== document.getElementById('gridCategoryFilter').value || monthVal !== document.getElementById('gridMonth').value) return;
 
                 const thead = document.getElementById('gridHead');
                 const tbody = document.getElementById('gridBody');
@@ -2489,7 +2891,7 @@
                 thead.innerHTML = headHtml;
 
                 let bodyHtml = '';
-                activeEmployeeEntries().forEach(([id, emp]) => {
+                selectedEmployees.forEach(([id, emp]) => {
                     const empPunches = allPunches[id] || {};
                     const report = calculateReport(emp, empPunches, startStr, endStr);
 
@@ -2503,7 +2905,7 @@
                         else if(day.st === 'E') cellClass += 'bg-orange-100 text-orange-800';
                         else if(day.st === 'P/A') cellClass += 'bg-blue-100 text-blue-800';
                         else if(day.st === 'W/O') cellClass += 'bg-gray-100 text-gray-400';
-                        rowHtml += `<td class="${cellClass}">${day.st === '' ? '-' : day.st}</td>`;
+                        rowHtml += `<td class="${cellClass}" data-export="${punchHtml(day.st || '-')}">${day.st === '' ? '-' : day.st}${day.eventInfo ? ` <button type="button" data-event-info="${punchHtml(day.eventInfo)}" class="text-indigo-700 text-xs font-bold" aria-label="Special Event and Admin Remark">ⓘ</button>` : ''}</td>`;
                     });
                     
                     rowHtml += `
@@ -2521,9 +2923,9 @@
                     bodyHtml += rowHtml;
                 });
 
-                tbody.innerHTML = bodyHtml;
+                tbody.innerHTML = bodyHtml || `<tr><td colspan="${daysInMonth+14}">No employees match this Punch Category.</td></tr>`;
                 document.getElementById('grid-container').classList.remove('hidden');
-                document.getElementById('copyGridBtn').classList.remove('hidden');
+                document.getElementById('copyGridBtn').classList.toggle('hidden', !selectedEmployees.length);
             } catch(e) { showMessage('Error generating grid.', 'error'); }
             finally { hideLoader(); }
         }
@@ -2535,7 +2937,7 @@
                 let row = table.rows[i];
                 let rowData = [];
                 for (let j = 0; j < row.cells.length; j++) {
-                    let text = row.cells[j].innerText.replace(/\n/g, ' ').replace(/\t/g, ' ');
+                    let text = (row.cells[j].getAttribute('data-export') ?? row.cells[j].innerText).replace(/\n/g, ' ').replace(/\t/g, ' ');
                     rowData.push(text);
                 }
                 tsv += rowData.join("\t") + "\n";
@@ -2689,6 +3091,7 @@
         }
 
         async function submitManualPunch() {
+            if(!isAdmin) return showMessage('Admin login required.', 'error');
             const empId = document.getElementById('manualEmpSelect').value;
             const date = document.getElementById('manualDate').value;
             const inTime = document.getElementById('manualIn').value;
@@ -2696,23 +3099,30 @@
             const remark = document.getElementById('manualRemark').value.trim();
 
             if(!empId || !date) return showMessage('Employee and Date required.', 'error');
+            if(punchCategory(allEmployeesData[empId]) === 'Manual') return showMessage('Manual category ke liye Mark Attendance screen use karein.', 'info');
             if(!inTime && !outTime) return showMessage('Provide In or Out time.', 'error');
 
             showLoader('Saving Manual Punch...');
             try {
-                const updates = {};
+                const actor=currentEmployee, path=`attendance/${encodeURIComponent(empId)}/${date}`;
+                const [employee,snapshot]=await Promise.all([databaseRequest('employees/'+encodeURIComponent(empId)),databaseRequest(path,{headers:{'X-Firebase-ETag':'true'}},true)]);
+                if(!isAdmin||currentEmployee!==actor)throw new Error('Admin session changed.');
+                if(!employeeIsActive(employee))throw new Error('Active employee required.');
+                if(punchCategory(employee)==='Manual'||snapshot.data?.ManualStatus)throw new Error('Use Mark Attendance for this employee/day.');
+                if(!snapshot.etag)throw new Error('Attendance verification failed.');
+                const updates = {...snapshot.data};
                 if(inTime) {
                     const ts = new Date(`${date}T${inTime}:00`).toISOString();
-                    updates[`attendance/${empId}/${date}/In`] = { timestamp: ts, address: "Manual Entry by Admin", remark: remark || "Manual Punch", location: "Admin Setup", department: "Admin Setup", latitude: "N/A", longitude: "N/A", photoUrl: "N/A" };
+                    updates.In = { timestamp: ts, address: "Manual Entry by Admin", remark: remark || "Manual Punch", location: "Admin Setup", department: "Admin Setup", latitude: "N/A", longitude: "N/A", photoUrl: "N/A" };
                 }
                 if(outTime) {
                     const ts = new Date(`${date}T${outTime}:00`).toISOString();
-                    updates[`attendance/${empId}/${date}/Out`] = { timestamp: ts, address: "Manual Entry by Admin", remark: remark || "Manual Punch", location: "Admin Setup", department: "Admin Setup", latitude: "N/A", longitude: "N/A", photoUrl: "N/A" };
+                    updates.Out = { timestamp: ts, address: "Manual Entry by Admin", remark: remark || "Manual Punch", location: "Admin Setup", department: "Admin Setup", latitude: "N/A", longitude: "N/A", photoUrl: "N/A" };
                 }
-                await update(ref(database), updates);
+                await databaseRequest(path,{method:'PUT',headers:{'if-match':snapshot.etag},body:JSON.stringify(updates)});
                 showMessage('Manual Punch Saved!', 'success');
                 document.getElementById('manualIn').value = ''; document.getElementById('manualOut').value = ''; document.getElementById('manualRemark').value = '';
-            } catch(e) { showMessage('Error saving punch.', 'error'); } finally { hideLoader(); }
+            } catch(e) { showMessage(e.message || 'Error saving punch.', 'error'); } finally { hideLoader(); }
         }
 
         async function runFraudCheck() {
@@ -2877,7 +3287,8 @@
             const filter = document.getElementById('empDirStatusFilter').value;
             const select = document.getElementById('empDirDesignationFilter');
             const previous = select.value || 'all';
-            const entries = sortedEmployeeEntries().filter(([,emp]) => filter === 'all' || String(emp.status ?? 'active').trim().toLowerCase() === filter);
+            const category = document.getElementById('empDirCategoryFilter').value;
+            const entries = sortedEmployeeEntries().filter(([,emp]) => matchesPunchCategory(emp, category) && (filter === 'all' || String(emp.status ?? 'active').trim().toLowerCase() === filter));
             const mapped = emp => !!designationMaster[emp.designationId]?.name;
             const mappedCount = entries.filter(([,emp]) => mapped(emp)).length;
             select.replaceChildren(new Option(`All Designations (${entries.length})`, 'all'), new Option(`Mapped (${mappedCount})`, 'mapped'), new Option(`Unmapped (${entries.length-mappedCount})`, 'unmapped'));
@@ -2888,6 +3299,7 @@
             sortedEmployeeEntries().forEach(([id, emp]) => {
                 let stat = String(emp.status ?? 'active').trim().toLowerCase();
                 if(filter !== 'all' && stat !== filter) return;
+                if(!matchesPunchCategory(emp, category)) return;
                 if(designationFilter === 'mapped' && !mapped(emp)) return;
                 if(designationFilter === 'unmapped' && mapped(emp)) return;
                 if(designationFilter.startsWith('designation:') && emp.designationId !== designationFilter.slice(12)) return;
@@ -2903,11 +3315,12 @@
                     <td>${emp.location || '-'}</td>
                     <td>${punchHtml(designationName(emp))}</td>
                     <td class="font-mono text-xs">${emp.startTime||'00:00'} - ${emp.endTime||'00:00'}</td>
+                    <td>${punchCategory(emp)}</td>
                     <td>${badge}</td>
                     <td><button onclick="window.openEmpModal('${id}')" class="bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 rounded p-1 text-xs font-bold" title="Edit/View Full Details">✏️ Edit</button></td>
                 </tr>`;
             });
-            tbody.innerHTML = html || '<tr><td colspan="8" class="text-center py-4 text-gray-500">No employees match these filters.</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="9" class="text-center py-4 text-gray-500">No employees match these filters.</td></tr>';
         }
 
         window.openEmpModal = (empId = null) => {
@@ -2952,6 +3365,7 @@
                 document.getElementById('mod-emp-status').value = 'active';
             }
             
+            document.getElementById('mod-emp-category').value = punchCategory(empId ? allEmployeesData[empId] : null);
             fillDesignationSelect(empId ? allEmployeesData[empId]?.designationId : '');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -2974,11 +3388,13 @@
                     allowanceIn: parseInt(document.getElementById('mod-emp-all-in').value) || 0,
                     allowanceOut: parseInt(document.getElementById('mod-emp-all-out').value) || 0,
                     salary: parseFloat(document.getElementById('mod-emp-salary').value) || 0,
+                    attendanceCategory: document.getElementById('mod-emp-category').value,
                     designationId: document.getElementById('mod-emp-designation').value,
                     status: document.getElementById('mod-emp-status').value
                 };
                 
                 if (!isAdmin) throw new Error('Admin access required.');
+                if (newEmpData.attendanceCategory === 'Manual' && (!newEmpData.startTime || !newEmpData.endTime)) throw new Error('Manual category ke liye shift start aur end zaroori hain.');
                 await update(ref(database, `employees/${empId}`), newEmpData);
                 allEmployeesData[empId] = {...allEmployeesData[empId], ...newEmpData};
                 populateEmployeeSelects(); 
@@ -2986,7 +3402,7 @@
                 showMessage("Employee Saved Successfully!", "success");
                 window.closeModals();
                 renderEmpDirectory(); 
-            } catch(e) { showMessage("Error saving employee.", "error"); } finally { hideLoader(); }
+            } catch(e) { showMessage(e.message || "Error saving employee.", "error"); } finally { hideLoader(); }
         });
 
         window.renderWeekOffs = () => {
@@ -3050,7 +3466,7 @@
                         <td class="font-mono text-xs text-green-700">${rule.inTime || '-'}</td>
                         <td class="font-mono text-xs text-blue-700">${rule.outTime || '-'}</td>
                         <td class="text-xs font-bold text-indigo-700">${rule.minHrs ? rule.minHrs + ' hrs' : '-'}</td>
-                        <td class="text-xs font-medium max-w-[150px] truncate" title="${rule.remark}">${rule.remark}</td>
+                        <td class="text-xs font-medium max-w-[150px] truncate" title="${punchHtml(rule.remark)}">${punchHtml(rule.remark)}${rule.fullDayPresent === true ? '<span class="block text-green-700 font-bold">P · Punch not required</span>' : ''}</td>
                         <td><button onclick="window.deleteSpecialDay('${date}', '${dept}')" class="text-red-500 hover:text-red-700 font-bold text-[10px] bg-red-50 border border-red-200 px-2 py-1 rounded transition-colors uppercase">Delete</button></td>
                     </tr>`;
                 });
@@ -3071,6 +3487,12 @@
             } catch(e) { showMessage("Error deleting rule", "error"); } finally { hideLoader(); }
         };
 
+        function loadSpecialRuleForm() {
+            const rule = globalSettings.specialDays?.[document.getElementById('spDate').value]?.[document.getElementById('spDept').value] || {};
+            for(const [id,key] of [['spIn','inTime'],['spOut','outTime'],['spHrs','minHrs'],['spRemark','remark']]) document.getElementById(id).value=rule[key] ?? '';
+            document.getElementById('spFullDayPresent').checked=rule.fullDayPresent === true;
+        }
+        ['spDate','spDept'].forEach(id=>document.getElementById(id).addEventListener('change',loadSpecialRuleForm));
         document.getElementById('saveSpecialDayBtn').addEventListener('click', async () => {
             const date = document.getElementById('spDate').value;
             const dept = document.getElementById('spDept').value;
@@ -3078,6 +3500,8 @@
             const outT = document.getElementById('spOut').value;
             const hrs = document.getElementById('spHrs').value;
             const rem = document.getElementById('spRemark').value.trim();
+            const fullDayPresent = document.getElementById('spFullDayPresent').checked;
+            if(!isAdmin) return;
 
             if(!date || !rem) return showMessage("Date aur Remark daalna zaroori hai!", "error");
 
@@ -3086,15 +3510,16 @@
                 if(!globalSettings.specialDays) globalSettings.specialDays = {};
                 if(!globalSettings.specialDays[date]) globalSettings.specialDays[date] = {};
                 
-                globalSettings.specialDays[date][dept] = { inTime: inT, outTime: outT, minHrs: hrs, remark: rem };
-                
-                await set(ref(database, 'settings/specialDays'), globalSettings.specialDays);
+                const rule = { inTime: inT, outTime: outT, minHrs: hrs, remark: rem, fullDayPresent };
+                await update(ref(database, `settings/specialDays/${date}/${dept}`), rule);
+                globalSettings.specialDays[date][dept] = {...globalSettings.specialDays[date][dept], ...rule};
                 showMessage("Special Day Rule Saved Successfully!", "success");
                 
                 document.getElementById('spIn').value = '';
                 document.getElementById('spOut').value = '';
                 document.getElementById('spHrs').value = '';
                 document.getElementById('spRemark').value = '';
+                document.getElementById('spFullDayPresent').checked = false;
                 window.renderSpecialDaysUI();
             } catch(e) { showMessage("Error saving rule", "error"); } finally { hideLoader(); }
         });
@@ -3633,6 +4058,11 @@
         function teamStatusRow(id,emp,day,date,now,unavailable=false) {
             if(unavailable)return {id,emp,state:'Unavailable',late:false,held:false,day:{}};
             day=day||{};
+            const manual = manualStatusRecord(day);
+            if(manual) return {id,emp,day,state:manual.status==='P'?'Manual Present':manual.status==='P/A'?'Manual Half':'Manual Absent',late:false,held:false};
+            const eventRule=globalSettings.specialDays?.[date]?.[emp.department] || globalSettings.specialDays?.[date]?.all;
+            if(eventRule?.fullDayPresent===true && !day.In && !day.Out) return {id,emp,day,state:'Holiday · P',late:false,held:false};
+            if(punchCategory(emp)==='Manual' && !day.In && !day.Out) return {id,emp,day,state:'Manual Not Marked',late:false,held:false};
             const inHeld=fraudPunchState(day.In,emp.department).held, outHeld=fraudPunchState(day.Out,emp.department).held;
             const validIn=day.In&&!inHeld,validOut=day.Out&&!outHeld;
             const special=globalSettings.specialDays?.[date]?.[emp.department] || globalSettings.specialDays?.[date]?.all || {};
@@ -3647,7 +4077,7 @@
         function renderTeamStatus() {
             const val=id=>document.getElementById(id).value,term=val('teamSearch').trim().toLowerCase();
             const scope=teamRowsData.filter(r=>(val('teamDept')==='all'||r.emp.department===val('teamDept'))&&(val('teamLoc')==='all'||r.emp.location===val('teamLoc'))&&`${r.emp.name} ${r.id}`.toLowerCase().includes(term));
-            const options=['On Duty','Punched Out','Not Arrived','Shift Not Started','Weekly Off','Approval Pending','Unavailable'];
+            const options=['Holiday · P','Manual Present','Manual Half','Manual Absent','Manual Not Marked','On Duty','Punched Out','Not Arrived','Shift Not Started','Weekly Off','Approval Pending','Unavailable'];
             const card=(name,count,value)=>`<button type="button" data-team-filter="${punchHtml(value)}" class="p-3 border rounded-xl text-left ${val('teamState')===value?'bg-blue-100 border-blue-500':'bg-white border-blue-100'}"><span class="block text-xs text-gray-600">${name}</span><strong class="text-xl text-blue-900">${count}</strong></button>`;
             document.getElementById('teamCards').innerHTML=card('All Employees',scope.length,'all')+options.map(st=>card(st,scope.filter(r=>r.state===st).length,st)).join('')+card('Late',scope.filter(r=>r.late).length,'late')+card('Approval Issue',scope.filter(r=>r.held).length,'held');
             const list=scope.filter(r=>val('teamState')==='all'||(val('teamState')==='late'?r.late:val('teamState')==='held'?r.held:r.state===val('teamState')));
@@ -3750,9 +4180,7 @@
 
         function daywiseInfoText(dayPunch, specialRule) {
             const lines = [];
-            if (specialRule?.remark) lines.push('Special day: ' + specialRule.remark +
-                (specialRule.inTime ? ' | IN: ' + specialRule.inTime : '') +
-                (specialRule.outTime ? ' | OUT: ' + specialRule.outTime : ''));
+            if (specialRule) lines.push(specialEventInfo(specialRule));
             ['In', 'Out'].forEach(type => {
                 const punch = dayPunch?.[type]; if (!punch) return;
                 const details = [];
@@ -3771,18 +4199,20 @@
             const checkDate = document.getElementById('daywiseDate').value;
             const deptFilter = document.getElementById('daywiseDeptFilter').value;
             const locFilter = document.getElementById('daywiseLocFilter').value;
+            const category = document.getElementById('daywiseCategoryFilter').value;
             
             if(!checkDate) return showMessage('Select Date', 'error');
             showLoader('Fetching Daywise Data...');
             
             try {
-                const selectedEmployees = activeEmployeeEntries().filter(([,emp]) => (deptFilter === 'all' || emp.department === deptFilter) && (locFilter === 'all' || emp.location === locFilter));
+                const selectedEmployees = activeEmployeeEntries().filter(([,emp]) => (deptFilter === 'all' || emp.department === deptFilter) && (locFilter === 'all' || emp.location === locFilter) && matchesPunchCategory(emp, category));
                 const allPunches = await fetchAttendanceRange(selectedEmployees, checkDate, checkDate);
+                if(category !== document.getElementById('daywiseCategoryFilter').value || checkDate !== document.getElementById('daywiseDate').value) return;
                 const tbody = document.getElementById('daywiseBody');
                 let html = '';
 
 
-                activeEmployeeEntries().forEach(([id, emp]) => {
+                selectedEmployees.forEach(([id, emp]) => {
                     if(deptFilter !== 'all' && emp.department !== deptFilter) return;
                     if(locFilter !== 'all' && emp.location !== locFilter) return;
 
@@ -3845,7 +4275,7 @@
                         const state = fraudPunchState(dayPunch?.[type], emp.department);
                         return state.reason ? type.toUpperCase() + ' — ' + (state.held ? 'F: Fraud punch detected. Please ask admin to approve. ' : 'Approved by Admin. ') + state.reason : '';
                     }).filter(Boolean);
-                    const infoText = [report.statuses[0].explanation || '', warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, sRule)].filter(Boolean).join('\n\n');
+                    const infoText = [manualStatusRecord(dayPunch) ? report.statuses[0].rem : '', report.statuses[0].explanation || '', warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, sRule)].filter(Boolean).join('\n\n');
                     const infoStyle = report.statuses[0].fraudTypes?.length ? 'bg-red-50 border-red-300 text-red-600' : 'bg-indigo-50 border-indigo-200 text-indigo-700';
                     const infoLabel = warnings.length ? 'Suspicious punch — view reasons, remark and address' : 'View remark / address';
 
@@ -3886,6 +4316,7 @@
             csvContent += `Date:,${dateStr}\n`;
             csvContent += `Department:,${deptText}\n`;
             csvContent += `Location:,${locText}\n`;
+            csvContent += `Punch Category:,${document.getElementById("daywiseCategoryFilter").value}\n`;
             const statusFilter = document.getElementById('daywiseStatusFilter');
             csvContent += `Status:,${statusFilter.options[statusFilter.selectedIndex].text}\n\n`;
             
@@ -3926,7 +4357,7 @@
         }
 
         document.getElementById('verifyLoginBtn').addEventListener('click', verifyLogin);
-        document.getElementById('btn-logout').addEventListener('click', () => { supportStop(); ++dashboardVersion; ++reportVersion; currentEmployee = null; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
+        document.getElementById('btn-logout').addEventListener('click', () => { if(miniSession)miniCall('miniLogout').catch(()=>{}); miniSession=null; mainAdminCredentials=null; miniRows=[];miniData=null;miniLoadedRange=null;supportStop(); ++dashboardVersion; ++reportVersion; currentEmployee = null; markStatusRows=[]; markStatusDate=''; ++markStatusVersion; invalidateAppClock(); isAdmin = false; document.getElementById('employeeId').value=''; document.getElementById('employeePin').value=''; stopCamera(); showView('login-section'); });
         
         document.getElementById('view-msg-btn').addEventListener('click', () => { document.getElementById('msg-modal').classList.remove('hidden'); document.getElementById('msg-modal').classList.add('flex'); trackAnnouncementRead(); });
         document.getElementById('openReportDirectBtn').addEventListener('click', openTodayReport);
@@ -4001,6 +4432,20 @@
                 });
             });
         });
+        document.getElementById('empDirCategoryFilter').addEventListener('change', renderEmpDirectory);
+        document.getElementById('repCategoryFilter').addEventListener('change', () => populateEmployeePicker(employeePickerConfigs[0]));
+        document.getElementById('daywiseCategoryFilter').addEventListener('change', () => {
+            const loaded = !document.getElementById('daywise-container').classList.contains('hidden');
+            document.getElementById('daywise-container').classList.add('hidden');
+            document.getElementById('exportDaywiseBtn').classList.add('hidden');
+            if(loaded && isAdmin) fetchDaywiseReport();
+        });
+        document.getElementById('gridCategoryFilter').addEventListener('change', () => {
+            const loaded = !document.getElementById('grid-container').classList.contains('hidden');
+            document.getElementById('grid-container').classList.add('hidden');
+            document.getElementById('copyGridBtn').classList.add('hidden');
+            if(loaded && isAdmin) generateGrid();
+        });
         document.getElementById('empDirStatusFilter').addEventListener('change', renderEmpDirectory);
         document.getElementById('empDirDesignationFilter').addEventListener('change', renderEmpDirectory);
         document.getElementById('addEmployeeBtn').addEventListener('click', () => window.openEmpModal(null));
@@ -4068,6 +4513,7 @@
             };
             document.body.append(dialog); dialog.showModal();
         }
+        document.addEventListener('click', event => { const button=event.target.closest('[data-event-info]'); if(button) window.showRemark(button.dataset.eventInfo); });
         document.getElementById('daywiseBody').addEventListener('click', event => {
             const fraudButton = event.target.closest('[data-daywise-fraud]');
             if (fraudButton) { openDaywiseFraud(JSON.parse(fraudButton.dataset.daywiseFraud)); return; }
