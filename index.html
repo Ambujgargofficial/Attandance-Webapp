@@ -509,6 +509,9 @@
             #daywiseActions button {width:auto;max-width:100%;height:38px;padding:0 12px}
             #daywise-container {overflow-x:auto;overscroll-behavior-x:contain}
         }
+        #supportInboxFilters:not([hidden]) {display:flex;gap:4px;margin:5px 12px;padding:3px;border-radius:10px;background:#f0f5f5}
+        #supportInboxFilters button {flex:1;padding:5px;border-radius:8px;font-size:12px;font-weight:700;color:#45615f}
+        #supportInboxFilters button[aria-pressed="true"] {background:#0f766e;color:white}
     </style>
 </head>
 <body data-view="login-section" class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -629,6 +632,10 @@
             <div id="supportShell" class="support-shell">
                 <aside id="supportSidebar" class="support-sidebar" hidden>
                     <div class="support-list-heading"><h2 id="supportListTitle">Chats</h2><span id="supportInboxCount" class="support-count">0</span><button id="supportNewChatBtn" type="button" class="support-new-chat" title="Start a new conversation" aria-label="Start a new conversation" aria-pressed="false">+</button></div>
+                    <div id="supportInboxFilters" role="group" aria-label="Conversation status">
+                        <button type="button" data-inbox-group="open" aria-pressed="true">Open</button>
+                        <button type="button" data-inbox-group="resolved" aria-pressed="false">Resolved</button>
+                    </div>
                     <label id="supportSearchLabel" class="support-search-label" for="supportSearch">Search conversations</label>
                     <input id="supportSearch" type="search" placeholder="Name or phone / employee ID" autocomplete="off" class="support-search">
                     <div id="supportInbox" class="support-inbox" aria-label="Employee conversations"></div>
@@ -2969,7 +2976,7 @@
             document.getElementById('sum-net').innerText = data.sum.Net;
             document.getElementById('report-summary-box').classList.remove('hidden');
 
-            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th>${isAdminMode ? '<th>IN Photo</th><th>OUT Photo</th><th data-no-export>Action</th>' : ''}</tr></thead><tbody>`;
+            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th>${isAdminMode ? '<th>IN Photo</th><th>OUT Photo</th><th>Map Info</th><th data-no-export>Action</th>' : ''}</tr></thead><tbody>`;
             data.statuses.forEach(d => {
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 
@@ -2980,7 +2987,14 @@
                     const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
                     return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
                 }).join('') : '';
-                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}${isAdminMode ? `<td data-no-export>${noPunchAction(data.emp,d.date,d.noPunchDay,'individual')}</td>` : ''}</tr>`;
+                let mapCell = '';
+                if (isAdminMode) {
+                    const points = punchMapPoints(d.noPunchDay);
+                    const info = punchReportInfo(d.noPunchDay, d, data.emp.department);
+                    const text = [data.emp.name, d.date].filter(Boolean).join(' · ') + '\n\n' + info;
+                    mapCell = (points.length || info) ? `<td><button type="button" data-individual-map="${punchHtml(text)}" data-punch-maps="${punchHtml(JSON.stringify(points))}" class="px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold whitespace-nowrap">Map Info</button></td>` : '<td>—</td>';
+                }
+                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}${mapCell}${isAdminMode ? `<td data-no-export>${noPunchAction(data.emp,d.date,d.noPunchDay,'individual')}</td>` : ''}</tr>`;
             });
             h+= `</tbody></table>`;
             document.getElementById(contId).innerHTML = h;
@@ -3985,7 +3999,24 @@
             }
             return databaseRequest(path, { method: 'PUT', headers: { 'if-match': snapshot.etag }, body: JSON.stringify({ ...punch, fraudFlagReason: state.reason, fraudReview: review }) });
         }
+        function openPunchMapInfo(button, text) {
+                window.showRemark(text);
+                if (isAdmin) {
+                    const links = document.getElementById('attendancePunchDetails');
+                    for (const point of JSON.parse(button.dataset.punchMaps)) {
+                        const link = document.createElement('a');
+                        link.textContent = point.type.toUpperCase() + ' Map ↗';
+                        link.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(point.lat + ',' + point.lon);
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.className = 'inline-flex mr-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-bold';
+                        links.append(link);
+                    }
+                }
+        }
         document.getElementById('report-container').addEventListener('click', event => {
+            const mapButton = event.target.closest('[data-individual-map]');
+            if (isAdmin && mapButton) return openPunchMapInfo(mapButton, mapButton.dataset.individualMap);
             const button = event.target.closest('[data-report-info]'); if (!button) return;
             const details = JSON.parse(button.dataset.reportInfo);
             window.showRemark(details.text);
@@ -4416,6 +4447,19 @@
             const remove = district==='bulandshahr' ? 'ghaziabad' : 'bulandshahr';
             return parts.filter((_,i)=>labels[i]!==remove).join(',').trim();
         }
+        function punchMapPoints(day) {
+            const points = [];
+            for (const type of ['In','Out']) {
+                const punch = day?.[type];
+                if (!punch) continue;
+                const values = [punch.latitude, punch.longitude];
+                if (!values.every(v => typeof v === 'number' || (typeof v === 'string' && v.trim() !== ''))) continue;
+                const [lat, lon] = values.map(Number);
+                if (Number.isFinite(lat) && Math.abs(lat) <= 90 && Number.isFinite(lon) && Math.abs(lon) <= 180)
+                    points.push({type, lat, lon});
+            }
+            return points;
+        }
         function daywiseInfoText(dayPunch, specialRule) {
             const lines = [];
             if (specialRule) lines.push(specialEventInfo(specialRule));
@@ -4427,6 +4471,13 @@
                 if (details.length) lines.push(type.toUpperCase() + '\n' + details.join('\n'));
             });
             return lines.join('\n\n');
+        }
+        function punchReportInfo(dayPunch, status, department) {
+            const warnings = ['In', 'Out'].map(type => {
+                const state = fraudPunchState(dayPunch?.[type], department);
+                return state.reason ? type.toUpperCase() + ' — ' + (state.held ? 'F: Fraud punch detected. Please ask admin to approve. ' : 'Approved by Admin. ') + state.reason : '';
+            }).filter(Boolean);
+            return [manualStatusRecord(dayPunch) ? status.rem : '', status.explanation || '', warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, null), status.eventInfo].filter(Boolean).join('\n\n');
         }
         function daywisePhotoCell(punch) {
             const url = validPunchPhoto(punch?.photoUrl);
@@ -4509,11 +4560,7 @@
 
                     let shift = `${emp.startTime || '00:00'} - ${emp.endTime || '00:00'}`;
 
-                    const warnings = ['In', 'Out'].map(type => {
-                        const state = fraudPunchState(dayPunch?.[type], emp.department);
-                        return state.reason ? type.toUpperCase() + ' — ' + (state.held ? 'F: Fraud punch detected. Please ask admin to approve. ' : 'Approved by Admin. ') + state.reason : '';
-                    }).filter(Boolean);
-                    const infoText = [manualStatusRecord(dayPunch) ? report.statuses[0].rem : '', report.statuses[0].explanation || '', warnings.length ? 'Review required\n' + warnings.join('\n') : '', daywiseInfoText(dayPunch, sRule)].filter(Boolean).join('\n\n');
+                    const infoText = punchReportInfo(dayPunch, report.statuses[0], emp.department);
                     const infoStyle = report.statuses[0].fraudTypes?.length ? 'bg-red-50 border-red-300 text-red-600' : 'bg-indigo-50 border-indigo-200 text-indigo-700';
                     const infoLabel = warnings.length ? 'Suspicious punch — view reasons, remark and address' : 'View remark / address';
 
@@ -4524,7 +4571,7 @@
                         <td class="font-mono text-xs ${inTime !== '-' ? 'text-green-700 font-bold' : ''}">${renderPunchTime(inTime, report.statuses[0].fraudTypes?.includes('In'))}</td>
                         <td class="font-mono text-xs ${outTime !== '-' ? 'text-blue-700 font-bold' : ''}">${renderPunchTime(outTime, report.statuses[0].fraudTypes?.includes('Out'))}</td>
                         <td class="text-center" data-status="${st}">${stBadge}</td>
-                        <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${infoText ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" data-original-location="${punchHtml(['In','Out'].filter(type=>dayPunch?.[type]).map(type=>{const p=dayPunch[type];return type.toUpperCase()+' · GPS: '+(p.latitude??'—')+', '+(p.longitude??'—')+'\nOriginal address: '+(p.address||'—');}).join('\n\n'))}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
+                        <td class="text-center whitespace-nowrap" data-export="${punchHtml(infoText || '-')}">${(infoText || punchMapPoints(dayPunch).length) ? `<button type="button" data-daywise-info="${punchHtml(infoText)}" data-punch-maps="${punchHtml(JSON.stringify(punchMapPoints(dayPunch)))}" aria-label="${infoLabel}" title="${infoLabel}" class="w-7 h-7 rounded-full border font-bold ${infoStyle}">ⓘ</button>` : '—'}</td>
                         ${daywisePhotoCell(dayPunch?.In)}
                         ${daywisePhotoCell(dayPunch?.Out)}
                         <td>${punchHtml(designationName(emp))}</td>
@@ -4756,19 +4803,7 @@
             const fraudButton = event.target.closest('[data-daywise-fraud]');
             if (fraudButton) { openDaywiseFraud(JSON.parse(fraudButton.dataset.daywiseFraud)); return; }
             const button = event.target.closest('[data-daywise-info]');
-            if (button) {
-                window.showRemark(button.dataset.daywiseInfo);
-                if (isAdmin && button.dataset.originalLocation) {
-                    const audit=document.createElement('details');
-                    const label=document.createElement('summary');
-                    label.textContent='Original GPS & address';
-                    const text=document.createElement('p');
-                    text.style.whiteSpace='pre-wrap';
-                    text.textContent=button.dataset.originalLocation;
-                    audit.append(label,text);
-                    document.getElementById('attendancePunchDetails').append(audit);
-                }
-            }
+            if (button) openPunchMapInfo(button, button.dataset.daywiseInfo);
         });
         document.getElementById('fetchAdminReportBtn').addEventListener('click', fetchAdminReport);
         document.getElementById('daywiseStatusFilter').addEventListener('change', applyDaywiseStatusFilter);
@@ -4903,6 +4938,7 @@
             supportEl('supportMessageItems').replaceChildren();
         }
         function supportLeaveView() {
+            clearInboxStatusListeners();
             supportCloseCamera(); supportCloseThread();
             if (supportEl('supportPhotoDialog').open) supportEl('supportPhotoDialog').close();
             supportEl('supportFullPhoto').removeAttribute('src');
@@ -4974,11 +5010,49 @@
             }
         }
         function supportUnread(meta, role) { return Object.keys(meta?.[role === 'admin' ? 'pendingAdmin' : 'pendingEmployee'] || {}).length; }
+        const inboxStatusSubscriptions = new Map();
+        function clearInboxStatusListeners() {
+            for (const entry of inboxStatusSubscriptions.values()) entry.off();
+            inboxStatusSubscriptions.clear();
+        }
+        function conversationGroup(messages) {
+            let hasResolved = false;
+            for (const message of Object.values(messages || {})) {
+                if (!supportIsTicket(message)) continue;
+                if (message.ticketStatus !== 'resolved') return 'open';
+                hasResolved = true;
+            }
+            return hasResolved ? 'resolved' : 'open';
+        }
+        function syncInboxStatusListeners() {
+            const ids = new Set(Object.keys(support.inbox).filter(id =>
+                Number.isFinite(support.inbox[id]?.lastAt) && employeeIsActive(allEmployeesData[id])));
+            for (const [id, entry] of inboxStatusSubscriptions) {
+                if (!ids.has(id)) { entry.off(); inboxStatusSubscriptions.delete(id); }
+            }
+            for (const id of ids) {
+                if (inboxStatusSubscriptions.has(id)) continue;
+                const entry = {group:null, off:()=>{}};
+                inboxStatusSubscriptions.set(id,entry);
+                entry.off = onValue(ref(database, 'supportThreads/'+id+'/messages'), snapshot => {
+                    if (inboxStatusSubscriptions.get(id)!==entry) return;
+                    const group = conversationGroup(snapshot.val());
+                    if (group!==entry.group) { entry.group=group; supportRenderInbox(); }
+                }, () => {
+                    if (inboxStatusSubscriptions.get(id)!==entry) return;
+                    entry.group='unavailable'; supportRenderInbox();
+                });
+            }
+        }
         function supportRenderInbox() {
             const total = support.admin ? Object.entries(support.inbox).reduce((sum, [id, meta]) => sum + (employeeIsActive(allEmployeesData[id] || { status: 'inactive' }) ? supportUnread(meta, 'admin') : 0), 0) : supportUnread(support.inbox[support.userId], 'employee');
             const badge = supportEl(support.admin ? 'supportAdminUnread' : 'supportEmployeeUnread');
             badge.textContent = total > 99 ? '99+' : String(total); badge.hidden = total === 0;
             if (!support.admin || activeView !== 'support-chat-view') return;
+            syncInboxStatusListeners();
+            const filters = supportEl('supportInboxFilters');
+            filters.hidden = support.newChatMode;
+            filters.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.inboxGroup === support.inboxGroup)));
             supportEl('supportListTitle').textContent = support.newChatMode ? 'New chat' : 'Chats';
             supportEl('supportSearchLabel').textContent = support.newChatMode ? 'Select an active employee' : 'Search conversations';
             const newButton = supportEl('supportNewChatBtn');
@@ -4988,12 +5062,12 @@
             newButton.title = support.newChatMode ? 'Back to conversations' : 'Start a new conversation';
             const search = supportEl('supportSearch').value.trim().toLocaleLowerCase();
             const entries = activeEmployeeEntries().filter(([id, emp]) =>
-                (support.newChatMode || Number.isFinite(support.inbox[id]?.lastAt)) &&
+                (support.newChatMode || inboxStatusSubscriptions.get(id)?.group === support.inboxGroup) &&
                 `${emp.name || ''} ${id} ${emp.phone || ''} ${emp.mobile || ''}`.toLocaleLowerCase().includes(search))
                 .sort(([idA, a], [idB, b]) => (!support.newChatMode && ((Number(support.inbox[idB]?.lastAt) || 0) - (Number(support.inbox[idA]?.lastAt) || 0))) || String(a.name || '').localeCompare(String(b.name || ''), 'en', { sensitivity: 'base' }));
             supportEl('supportInboxCount').textContent = entries.length;
             const list = supportEl('supportInbox'); list.replaceChildren();
-            if (!entries.length) { const p = document.createElement('p'); p.className = 'support-error'; p.textContent = search ? 'No matches found.' : support.newChatMode ? 'No active employees found.' : 'No conversations yet. Tap + to start a chat.'; list.append(p); }
+            if (!entries.length) { const p = document.createElement('p'); p.className = 'support-error'; p.textContent = search ? 'No matches found.' : support.newChatMode ? 'No active employees found.' : [...inboxStatusSubscriptions.values()].some(entry => !entry.group) ? 'Loading conversation status…' : [...inboxStatusSubscriptions.values()].some(entry => entry.group==='unavailable') ? 'Some conversation statuses are unavailable.' : 'No '+support.inboxGroup+' conversations.'; list.append(p); }
             entries.forEach(([id, emp]) => {
                 const meta = support.inbox[id] || {}, unread = supportUnread(meta, 'admin');
                 const button = document.createElement('button'); button.type = 'button'; button.className = `support-inbox-row${unread ? ' unread' : ''}${support.selected === id ? ' selected' : ''}`;
@@ -5019,7 +5093,7 @@
             supportEl('supportListBack').hidden = !isAdmin;
             supportEl('supportScreenTitle').textContent = isAdmin ? 'Employee conversations' : 'Issues & Suggestions';
             supportError();
-            if (isAdmin) { support.newChatMode = false; supportEl('supportSearch').value = ''; supportCloseThread(); supportRenderInbox(); }
+            if (isAdmin) { support.inboxGroup = 'open'; support.newChatMode = false; supportEl('supportSearch').value = ''; supportCloseThread(); supportRenderInbox(); }
             else supportOpenThread(currentEmployee.id);
         }
         function supportOpenThread(employeeId) {
@@ -5536,6 +5610,12 @@
         supportEl('supportAdminBtn').addEventListener('click', supportOpen);
         supportEl('supportExitBtn').addEventListener('click', () => showView(isAdmin ? 'admin-dashboard' : 'employee-dashboard', isAdmin ? 'Admin Portal' : 'Emp. Dashboard'));
         supportEl('supportListBack').addEventListener('click', () => { if (!support.sending) supportCloseThread(); });
+        supportEl('supportInboxFilters').addEventListener('click', event => {
+            const button = event.target.closest('[data-inbox-group]');
+            if (!button || !support.admin) return;
+            support.inboxGroup = button.dataset.inboxGroup;
+            supportRenderInbox();
+        });
         supportEl('supportSearch').addEventListener('input', supportRenderInbox);
         supportEl('supportNewChatBtn').addEventListener('click', () => {
             if (!isAdmin || !support.admin || support.sending || support.photoBusy) return;
