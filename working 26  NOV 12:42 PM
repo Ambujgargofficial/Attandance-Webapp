@@ -432,6 +432,69 @@
         .read-report-filters {display:flex;flex-wrap:wrap;gap:8px;}.read-report-filters>* {flex:1 1 130px;min-width:0;}
         .fraud-time {position:relative;display:inline-block;padding-top:9px;color:#dc2626;white-space:nowrap;}
         .fraud-time-caution {position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:10px;height:10px;pointer-events:none;}
+
+        /* Mini Admin: scoped dashboard and report presentation */
+        #mini-admin-view {color:#262346;}
+        #mini-admin-view .mini-hero {padding:24px;border:1px solid #dcd7ff;border-radius:24px;background:linear-gradient(120deg,#eeeaff,#e9f5ff 65%,#e4faf2);box-shadow:0 8px 28px #5b52a00a;}
+        #mini-admin-view .mini-eyebrow {font-size:11px;font-weight:800;letter-spacing:1.6px;color:#7771b7;text-transform:uppercase;}
+        #miniWelcome {font-size:clamp(22px,3vw,30px);margin:5px 0;font-weight:800;letter-spacing:-.6px;}
+        #mini-admin-view .mini-subtitle {font-size:13px;color:#686582;line-height:1.6;}
+        #miniTabs {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+        #miniTabs button {position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:19px 16px;border:1px solid var(--mini-border);border-radius:20px;background:var(--mini-bg);color:var(--mini-ink);box-shadow:0 4px 14px #34306b06;transition:transform .15s,box-shadow .15s;min-height:143px;white-space:normal;}
+        #miniTabs button[data-mini-mode="mark"] {--mini-bg:#effbf4;--mini-ink:#176447;--mini-border:#c9ead7;}
+        #miniTabs button[data-mini-mode="daily"] {--mini-bg:#eef5ff;--mini-ink:#295b99;--mini-border:#d5e3fb;}
+        #miniTabs button[data-mini-mode="monthly"] {--mini-bg:#f4efff;--mini-ink:#6943a3;--mini-border:#e3d6fa;}
+        #miniTabs button[data-mini-mode="individual"] {--mini-bg:#fff3ec;--mini-ink:#9d5c28;--mini-border:#f7dfcb;}
+        #miniTabs button[aria-pressed="true"] {box-shadow:0 0 0 2px var(--mini-ink),0 8px 20px #34306b0c;}
+        #miniTabs button:hover {transform:translateY(-2px);}
+        #miniTabs .mini-icon {font-size:28px;line-height:1.2;}
+        #miniTabs strong {font-size:15px;}
+        #miniTabs small {font-size:11px;font-weight:500;opacity:.8;}
+        #mini-admin-view button:focus-visible {outline:3px solid #7465dc;outline-offset:4px;}
+        #mini-admin-view .read-report-filters {padding:16px;border:1px solid #e5e2f0;border-radius:18px;background:#fff;box-shadow:0 3px 12px #3c326906;align-items:end;}
+        #mini-admin-view input:not([type="checkbox"]),#mini-admin-view select {border:1px solid #dedbea;border-radius:11px;min-height:40px;background:#fafaff;color:#35304f;font-size:13px;max-width:100%;}
+        #mini-admin-view input[type="checkbox"] {accent-color:#6c4de6;width:16px;height:16px;}
+        #mini-admin-view .support-send {background:linear-gradient(120deg,#6552df,#8c59e8);border-radius:12px;box-shadow:0 3px 9px #7255db20;}
+        #mini-admin-view .support-attach-btn {border-radius:12px;}
+        #miniMarkTools {border:1px solid #e3ddf7;background:#f5f2ff;border-radius:16px;padding:14px;font-size:12px;}
+        #miniProgress:empty,#miniSummary:empty {display:none;}
+        #miniProgress {color:#706b8d;font-size:12px;padding:2px 4px;}
+        #miniStats {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+        #miniStats:empty {display:none;}
+        #miniStats .mini-stat {border:1px solid var(--stat-line,#e1dff0);background:var(--stat-bg,#f4f2ff);color:var(--stat-ink,#5c4d97);border-radius:17px;padding:16px;}
+        #miniStats .mini-stat span {display:block;font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;}
+        #miniStats .mini-stat strong {display:block;font-size:28px;line-height:1.4;font-weight:800;}
+        #miniStats .mini-stat.green {--stat-bg:#edfbf3;--stat-line:#cdeedb;--stat-ink:#25845a;}
+        #miniStats .mini-stat.blue {--stat-bg:#eef5ff;--stat-line:#d5e4fc;--stat-ink:#396bb0;}
+        #miniStats .mini-stat.rose {--stat-bg:#fff0f2;--stat-line:#f4d5dd;--stat-ink:#b34e64;}
+        #mini-admin-view .report-table-wrapper {border:1px solid #e2deef;border-radius:18px;box-shadow:0 5px 20px #463b7007;max-width:100%;}
+        #mini-admin-view .report-table th {background:#f1effa;color:#625985;font-size:11px;padding:13px 12px;white-space:nowrap;}
+        #mini-admin-view .report-table td {padding:12px;border-color:#eeeaf5;vertical-align:middle;}
+        #mini-admin-view .report-table tbody tr:nth-child(even) {background:#fcfbff;}
+        #mini-admin-view .report-table tbody tr:hover {background:#f6f3ff;}
+        #mini-admin-view .report-table td small {font-size:10px;color:#8a849c;margin-top:4px;}
+        #mini-admin-view .mini-status {display:inline-flex;align-items:center;justify-content:center;min-width:35px;padding:5px 8px;border-radius:8px;font-size:11px;font-weight:800;background:#f0edf6;color:#7a708c;white-space:nowrap;}
+        #mini-admin-view .mini-status.present {background:#dff7e9;color:#1f8150;}
+        #mini-admin-view .mini-status.half {background:#e4efff;color:#3664b0;}
+        #mini-admin-view .mini-status.absent {background:#ffe3e7;color:#b43f56;}
+        #mini-admin-view .mini-status.late {background:#fff0cf;color:#9b731c;}
+        #miniReportTitle {font-size:18px;font-weight:800;margin-bottom:2px;}
+        #miniSummary {color:#7c7496;font-size:12px;}
+        @media(max-width:640px) {#miniTabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}#miniTabs button{padding:15px;min-height:130px;}#miniStats{grid-template-columns:repeat(2,minmax(0,1fr));}#mini-admin-view .mini-hero{padding:20px;}#miniStats .mini-stat{padding:13px;}#miniMarkTools{gap:10px;} }
+        @media(prefers-reduced-motion:reduce) {#miniTabs button{transition:none;}#miniTabs button:hover{transform:none;}}
+        #mini-admin-view [hidden]{display:none!important}
+        #miniHome .mini-hero{padding:12px 16px;margin-bottom:12px}
+        #miniTabs button{min-height:0;padding:13px;gap:4px}
+        #miniTabs .mini-icon{font-size:23px}
+        #miniDetail{display:grid;gap:9px;min-width:0}
+        .mini-detail-heading{display:flex;align-items:center;justify-content:space-between}
+        #miniBack{color:#5146ba;font-weight:700;padding:7px 12px;border-radius:10px;background:#f3f1ff}
+        #miniDetail .read-report-filters,#miniMarkTools{padding:10px}
+        #miniStats{grid-template-columns:repeat(auto-fit,minmax(min(100%,105px),1fr));gap:6px}
+        #miniStats .mini-stat{padding:8px 10px;border-radius:12px}
+        #miniStats .mini-stat strong{font-size:21px}
+        #miniDetail .report-table :is(th,td){padding:8px}
+        #miniExport{justify-self:start}
     </style>
 </head>
 <body data-view="login-section" class="flex flex-col items-center justify-center min-h-screen p-3 md:p-6">
@@ -1033,11 +1096,22 @@
             <div id="miniManageList" class="space-y-2"></div>
         </div>
         <div id="mini-admin-view" class="hidden w-full space-y-4">
-            <h2 id="miniWelcome" class="text-xl font-bold">Mini Admin</h2>
-            <div id="miniTabs" class="flex flex-wrap gap-2"><button type="button" class="support-send" data-mini-mode="mark">📝 Mark Attendance</button><button type="button" class="support-attach-btn" data-mini-mode="daily">Daywise</button><button type="button" class="support-attach-btn" data-mini-mode="monthly">Monthly Grid</button><button type="button" class="support-attach-btn" data-mini-mode="individual">Individual</button></div>
+            <div id="miniHome"><div class="mini-hero"><h2 id="miniWelcome">Mini Admin</h2></div>
+            <div id="miniTabs" aria-label="Mini Admin sections">
+                <button type="button" data-mini-mode="mark" aria-pressed="true"><span class="mini-icon" aria-hidden="true">📝</span><strong>Mark Attendance</strong><small>Full, half day or absent</small></button>
+                <button type="button" data-mini-mode="daily" aria-pressed="false"><span class="mini-icon" aria-hidden="true">📅</span><strong>Daywise Report</strong><small>Your team's daily view</small></button>
+                <button type="button" data-mini-mode="monthly" aria-pressed="false"><span class="mini-icon" aria-hidden="true">📊</span><strong>Monthly Grid</strong><small>The whole month at a glance</small></button>
+                <button type="button" data-mini-mode="individual" aria-pressed="false"><span class="mini-icon" aria-hidden="true">👤</span><strong>Individual Report</strong><small>One employee, every detail</small></button>
+            </div>
+            </div>
+            <section id="miniDetail" hidden aria-labelledby="miniReportTitle"><header class="mini-detail-heading"><h3 id="miniReportTitle">Mark Attendance</h3><button type="button" id="miniBack">← Back</button></header>
             <div class="read-report-filters">
                 <label id="miniDateWrap" class="text-xs font-bold">Date<input id="miniDate" type="date"></label>
                 <label id="miniMonthWrap" class="text-xs font-bold hidden">Month<input id="miniMonth" type="month"></label>
+                <div id="miniPresets" hidden class="flex gap-2">
+                    <button type="button" data-mini-preset="MTD" class="text-xs font-bold px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg">MTD</button>
+                    <button type="button" data-mini-preset="PREVIOUS" class="text-xs font-bold px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg" title="Previous full month">N-1 MTD</button>
+                </div>
                 <label id="miniFromWrap" class="text-xs font-bold hidden">From<input id="miniFrom" type="date"></label>
                 <label id="miniToWrap" class="text-xs font-bold hidden">To<input id="miniTo" type="date"></label>
                 <select id="miniLocation" aria-label="Location"><option value="all">All Allowed Locations</option></select>
@@ -1051,9 +1125,11 @@
                 <button id="miniApply" type="button" class="support-attach-btn">Apply to Selected</button><button id="miniSave" type="button" class="support-send">Save Selected</button>
             </div>
             <p id="miniProgress" role="status" class="text-sm font-bold"></p>
+            <div id="miniStats" aria-label="Attendance summary"></div>
             <p id="miniSummary" class="text-sm font-bold text-indigo-700"></p>
             <button id="miniExport" type="button" class="support-attach-btn hidden">Download CSV</button>
             <div class="report-table-wrapper bg-white"><table class="report-table text-xs"><thead id="miniReportHead"></thead><tbody id="miniReportBody"></tbody></table></div>
+            </section>
         </div>
 
         <div id="admin-mark-status-view" class="hidden w-full flex-col space-y-4">
@@ -2304,7 +2380,7 @@
             miniEl('miniDate').value=r.today;miniEl('miniFrom').value=r.today;miniEl('miniTo').value=r.today;miniEl('miniMonth').value=r.today.slice(0,7);
             miniEl('miniSearch').value='';miniEl('miniLocation').replaceChildren(new Option('All Allowed Locations','all'));
             miniEl('miniWelcome').textContent='Mini Admin · '+r.user.name;
-            showView('mini-admin-view','Mini Admin');configureMiniMode();await loadMiniPortal();
+            showView('mini-admin-view','Mini Admin');miniEl('miniHome').hidden=false;miniEl('miniDetail').hidden=true;
         }
         function miniDirty() {return miniRows.some(r=>r.status!==(r.day?.ManualStatus?.status||'')||r.remark!==(r.day?.ManualStatus?.remark||''));}
         function miniRange() {
@@ -2315,25 +2391,41 @@
         }
         function configureMiniMode() {
             miniEl('miniDateWrap').classList.toggle('hidden',!['mark','daily'].includes(miniMode));miniEl('miniMonthWrap').classList.toggle('hidden',miniMode!=='monthly');
+            miniEl('miniPresets').hidden = miniMode !== 'individual';
             ['miniFromWrap','miniToWrap','miniEmployee'].forEach(id=>miniEl(id).classList.toggle('hidden',miniMode!=='individual'));
             miniEl('miniMarkTools').classList.toggle('hidden',miniMode!=='mark');miniEl('miniDate').disabled=miniMode==='mark'&&!miniSession.user.allowPast;
             if(miniMode==='mark'&&!miniSession.user.allowPast)miniEl('miniDate').value=miniSession.today;
             ['miniDate','miniFrom','miniTo'].forEach(id=>miniEl(id).max=miniSession.today);miniEl('miniMonth').max=miniSession.today.slice(0,7);
-            miniEl('miniTabs').querySelectorAll('button').forEach(b=>b.className=b.dataset.miniMode===miniMode?'support-send':'support-attach-btn');
+            miniEl('miniTabs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.miniMode===miniMode)));
+            miniEl('miniReportTitle').textContent={mark:'Mark Attendance',daily:'Daywise Report',monthly:'Monthly Grid',individual:'Individual Report'}[miniMode];
         }
         function miniVisibleRows() {const q=miniEl('miniSearch').value.trim().toLowerCase(),loc=miniEl('miniLocation').value;return miniRows.filter(r=>(loc==='all'||r.emp.location===loc)&&`${r.emp.name} ${r.id}`.toLowerCase().includes(q));}
         function miniBlocked(row) {return row.day?.In||row.day?.Out?'Existing IN / OUT — contact main admin':!row.emp.startTime||!row.emp.endTime?'Shift missing':row.day?.ManualStatus&&!miniSession.user.canEdit?'Saved — editing not allowed':'';}
+        function miniStatusBadge(status) {
+            const tone={P:'present','P/A':'half',A:'absent',F:'absent',L:'late',E:'late'}[status]||'';
+            return `<span class="mini-status ${tone}">${punchHtml(status||'Not marked')}</span>`;
+        }
+        function miniStatCards(items) {
+            miniEl('miniStats').innerHTML=items.map(([label,value,tone])=>`<div class="mini-stat ${tone||''}"><span>${punchHtml(label)}</span><strong>${punchHtml(value)}</strong></div>`).join('');
+        }
         function renderMiniPortal() {
             if(!miniSession)return;
             const visible=miniVisibleRows(),range=miniLoadedRange;
-            miniCsv=[];miniEl('miniSummary').textContent='';miniEl('miniExport').classList.add('hidden');
-            miniEl('miniSave').disabled=miniBusy;miniEl('miniApply').disabled=miniBusy;miniEl('miniFetch').disabled=miniBusy;
+            miniCsv=[];miniEl('miniStats').innerHTML='';miniEl('miniSummary').textContent='';miniEl('miniExport').classList.add('hidden');
+            miniEl('miniPresets').querySelectorAll('button').forEach(button => button.disabled = miniBusy);
+            miniEl('miniBack').disabled=miniBusy;miniEl('miniSave').disabled=miniBusy;miniEl('miniApply').disabled=miniBusy;miniEl('miniFetch').disabled=miniBusy;
             if(!range){miniEl('miniReportHead').innerHTML='';miniEl('miniReportBody').innerHTML='';return;}
             if(miniMode==='mark'){
+                miniStatCards([['Employees',visible.length,''],['Marked',visible.filter(r=>manualStatusRecord(r.day)).length,'green'],['Not marked',visible.filter(r=>!manualStatusRecord(r.day)&&!r.day?.In&&!r.day?.Out).length,'rose'],['Selected',visible.filter(r=>r.selected&&!miniBlocked(r)).length,'blue']]);
                 const selectable=visible.filter(r=>!miniBlocked(r));miniEl('miniSelectAll').checked=!!selectable.length&&selectable.every(r=>r.selected);miniEl('miniSelectAll').indeterminate=selectable.some(r=>r.selected)&&!miniEl('miniSelectAll').checked;
                 miniEl('miniSave').textContent='Save Selected ('+selectable.filter(r=>r.selected).length+')';
                 miniEl('miniReportHead').innerHTML='<tr><th>Select</th><th>Employee</th><th>Location / Shift</th><th>Saved</th><th>Status</th><th>Remark</th><th>Action</th></tr>';
-                miniEl('miniReportBody').innerHTML=visible.map(r=>`<tr data-mini-id="${punchHtml(r.id)}"><td><input type="checkbox" data-mini-select ${r.selected?'checked':''} ${miniBusy||miniBlocked(r)?'disabled':''}></td><td>${punchHtml(r.emp.name||r.id)}<small class="block">${punchHtml(r.id)}</small></td><td>${punchHtml(r.emp.location||'—')}<small class="block">${punchHtml(r.emp.startTime||'—')}–${punchHtml(r.emp.endTime||'—')}</small></td><td>${punchHtml(r.day?.ManualStatus?.status||'Not marked')}</td><td><select data-mini-status ${miniBusy||miniBlocked(r)?'disabled':''}><option value="">Select</option>${['P','P/A','A'].map(st=>`<option ${r.status===st?'selected':''}>${st}</option>`).join('')}</select></td><td><input data-mini-remark maxlength="500" value="${punchHtml(r.remark)}" class="border rounded p-2" ${miniBusy||miniBlocked(r)?'disabled':''}></td><td><button data-mini-save type="button" class="support-send" ${miniBusy||miniBlocked(r)?'disabled':''}>Save</button><small class="block text-red-700">${punchHtml(miniBlocked(r)||r.error||'')}</small></td></tr>`).join('')||'<tr><td colspan="7">No Manual employees in your assigned locations.</td></tr>';return;
+                miniEl('miniReportBody').innerHTML=visible.map(r=>`<tr data-mini-id="${punchHtml(r.id)}"><td><input type="checkbox" data-mini-select ${r.selected?'checked':''} ${miniBusy||miniBlocked(r)?'disabled':''}></td><td>${punchHtml(r.emp.name||r.id)}<small class="block">${punchHtml(r.id)}</small></td><td>${punchHtml(r.emp.location||'—')}<small class="block">${punchHtml(r.emp.startTime||'—')}–${punchHtml(r.emp.endTime||'—')}</small></td><td>${miniStatusBadge(r.day?.ManualStatus?.status)}</td><td><select data-mini-status ${miniBusy||miniBlocked(r)?'disabled':''}><option value="">Select</option>${['P','P/A','A'].map(st=>`<option ${r.status===st?'selected':''}>${st}</option>`).join('')}</select></td><td><input data-mini-remark maxlength="500" value="${punchHtml(r.remark)}" class="border rounded p-2" ${miniBusy||miniBlocked(r)?'disabled':''}></td><td><button data-mini-save type="button" class="support-send" ${miniBusy||miniBlocked(r)?'disabled':''}>Save</button><small class="block text-red-700">${punchHtml(miniBlocked(r)||r.error||'')}</small></td></tr>`).join('')||'<tr><td colspan="7">No Manual employees in your assigned locations.</td></tr>';return;
+            }
+            const totals = {P:0, PA:0, A:0, WO:0, Net:0};
+            function includeReport(report) {
+                for (const key of Object.keys(totals)) totals[key] += report.sum[key];
+                return report;
             }
             if(miniMode==='individual') {
                 const selected=miniEl('miniEmployee').value;miniEl('miniEmployee').replaceChildren(new Option('Select Employee',''));
@@ -2341,19 +2433,26 @@
                 if(visible.some(r=>r.id===selected))miniEl('miniEmployee').value=selected;
                 const row=visible.find(r=>r.id===miniEl('miniEmployee').value);
                 if(!row){miniEl('miniReportHead').innerHTML='';miniEl('miniReportBody').innerHTML='<tr><td>Select an employee above.</td></tr>';return;}
-                const report=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to);
-                miniEl('miniSummary').textContent=`${row.emp.name} · P ${report.sum.P} · P/A ${report.sum.PA} · A ${report.sum.A} · Net ${report.sum.Net}`;
+                const report=includeReport(calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to));
+                miniEl('miniSummary').textContent=`${row.emp.name} · ${range.from} to ${range.to}`;
                 miniCsv=[['Date','IN','OUT','Status','Remark'],...report.statuses.map(d=>[d.date,d.in,d.out,d.st,[d.eventInfo,d.explanation,d.rem].filter(Boolean).join('\n')])];
             } else if(miniMode==='daily'){
-                miniCsv=[['ID','Name','Location','Shift','IN','OUT','Status','Remark'],...visible.map(row=>{const d=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to).statuses[0];return[row.id,row.emp.name,row.emp.location,`${row.emp.startTime||''}–${row.emp.endTime||''}`,d.in,d.out,d.st,[d.eventInfo,d.explanation,d.rem].filter(Boolean).join('\n')];})];
+                miniCsv=[['ID','Name','Location','Shift','IN','OUT','Status','Remark'],...visible.map(row=>{const d=includeReport(calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,range.to)).statuses[0];return[row.id,row.emp.name,row.emp.location,`${row.emp.startTime||''}–${row.emp.endTime||''}`,d.in,d.out,d.st,[d.eventInfo,d.explanation,d.rem].filter(Boolean).join('\n')];})];
             } else {
                 const end=range.displayTo||range.to,first=visible[0],dates=first?calculateReport(first.emp,{},range.from,end).statuses.map(d=>d.date):[];
-                miniCsv=[['ID','Name','Location',...dates.map(d=>d.slice(8)),'P','P/A','A','L','E','W/O','Deduction','Net'],...visible.map(row=>{const report=calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,end),s=report.sum;return[row.id,row.emp.name,row.emp.location,...report.statuses.map(d=>d.st||'—'),s.P,s.PA,s.A,s.L,s.E,s.WO,report.totalDed,s.Net];})];
+                miniCsv=[['ID','Name','Location',...dates.map(d=>d.slice(8)),'P','P/A','A','L','E','W/O','Deduction','Net'],...visible.map(row=>{const report=includeReport(calculateReport(row.emp,miniData.attendance[row.id]||{},range.from,end)),s=report.sum;return[row.id,row.emp.name,row.emp.location,...report.statuses.map(d=>d.st||'—'),s.P,s.PA,s.A,s.L,s.E,s.WO,report.totalDed,s.Net];})];
             }
+            const cards = [
+                ['Present', totals.P, 'green'], ['Half day', totals.PA, 'blue'],
+                ['Absent', totals.A, 'rose'], ['Week Off (W/O)', totals.WO, ''],
+                ['Net Pay Days', totals.Net, 'green']
+            ];
+            if (miniMode !== 'individual') cards.unshift(['Employees', visible.length, '']);
+            miniStatCards(cards);
             miniEl('miniReportHead').innerHTML='<tr>'+miniCsv[0].map(v=>'<th>'+punchHtml(v)+'</th>').join('')+'</tr>';
             miniEl('miniReportBody').innerHTML=miniCsv.slice(1).map(row=>{
                 const days=miniMode==='monthly' ? calculateReport(miniData.employees[row[0]],miniData.attendance[row[0]]||{},range.from,range.displayTo||range.to).statuses : [];
-                return '<tr>'+row.map((v,i)=>'<td class="whitespace-pre-wrap">'+punchHtml(v??'')+(days[i-3]?.eventInfo ? ` <button type="button" data-event-info="${punchHtml(days[i-3].eventInfo)}" class="text-indigo-700 font-bold" aria-label="Special Event and Admin Remark">ⓘ</button>` : '')+'</td>').join('')+'</tr>';
+                return '<tr>'+row.map((v,i)=>'<td class="whitespace-pre-wrap">'+((miniMode==='monthly' && i>=3 && i<3+days.length)||(miniMode==='daily'&&i===6)||(miniMode==='individual'&&i===3) ? miniStatusBadge(v) : punchHtml(v??''))+(days[i-3]?.eventInfo ? ` <button type="button" data-event-info="${punchHtml(days[i-3].eventInfo)}" class="text-indigo-700 font-bold" aria-label="Special Event and Admin Remark">ⓘ</button>` : '')+'</td>').join('')+'</tr>';
             }).join('')||'<tr><td>No matching employees.</td></tr>';
             miniEl('miniExport').classList.toggle('hidden',miniCsv.length<2);
         }
@@ -2384,7 +2483,36 @@
                 }
             }catch(e){miniEl('miniProgress').textContent=e.message+' Reload to verify saved attendance.';}finally{miniBusy=false;renderMiniPortal();}
         }
-        miniEl('miniTabs').onclick=e=>{const b=e.target.closest('[data-mini-mode]');if(!b||miniBusy||!miniSession)return;if(miniDirty()&&!confirm('Discard unsaved changes?'))return;miniMode=b.dataset.miniMode;miniRows=[];miniLoadedRange=null;configureMiniMode();renderMiniPortal();loadMiniPortal();};
+        miniEl('miniTabs').onclick = event => {
+            const card = event.target.closest('[data-mini-mode]');
+            if (!card || !miniSession || miniBusy) return;
+            miniMode = card.dataset.miniMode;
+            miniRows = [];
+            miniLoadedRange = null;
+            miniEl('miniHome').hidden = true;
+            miniEl('miniDetail').hidden = false;
+            configureMiniMode();
+            miniEl('miniBack').focus();
+            loadMiniPortal();
+        };
+        miniEl('miniBack').onclick = () => {
+            if (miniBusy || (miniDirty() && !confirm('Discard unsaved attendance changes?'))) return;
+            miniRows = [];
+            miniLoadedRange = null;
+            miniEl('miniDetail').hidden = true;
+            miniEl('miniHome').hidden = false;
+            miniEl('miniTabs').querySelector('[data-mini-mode="'+miniMode+'"]').focus();
+        };
+        miniEl('miniPresets').onclick = event => {
+            const button = event.target.closest('[data-mini-preset]');
+            if (!button || !miniSession || miniMode !== 'individual' || miniBusy) return;
+            const range = reportDateRangeForDay(button.dataset.miniPreset, miniSession.today);
+            miniEl('miniFrom').value = range.start;
+            miniEl('miniTo').value = range.end;
+            miniLoadedRange = null;
+            renderMiniPortal();
+            miniEl('miniProgress').textContent = 'Dates selected. Click Load to view report.';
+        };
         miniEl('miniFetch').onclick=loadMiniPortal;
         ['miniLocation','miniSearch','miniEmployee'].forEach(id=>miniEl(id).addEventListener('input',()=>{if(!miniBusy)renderMiniPortal();}));
         miniEl('miniSelectAll').onchange=e=>{if(miniBusy)return;miniVisibleRows().filter(r=>!miniBlocked(r)).forEach(r=>r.selected=e.target.checked);renderMiniPortal();};
@@ -2404,6 +2532,62 @@
             return day && !day.In && !day.Out && ['P','P/A','A'].includes(day.ManualStatus?.status) ? day.ManualStatus : null;
         }
         function manualStatusVersion(day) { return JSON.stringify(day?.ManualStatus || null); }
+        function noPunchAction(emp, date, day, origin) {
+            if (!isAdmin || !employeeIsActive(emp) || day?.In || day?.Out || date > istDate(Date.now())) return '—';
+            const selection = {id:emp.id, name:emp.name||emp.id, date, origin, version:manualStatusVersion(day), previous:day?.ManualStatus||null};
+            return `<button type="button" data-no-punch-p="${punchHtml(JSON.stringify(selection))}" class="px-2 py-1 rounded-lg bg-green-50 text-green-800 font-bold text-xs whitespace-nowrap">${day?.ManualStatus?.source==='admin-no-punch' ? 'Edit / Remove P' : 'Mark P'}<small class="block">No punch required</small></button>`;
+        }
+        async function saveNoPunchP(selection, remark, remove=false) {
+            const actor=currentEmployee;
+            if (!isAdmin || !actor || miniSession) throw new Error('Admin login required.');
+            const date=selection.date, today=istDate(await ensureAppTime());
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date>today || new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date) throw new Error('Valid past ya today date select karein.');
+            const path=`attendance/${encodeURIComponent(selection.id)}/${date}`;
+            const [emp,snapshot]=await Promise.all([databaseRequest('employees/'+encodeURIComponent(selection.id)),databaseRequest(path,{headers:{'X-Firebase-ETag':'true'}},true)]);
+            if (!isAdmin || currentEmployee!==actor || miniSession) throw new Error('Admin session changed.');
+            if (!employeeIsActive(emp)) throw new Error('Employee active nahi hai. Report refresh karein.');
+            const day=snapshot.data||{};
+            if (day.In || day.Out) throw new Error('IN / OUT punch already saved hai. Overwrite nahi hoga.');
+            if (!snapshot.etag || manualStatusVersion(day)!==selection.version) throw new Error('Attendance change hui hai. Report refresh karein.');
+            if (remove) {
+                if (day.ManualStatus?.source!=='admin-no-punch') throw new Error('Yeh No punch required P nahi hai.');
+                const previous=day.ManualStatus.previousStatus;
+                if (previous) day.ManualStatus=previous; else delete day.ManualStatus;
+            } else {
+                const previousStatus=day.ManualStatus?.source==='admin-no-punch' ? day.ManualStatus.previousStatus||null : day.ManualStatus||null;
+                day.ManualStatus={status:'P',source:'admin-no-punch',remark:String(remark||'').trim().slice(0,500),markedBy:actor.id,markedByName:actor.name||actor.id,markedAt:{'.sv':'timestamp'},revision:crypto.randomUUID(),previousStatus,location:emp.location||'',department:emp.department||'',shiftStart:emp.startTime||'',shiftEnd:emp.endTime||''};
+            }
+            return databaseRequest(path,{method:'PUT',headers:{'if-match':snapshot.etag},body:JSON.stringify(day)});
+        }
+        function openNoPunchP(selection) {
+            if (!isAdmin || miniSession) return;
+            const dialog=document.createElement('dialog');
+            dialog.className='rounded-2xl p-5 shadow-xl w-full max-w-md';
+            dialog.style.maxWidth='min(440px, 92vw)';
+            dialog.innerHTML=`<form class="space-y-3"><h3 class="font-bold text-lg text-green-800">P — No punch required</h3><p data-employee class="text-sm font-bold"></p><p class="text-sm">Full-day paid present. IN / OUT time aur photo ki zarurat nahi.</p><p data-existing class="text-sm"></p><label class="block text-sm font-bold">Admin remark (optional)<textarea maxlength="500" rows="3" class="w-full border rounded-lg p-2" placeholder="Employee duty par tha; app mein baad mein add hua."></textarea></label><p data-error role="alert" class="text-sm text-red-700"></p><div class="flex gap-2 flex-wrap"><button type="button" data-cancel class="support-attach-btn">Cancel</button><button type="button" data-remove class="support-attach-btn">Remove P</button><button type="submit" class="support-send">Save P</button></div></form>`;
+            dialog.querySelector('[data-employee]').textContent=`${selection.name} · ${selection.id} · ${selection.date}`;
+            dialog.querySelector('textarea').value=selection.previous?.remark||'';
+            dialog.querySelector('[data-existing]').textContent=selection.previous ? `Saved status: ${selection.previous.status}. Save P replaces this status; Remove P restores the earlier status.` : '';
+            dialog.querySelector('[data-remove]').hidden=selection.previous?.source!=='admin-no-punch';
+            let busy=false;
+            const save=async remove=>{
+                if(busy)return; busy=true; dialog.querySelectorAll('button,textarea').forEach(b=>b.disabled=true);
+                try {
+                    await saveNoPunchP(selection,dialog.querySelector('textarea').value,remove);
+                    dialog.close(); showMessage(remove?'P removed; previous attendance restored.':'P saved — No punch required.','success');
+                    if(isAdmin && selection.origin==='daywise' && activeView==='admin-daywise-view') await fetchDaywiseReport();
+                    else if(isAdmin && selection.origin==='individual' && activeView==='report-section') await fetchMyReport();
+                } catch(error) {dialog.querySelector('[data-error]').textContent=error.message;}
+                finally {busy=false;dialog.querySelectorAll('button,textarea').forEach(b=>b.disabled=false);}
+            };
+            dialog.querySelector('form').onsubmit=e=>{e.preventDefault();save(false);};
+            dialog.querySelector('[data-remove]').onclick=()=>save(true);
+            dialog.querySelector('[data-cancel]').onclick=()=>dialog.close();
+            dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+            dialog.addEventListener('close',()=>dialog.remove());
+            document.body.append(dialog);dialog.showModal();
+        }
+        document.addEventListener('click',event=>{const button=event.target.closest('[data-no-punch-p]');if(button)openNoPunchP(JSON.parse(button.dataset.noPunchP));});
         async function saveManualStatusRow(row, date, status, remark) {
             const actor = currentEmployee;
             if (!isAdmin || !actor) throw new Error('Admin login required.');
@@ -2443,7 +2627,7 @@
                 <td><strong>${punchHtml(r.emp.name||r.id)}</strong><small class="block">${punchHtml(r.id)}</small></td>
                 <td>${punchHtml(r.emp.department||'—')}<small class="block">${punchHtml(r.emp.location||'—')}</small></td>
                 <td class="whitespace-nowrap">${punchHtml(r.emp.startTime||'—')} – ${punchHtml(r.emp.endTime||'—')}</td>
-                <td>${punchHtml(r.day?.ManualStatus?.status||'Not marked')}</td>
+                <td>${miniStatusBadge(r.day?.ManualStatus?.status)}</td>
                 <td><select data-mark-status aria-label="Status" ${r.blocked||markStatusBusy?'disabled':''}><option value="">Select</option>${['P','P/A','A'].map(st=>`<option value="${st}" ${r.draft===st?'selected':''}>${st}</option>`).join('')}</select></td>
                 <td><input data-mark-remark aria-label="Remark" maxlength="500" class="border rounded-lg p-2" value="${punchHtml(r.remark)}" ${r.blocked||markStatusBusy?'disabled':''}></td>
                 <td><button type="button" data-mark-save class="support-send" ${r.blocked||markStatusBusy?'disabled':''}>Save</button><small class="block ${r.error||r.blocked?'text-red-700':'text-green-700'}">${punchHtml(r.blocked||r.error||r.message||'')}</small></td>
@@ -2555,6 +2739,7 @@
                 let isFuture = dKey > todayStr;
                 let s = { date: dKey, st: isFuture ? '' : 'A', in: '-', out: '-', rem: '', fraudTypes: [] };
                 let p = punches ? punches[dKey] : null;
+                s.noPunchDay = p || {};
                 s.punchDetails = ['In','Out'].filter(type=>p?.[type]).map(type=>({type, punch:p[type], review:fraudPunchState(p[type],emp.department).review, approved:fraudPunchState(p[type],emp.department).status==='approved'}));
                 let isWODay = (dt.getDay() === woDay);
                 let dayRems = [];
@@ -2572,7 +2757,7 @@
                     const manual = manualStatusRecord(p);
                     if (manual) {
                         s.st = manual.status;
-                        s.rem = 'Attendance marked by Admin · ' + manual.status + (manual.remark ? '\nRemark: ' + manual.remark : '');
+                        s.rem = 'Attendance marked by Admin · ' + manual.status + (manual.source==='admin-no-punch' ? '\nNo punch required · Full-day paid present' : '') + (manual.remark ? '\nRemark: ' + manual.remark : '');
                         s.punchDetails = [];
                         if (isWODay) totalWODays--;
                     } else if(p) {
@@ -2770,7 +2955,7 @@
             document.getElementById('sum-net').innerText = data.sum.Net;
             document.getElementById('report-summary-box').classList.remove('hidden');
 
-            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th>${isAdminMode ? '<th>IN Photo</th><th>OUT Photo</th>' : ''}</tr></thead><tbody>`;
+            let h = `<table class="report-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th><th>Remark</th>${isAdminMode ? '<th>IN Photo</th><th>OUT Photo</th><th data-no-export>Action</th>' : ''}</tr></thead><tbody>`;
             data.statuses.forEach(d => {
                 let cls='status-WO'; if(d.st==='P') cls='status-P'; else if(d.st==='A') cls='status-A'; else if(d.st==='P/A') cls='status-PA'; else if(d.st==='L') cls='status-L'; else if(d.st==='E') cls='status-E';
                 
@@ -2781,7 +2966,7 @@
                     const url = validPunchPhoto(d.punchDetails?.find(detail => detail.type === type)?.punch?.photoUrl);
                     return `<td>${url ? `<a href="${punchHtml(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold whitespace-nowrap" aria-label="View ${type.toUpperCase()} punch photo for ${punchHtml(d.date)}">View ↗</a>` : '<span class="text-gray-400" title="Photo unavailable">—</span>'}</td>`;
                 }).join('') : '';
-                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}</tr>`;
+                h+=`<tr><td>${d.date.split('-').reverse().join('/')}</td><td class="font-mono text-xs">${renderPunchTime(d.in, d.fraudTypes?.includes('In'))}</td><td class="font-mono text-xs">${renderPunchTime(d.out, d.fraudTypes?.includes('Out'))}</td><td class="${cls}">${d.st}</td><td>${inf}</td>${photoCells}${isAdminMode ? `<td data-no-export>${noPunchAction(data.emp,d.date,d.noPunchDay,'individual')}</td>` : ''}</tr>`;
             });
             h+= `</tbody></table>`;
             document.getElementById(contId).innerHTML = h;
@@ -2957,7 +3142,9 @@
         }
 
         function reportDateRange(preset, nowMs) {
-            const today = getLocalDateStr(new Date(nowMs));
+            return reportDateRangeForDay(preset, getLocalDateStr(new Date(nowMs)));
+        }
+        function reportDateRangeForDay(preset, today) {
             const [year, month] = today.split('-').map(Number);
             if (preset === 'MTD') return { start: `${year}-${String(month).padStart(2, '0')}-01`, end: today };
             const last = new Date(Date.UTC(year, month - 1, 0));
@@ -4290,7 +4477,7 @@
                         ${daywisePhotoCell(dayPunch?.In)}
                         ${daywisePhotoCell(dayPunch?.Out)}
                         <td>${punchHtml(designationName(emp))}</td>
-                        <td data-no-export>${dayPunch?.In || dayPunch?.Out ? `<button type="button" class="px-2 py-1 rounded-lg bg-red-50 text-red-700 font-bold text-xs whitespace-nowrap" data-daywise-fraud="${punchHtml(JSON.stringify({id,date:checkDate,name:emp.name||id,fingerprints:Object.fromEntries(['In','Out'].filter(t=>dayPunch?.[t]).map(t=>[t,fraudPunchFingerprint(dayPunch[t])]))}))}">Mark Fraud</button>` : '—'}</td>
+                        <td data-no-export>${dayPunch?.In || dayPunch?.Out ? `<button type="button" class="px-2 py-1 rounded-lg bg-red-50 text-red-700 font-bold text-xs whitespace-nowrap" data-daywise-fraud="${punchHtml(JSON.stringify({id,date:checkDate,name:emp.name||id,fingerprints:Object.fromEntries(['In','Out'].filter(t=>dayPunch?.[t]).map(t=>[t,fraudPunchFingerprint(dayPunch[t])]))}))}">Mark Fraud</button>` : noPunchAction({...emp,id},checkDate,dayPunch,'daywise')}</td>
                     </tr>`;
 
                 });
