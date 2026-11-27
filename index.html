@@ -722,6 +722,10 @@
                 <p id="accuracy-warning" class="text-[10px] text-red-600 font-bold mt-1 hidden">GPS weak hai. Kripya open area me aayein.</p>
             </div>
 
+            <dialog id="duty-location-retry" aria-labelledby="duty-location-message" style="margin:auto;width:min(88vw,360px);padding:22px;border:0;border-radius:20px;color:#202239">
+                <p id="duty-location-message" class="font-bold">Location nahi mil rahi. Phone ki Location check karein</p>
+                <button type="button" class="mt-4 rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white">Retry</button>
+            </dialog>
             <p class="text-xs text-gray-600">Location har 20 second auto-refresh hogi. GPS fail ho to upar ↻ Refresh Location dabayein</p>
             <button id="captureSubmitBtn" class="w-full bg-blue-600 text-white py-4 px-4 rounded-2xl hover:bg-blue-700 font-extrabold text-lg shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2">
                 📸 Capture & Submit
@@ -2016,6 +2020,7 @@
         }
 
         async function initCameraAndLocation() {
+            dutyGpsPaused = false;
             showLoader('Starting Camera...');
             startLocationTracking();
             try {
@@ -2025,7 +2030,7 @@
                 showView('attendance-section', `Mark Duty ${currentPunchTarget.toUpperCase()}`);
             } catch (err) {
                 stopCamera(); showMessage('Camera access failed.', 'error'); showView('employee-dashboard', 'Emp. Dashboard');
-            } finally { hideLoader(); revealPunchSubmit(); }
+            } finally { hideLoader(); revealPunchSubmit(); showDutyGpsRetry(); }
         }
 
         function invalidateLocation(message) {
@@ -2035,7 +2040,34 @@
             updateCaptureButton();
         }
 
-        function startLocationTracking() {
+        const dutyRetryDialog = document.getElementById('duty-location-retry');
+        let dutyGpsPaused = false, browserRetryPending = false;
+        function showDutyGpsRetry() {
+            if (browserRetryPending && locationActive && !document.hidden &&
+                dutyRetryDialog.parentElement.getClientRects().length && !dutyRetryDialog.open)
+                dutyRetryDialog.showModal();
+        }
+        dutyRetryDialog.querySelector('button').onclick = () => {
+            dutyRetryDialog.close();
+            browserRetryPending = false;
+            dutyGpsPaused = false;
+            startLocationTracking();
+        };
+        // APK 2.3 supplies the system check, settings intent, and its own dialog.
+        document.addEventListener('click', event => {
+            if (typeof window.mashaCheckDutyGps !== 'function') return;
+            const button = event.target.closest('button');
+            const dialog = button?.closest('dialog');
+            if (dialog?.querySelector('strong')?.textContent === 'Phone ki Location band hai')
+                dutyGpsPaused = button === dialog.lastElementChild;
+            else if (button?.textContent.includes('Settings kholein')) dutyGpsPaused = false;
+        }, true);
+        function startLocationTracking(event) {
+            if (event?.isTrusted) {
+                dutyGpsPaused = false;
+                browserRetryPending = false;
+            }
+            if (dutyGpsPaused) return;
             locationActive = true;
             return refreshLocation().catch(() => {});
         }
@@ -2126,8 +2158,13 @@
             } catch (err) {
                 if (generation === locationGeneration) {
                     permissionDenied = !!err.permissionDenied;
+                    if (locationActive && !document.hidden && !err.weakGps && !locationIsFresh() &&
+                        typeof window.mashaCheckDutyGps !== 'function') {
+                        browserRetryPending = dutyGpsPaused = true;
+                        showDutyGpsRetry();
+                    }
                     if (err.weakGps) warn.classList.remove('hidden');
-                    if (permissionDenied || !locationIsFresh()) invalidateLocation(err.message || 'Fresh GPS nahi mila. Refresh Location dabayein.');
+                    if (permissionDenied || !locationIsFresh()) invalidateLocation(browserRetryPending ? document.getElementById('duty-location-message').textContent : err.message || 'Fresh GPS nahi mila. Refresh Location dabayein.');
                 }
                 throw err;
             } finally {
@@ -2158,6 +2195,8 @@
             if (currentStream) currentStream.getTracks().forEach(t => t.stop());
             currentStream = null;
             locationActive = false;
+            browserRetryPending = dutyGpsPaused = false;
+            if (dutyRetryDialog.open) dutyRetryDialog.close();
             ++locationGeneration;
             if (cancelGpsAcquisition) cancelGpsAcquisition();
             clearTimeout(locationTimer);
@@ -2167,7 +2206,7 @@
 
         document.addEventListener('visibilitychange', () => {
             resumeAppClock();
-            if (!locationActive) return;
+            if (!locationActive || dutyGpsPaused) return;
             ++locationGeneration;
             if (cancelGpsAcquisition) cancelGpsAcquisition();
             clearTimeout(locationTimer);
@@ -4562,7 +4601,7 @@
 
                     const infoText = punchReportInfo(dayPunch, report.statuses[0], emp.department);
                     const infoStyle = report.statuses[0].fraudTypes?.length ? 'bg-red-50 border-red-300 text-red-600' : 'bg-indigo-50 border-indigo-200 text-indigo-700';
-                    const infoLabel = warnings.length ? 'Suspicious punch — view reasons, remark and address' : 'View remark / address';
+                    const infoLabel = report.statuses[0].fraudTypes?.length ? 'Suspicious punch — view reasons, remark and address' : 'View remark / address';
 
                     html += `<tr>
                         <td class="sticky-col-1 font-bold text-gray-700">${id}</td>
